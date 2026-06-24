@@ -22,7 +22,7 @@ Guides development through 8 structured phases:
 ### Prerequisites
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI installed
-- [glab](https://gitlab.com/gitlab-org/cli) (GitLab CLI) for ticket fetching
+- (Optional) [glab](https://gitlab.com/gitlab-org/cli) for GitLab ticket fetching, or [gh](https://cli.github.com/) for GitHub. If neither installed, paste ticket text / CI logs manually.
 
 ### Setup
 
@@ -120,7 +120,12 @@ The skill ships with general development standards covering:
 
 These serve as the baseline. Project-specific `CLAUDE.md` instructions override when conflicts arise.
 
-## Memory Integration
+## Variants
+
+- **`SKILL.md`** — for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (Claude agent backend)
+- **`SKILL.qwen.md`** — for [Qwen agent](https://www.alibabacloud.com/) (parallel implementation, same lifecycle)
+
+Both variants share the same lifecycle and coding standards; copy the appropriate manifest into your agent platform.
 
 The skill integrates with [claude-mem](https://github.com/anthropics/claude-mem) (if available) to:
 
