@@ -163,6 +163,19 @@ Execute the approved plan following the standards below. Order:
 
 If something goes sideways mid-implementation — STOP, reassess, inform user, re-plan if needed. Don't push through blindly.
 
+### Intra-phase checkpoints (mandatory)
+
+After completing each logical unit, **stop and ask the user to review** before continuing. This keeps human reviewers and AI agents in sync — especially across machines and sessions.
+
+| Checkpoint | After completing |
+|---|---|
+| Backend scaffold | Entity, DTOs, requests, config, service, controller, migration, DI + wire-up, build clean |
+| Backend tests | Unit tests written and passing |
+| Frontend models + service | TypeScript interfaces/enums, service class, barrel exports |
+| Frontend components | List + form components built, routes swapped, sidebar/nav wired, `ng build` clean |
+
+At each checkpoint, summarize what was built and ask: **"[Unit] done. Want to review before I continue?"** The user may review, request changes, push/commit, or say continue. **Never skip ahead silently.**
+
 ---
 
 ## Phase 5 — Validate
