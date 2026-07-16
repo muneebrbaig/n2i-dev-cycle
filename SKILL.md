@@ -314,20 +314,29 @@ public static void ConfigureMyEntity(this ModelBuilder builder)
 
 #### Service Patterns
 
+**Context resolution — check for a shared helper before writing a local one.** A real
+codebase (KoolHub, ticket #18) hit 30 services that each hand-rolled their own private
+`ResolveContext`/`ResolveOrg` method with this exact body, because the reference pattern
+below used to show it as step 1 of every new service. Before adding one:
+
+1. Look for an existing `IOrganizationContextAccessor` extension in the project's shared/Kernel
+   layer (e.g. `ResolveWriteContext`, `ResolveWriteOrganizationId`) that already does this.
+2. If it exists but only returns the scalar org id and this method *also* needs `role`/
+   `userOrgId` for a `GetOrganizationScoped` call in the same method, don't call the scalar
+   helper **and** separately re-derive role/userOrgId (that's a redundant second throw-check
+   per request, and it's the mistake that made 7 of #18's 30 services need fixing). Add a
+   tuple-returning sibling once, in the shared layer, and have the scalar helper delegate to
+   it — not the other way around, and not a third local copy.
+3. Only write a local private method if the project genuinely has no shared helper yet —
+   and if so, put it in the shared layer, not the service class, so the next entity doesn't
+   reinvent it too.
+
 ```csharp
 public class MyEntityService(IUnitOfWork unitOfWork) : IMyEntityService
 {
-  // 1. ResolveContext — always first
-  private (OrganizationRole userRole, string userOrganizationId) ResolveContext(
-    string? explicitOrganizationId)
-  {
-    var userRole = unitOfWork.ContextAccessor.GetCurrentOrganizationRole();
-    var userOrganizationId = unitOfWork.ContextAccessor.GetCurrentOrganizationIdOrThrow();
-    if (!string.IsNullOrEmpty(explicitOrganizationId) &&
-        userRole < OrganizationRole.SuperOrgManager)
-      throw new N2IException("Unauthorized: Only super roles can access other organizations.");
-    return (userRole, userOrganizationId);
-  }
+  // 1. Context resolution — call the shared ContextAccessor extension, don't hand-roll it:
+  //    var ctx = unitOfWork.ContextAccessor.ResolveWriteContext(explicitOrganizationId);
+  //    ctx.Role / ctx.UserOrgId / ctx.OrgId — see Security rule 3 for what this replaces.
 
   // 2. Reads: GetOrganizationScoped
   // 3. Writes: stamp OrganizationId
@@ -521,7 +530,45 @@ Minimum per service: create happy path, create invalid (name + each FK), GetAll 
 
 1. Every entity `: IOrganizationEntity`. Every query org-scoped. Every write stamps `OrganizationId`.
 2. Never trust client-supplied identity/role/org. Derive from JWT.
-3. Cross-org: `organizationId` param honored only for `>= SuperOrgManager`.
+3. Cross-org: `organizationId` param honored only for `>= SuperOrgManager` — **on writes, not just reads.**
+   Read paths usually get this for free through a shared scoping helper (e.g. `GetOrganizationScoped(query, userRole, userOrganizationId, explicitOrganizationId)`), which silently ignores `explicitOrganizationId` for non-super roles. Writes have no equivalent by default — resist writing the check inline in every `CreateAsync`:
+   ```csharp
+   // WRONG — copy-pasted across a real codebase 10 times before anyone noticed:
+   var organizationId = explicitOrganizationId ?? userOrganizationId;   // no role check at all
+   ```
+   ```csharp
+   // RIGHT — matches the reference scaffold; centralize as a ContextAccessor extension
+   // (e.g. ResolveWriteOrganizationId) if the project doesn't already have one, so new
+   // write endpoints can't reintroduce the gap by skipping the inline check:
+   if (!string.IsNullOrEmpty(explicitOrganizationId) && userRole < OrganizationRole.SuperOrgManager) {
+     throw new KoolException("Unauthorized: Only super roles can access other organizations.");
+   }
+   var organizationId = explicitOrganizationId ?? userOrganizationId;
+   ```
+   If the method also needs `role`/`userOrgId` in scope (e.g. to feed `GetOrganizationScoped`
+   for a read in the same method as a write), don't call the scalar helper above **and**
+   separately re-derive `role`/`userOrgId` — that's the same throw-check running twice per
+   request. Add a tuple-returning sibling instead (e.g. `ResolveWriteContext` returning
+   `(Role, UserOrgId, OrgId)`) and have the scalar helper delegate to it:
+   ```csharp
+   public static (OrganizationRole Role, string UserOrgId, string OrgId) ResolveWriteContext(
+       this IOrganizationContextAccessor contextAccessor, string? explicitOrganizationId) {
+     var userRole = contextAccessor.GetCurrentOrganizationRole();
+     var userOrganizationId = contextAccessor.GetCurrentOrganizationIdOrThrow();
+     if (!string.IsNullOrEmpty(explicitOrganizationId) && userRole < OrganizationRole.SuperOrgManager) {
+       throw new KoolException("Unauthorized: Only super roles can access other organizations.");
+     }
+     return (userRole, userOrganizationId, explicitOrganizationId ?? userOrganizationId);
+   }
+
+   public static string ResolveWriteOrganizationId(
+       this IOrganizationContextAccessor contextAccessor, string? explicitOrganizationId) =>
+     contextAccessor.ResolveWriteContext(explicitOrganizationId).OrgId;
+   ```
+   Never forward the *resolved* `OrgId`/`organizationId` into a nested service call's
+   `explicitOrganizationId` parameter — forward the original (usually-null)
+   `explicitOrganizationId` through instead. Forwarding the resolved value defeats the
+   nested call's own role check and is the single most common bug in this whole area.
 4. FK validation server-side in service, not just controller.
 5. When correct behaviour is not obvious (auth, roles, tenant isolation, money, deletion) → **ask, don't guess.**
 
@@ -538,6 +585,14 @@ Minimum per service: create happy path, create invalid (name + each FK), GetAll 
 - Forgetting route swap from placeholder to real component
 - Naming entity `Task` (conflicts with `System.Threading.Tasks.Task`)
 - Shipping without updating migration docs (when in migration mode)
+- `explicitOrganizationId ?? userOrganizationId` on a **write** path with no `SuperOrgManager` role check — copy-pasted from a read path or another service without noticing reads are protected by a shared scoping helper and writes aren't. See Security rule 3.
+- Reading an EF-generated identity (`entity.Id`) before `CommitAsync()`/`SaveChangesAsync()` — it's `0`/default until the save actually happens. If a later step in the same method needs the real id (e.g. a post-save re-fetch), commit right after the add, not at the end of the method.
+- Writing a local `ResolveContext`/`ResolveOrg` per service instead of checking for (or adding) a shared `ContextAccessor` extension first. One real codebase hit 30 services with this exact copy before it got caught. See Security rule 3.
+- Calling a scalar context-resolution helper **and** separately re-deriving `role`/`userOrgId` in the same method — the throw-check runs twice per request. Use a tuple-returning variant instead.
+- Trusting an audit/dedup ticket's stated file count. Re-grep the actual pattern across the whole tree before planning — "12 services" turned out to be 30 once every shape of the duplicate was searched for, not just the one named in the ticket.
+- Bulk regex/sed edits across many similar-but-not-identical files bleeding into unrelated code that happens to reuse the same variable/parameter names for a different purpose (e.g. a private helper's own `userRole` parameter getting overwritten by a blanket find-replace meant for call sites). A visual diff won't catch this reliably — rebuild after every batch, not just at the end.
+- Adding a new shared helper without checking whether an existing near-duplicate in the same file/class should collapse into it (delegate) instead of leaving a third copy of the same logic sitting alongside the first two.
+- Folding a genuine bug found mid-audit into a "pure refactor, no behavior change" ticket's scope. File it separately, even if it's a one-line fix — mixing concerns makes both harder to review and to revert independently.
 
 ---
 

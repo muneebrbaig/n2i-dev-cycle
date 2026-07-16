@@ -294,11 +294,15 @@ public static void ConfigureMyEntity(this ModelBuilder builder)
 
 #### Service Patterns
 
+Context resolution: check for a shared `IOrganizationContextAccessor` extension
+(e.g. `ResolveWriteContext`) before writing a per-service private method — 30 services in
+one real codebase each reinvented this before it got caught. See Security rule 3.
+
 ```csharp
 public class MyEntityService(IUnitOfWork unitOfWork) : IMyEntityService
 {
-  private (OrganizationRole userRole, string userOrganizationId) ResolveContext(
-    string? explicitOrganizationId) { ... }
+  // var ctx = unitOfWork.ContextAccessor.ResolveWriteContext(explicitOrganizationId);
+  // ctx.Role / ctx.UserOrgId / ctx.OrgId — don't hand-roll this locally.
   // Reads: GetOrganizationScoped
   // Writes: stamp OrganizationId
   // Validation: throw N2IException
@@ -470,7 +474,7 @@ Minimum per service: create happy path, create invalid (name + each FK), GetAll 
 
 1. Every entity `: IOrganizationEntity`. Every query org-scoped. Every write stamps `OrganizationId`.
 2. Never trust client-supplied identity/role/org. Derive from JWT.
-3. Cross-org: `organizationId` param only for `>= SuperOrgManager`.
+3. Cross-org: `organizationId` param only for `>= SuperOrgManager` — on writes too, not just reads (reads get this free from `GetOrganizationScoped`; writes need an explicit check, centralized as a `ContextAccessor` extension, not inlined per-service). Never forward the *resolved* org id into a nested service call's `explicitOrganizationId` param — forward the original through instead.
 4. FK validation server-side in service.
 5. When correct behaviour not obvious → **ask, don't guess.**
 
@@ -487,6 +491,11 @@ Minimum per service: create happy path, create invalid (name + each FK), GetAll 
 - Forgetting route swap from placeholder to real component
 - Naming entity `Task` (conflicts with `System.Threading.Tasks.Task`)
 - Shipping without updating migration docs (when in migration mode)
+- Writing a local `ResolveContext`/`ResolveOrg` per service instead of using/adding a shared `ContextAccessor` extension
+- Calling a scalar context helper and separately re-deriving role/userOrgId in the same method (double throw-check)
+- Trusting an audit/dedup ticket's stated file count without re-grepping the actual pattern first
+- Bulk sed/regex edits across many files bleeding into unrelated helper methods that reuse the same variable names — rebuild after every batch
+- Folding a bug found mid-audit into a "pure refactor" ticket's scope instead of filing it separately
 
 ---
 
