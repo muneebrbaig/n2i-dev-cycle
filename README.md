@@ -17,15 +17,13 @@ Guides development through 8 structured phases:
 | **7. Feedback** | Accepts your findings from local testing, fixes issues, re-validates. Repeatable. |
 | **8. Ship** | Pushes code on your command. Helps fix CI failures if they occur. |
 
-### Why review happens in Phase 5, not after the MR/PR is open
+### Why review happens before push
 
-Earlier versions offered the review after pushing and opening the MR/PR. In practice this meant
-any finding turned into a fix-up commit sitting permanently in the MR's history, plus a second CI
-run against a state you already knew was about to be patched. Reviewing the local diff at the end
-of Phase 5 — after build/test are green, before Phase 6/8 — catches the same issues (scope creep,
-missed edge cases, security gaps) while a fix is still a clean amend or a pre-push commit, so the
-MR/PR opens already reviewed and CI only runs once. `engineering:code-review` works directly on a
-`git diff`, no PR URL required, so nothing is lost by reviewing before the MR exists.
+Reviewing the local diff at the end of Phase 5 — after build/test are green, before anything is
+pushed — means a finding is still a clean amend or pre-push commit, not a fix-up commit stuck
+permanently in the MR/PR's history, and CI only has to run once against a reviewed state.
+`engineering:code-review` works directly on a `git diff`, no PR URL required, so nothing is lost
+by reviewing before the MR/PR exists.
 
 If `engineering:code-review` (or `caveman:caveman-review` for compressing findings into the
 handover summary) isn't installed, the skill skips the step silently — same best-effort pattern
