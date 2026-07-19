@@ -200,6 +200,24 @@ If validation fails:
 3. Repeat until all green
 4. Never skip or ignore failures
 
+### Pre-push review
+
+Once green, before Phase 6: ask user "Run engineering:code-review on this diff before pushing?"
+Default yes if unsure. Reviewing here — against the local diff, before an MR/PR exists — catches
+scope-creep and correctness issues while they're still a `git commit --amend` or a clean follow-up
+commit away, instead of a fix-up commit sitting permanently in MR history after the fact. It also
+skips triggering a CI run against a state you already know you're about to patch.
+
+- If `engineering:code-review` isn't in the available-skills list this session, say so and skip
+  silently — don't block the lifecycle. Offer a manual review pass instead if the user still wants one.
+- If accepted and available, invoke it against the diff: `git diff <base-branch>...HEAD` (backend
+  and/or frontend paths per SCOPE), not a PR URL — no MR/PR exists yet at this point.
+- Fix any findings, then **re-run this Phase 5 validation loop** before moving to Phase 6.
+- Optionally ask: "Compress findings into caveman-review one-liners for the MR/PR description?"
+  If yes and `caveman:caveman-review` is available, run it over the findings and fold the output
+  into Phase 6's handover summary. If not available, skip silently — the raw findings still stand.
+  (No MR comment thread exists yet to post to — that's why this differs from posting comments.)
+
 ---
 
 ## Phase 6 — Handover
@@ -247,23 +265,16 @@ Repeat until user is satisfied.
 
 Only when user explicitly asks to push/ship:
 
-1. **Push** to remote (ask for confirmation with exact command shown)
-2. **Offer review**: ask user "Run engineering:code-review on the MR/PR now?" Default yes if unsure.
-   - If `engineering:code-review` is not in the available-skills list this session, say so and skip
-     silently — don't block the lifecycle, don't error. Offer a plain manual review pass instead
-     if the user still wants one.
-   - If accepted and available, invoke `engineering:code-review` with the MR/PR URL from step 1.
-   - After findings land, ask: "Compress findings into caveman-review one-liners to post as MR
-     comments?" If yes and `caveman:caveman-review` is available, run it over the findings.
-     If not available, skip silently — the raw findings from step above are still usable as-is.
-3. If user reports CI failures, read logs by forge:
+1. **Push** to remote (ask for confirmation with exact command shown). Code review already
+   happened at the end of Phase 5, against the local diff — this push should already be clean.
+2. If user reports CI failures, read logs by forge:
    - gitlab: `glab ci trace`
    - github: `gh run view --log` (or `gh run view --log-failed`)
    - `FORGE_CLI=none`: ask user to paste CI error output
    - Fix issues
    - Re-validate locally
    - Push fix
-4. If in migration mode: update the configured `MIGRATION_DOC` status table before pushing
+3. If in migration mode: update the configured `MIGRATION_DOC` status table before pushing
 
 **Record memory observation** with final status (shipped, CI green, etc.).
 

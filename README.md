@@ -12,10 +12,24 @@ Guides development through 8 structured phases:
 | **2. Branch** | Detects if current branch matches the task. Suggests a branch name or lets you create your own. |
 | **3. Plan** | Produces a structured implementation plan: entities, services, controllers, migrations, frontend components, tests. Waits for your approval. |
 | **4. Implement** | Executes the plan following embedded coding standards and conventions. |
-| **5. Validate** | Runs `dotnet format`, `dotnet build`, `dotnet test`, `ng build`, `ng test`. Loops until all green. |
+| **5. Validate** | Runs `dotnet format`, `dotnet build`, `dotnet test`, `ng build`, `ng test`. Loops until all green. Once green, offers a code review of the local diff before anything gets pushed. |
 | **6. Handover** | Summarizes changes, lists what to test locally, notes known limitations. |
 | **7. Feedback** | Accepts your findings from local testing, fixes issues, re-validates. Repeatable. |
 | **8. Ship** | Pushes code on your command. Helps fix CI failures if they occur. |
+
+### Why review happens in Phase 5, not after the MR/PR is open
+
+Earlier versions offered the review after pushing and opening the MR/PR. In practice this meant
+any finding turned into a fix-up commit sitting permanently in the MR's history, plus a second CI
+run against a state you already knew was about to be patched. Reviewing the local diff at the end
+of Phase 5 — after build/test are green, before Phase 6/8 — catches the same issues (scope creep,
+missed edge cases, security gaps) while a fix is still a clean amend or a pre-push commit, so the
+MR/PR opens already reviewed and CI only runs once. `engineering:code-review` works directly on a
+`git diff`, no PR URL required, so nothing is lost by reviewing before the MR exists.
+
+If `engineering:code-review` (or `caveman:caveman-review` for compressing findings into the
+handover summary) isn't installed, the skill skips the step silently — same best-effort pattern
+used for the memory/`claude-mem` integration.
 
 ## Installation
 
