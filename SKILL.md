@@ -248,14 +248,22 @@ Repeat until user is satisfied.
 Only when user explicitly asks to push/ship:
 
 1. **Push** to remote (ask for confirmation with exact command shown)
-2. If user reports CI failures, read logs by forge:
+2. **Offer review**: ask user "Run engineering:code-review on the MR/PR now?" Default yes if unsure.
+   - If `engineering:code-review` is not in the available-skills list this session, say so and skip
+     silently — don't block the lifecycle, don't error. Offer a plain manual review pass instead
+     if the user still wants one.
+   - If accepted and available, invoke `engineering:code-review` with the MR/PR URL from step 1.
+   - After findings land, ask: "Compress findings into caveman-review one-liners to post as MR
+     comments?" If yes and `caveman:caveman-review` is available, run it over the findings.
+     If not available, skip silently — the raw findings from step above are still usable as-is.
+3. If user reports CI failures, read logs by forge:
    - gitlab: `glab ci trace`
    - github: `gh run view --log` (or `gh run view --log-failed`)
    - `FORGE_CLI=none`: ask user to paste CI error output
    - Fix issues
    - Re-validate locally
    - Push fix
-3. If in migration mode: update the configured `MIGRATION_DOC` status table before pushing
+4. If in migration mode: update the configured `MIGRATION_DOC` status table before pushing
 
 **Record memory observation** with final status (shipped, CI green, etc.).
 
