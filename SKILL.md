@@ -310,7 +310,7 @@ public class MyEntity : IOrganizationEntity, IAuditable
   public DateTime CreatedOn { get; set; }
   public string? UpdatedBy { get; set; }
   public DateTime? UpdatedOn { get; set; }
-  public string OrganizationId { get; set; } = string.Empty;  // CHAR(27) ULID
+  public string OrganizationId { get; set; } = string.Empty;  // CHAR(26) ULID
 }
 ```
 
@@ -323,7 +323,7 @@ public static void ConfigureMyEntity(this ModelBuilder builder)
   {
     entity.ToTable("MyEntities");
     entity.HasKey(e => e.Id);
-    entity.Property(e => e.OrganizationId).IsRequired().HasMaxLength(27);
+    entity.Property(e => e.OrganizationId).IsRequired().HasMaxLength(26);
     entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
     entity.HasIndex(e => e.OrganizationId);
     entity.HasIndex(e => e.SomeForeignKey);  // for each FK in queries
@@ -412,7 +412,7 @@ CREATE TABLE dbo.MyEntities (
   Name            NVARCHAR(100) NOT NULL,
   SomeForeignKey  BIGINT NOT NULL,
   OptionalFk      BIGINT NULL,
-  OrganizationId  CHAR(27) NOT NULL,
+  OrganizationId  CHAR(26) NOT NULL,
   CreatedBy       NVARCHAR(100) NULL,
   CreatedOn       DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
   UpdatedBy       NVARCHAR(100) NULL,
@@ -430,7 +430,7 @@ GO
 ```
 
 - Filename: `YYYYMMDD_HHMMSS_NN_<Area>_<Description>.sql` — monotonically increasing
-- OrganizationId CHAR(27) + FK ON DELETE CASCADE + index — always
+- OrganizationId CHAR(26) + FK ON DELETE CASCADE + index — always
 - Non-org FKs: no CASCADE
 - NVARCHAR for text, not VARCHAR
 - End with `GO`
