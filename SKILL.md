@@ -17,6 +17,7 @@ Full-lifecycle development skill. Phases: Ingest → Branch → Plan → Impleme
 - Forge: !`URL=$(git remote get-url origin 2>/dev/null); case "$URL" in *gitlab*) F=gitlab;; *github*) F=github;; *) F=unknown;; esac; CLI=none; if [ "$F" = gitlab ] && command -v glab >/dev/null 2>&1; then CLI=glab; elif [ "$F" = github ] && command -v gh >/dev/null 2>&1; then CLI=gh; elif command -v glab >/dev/null 2>&1; then CLI=glab; elif command -v gh >/dev/null 2>&1; then CLI=gh; fi; echo "FORGE=$F; FORGE_CLI=$CLI"`
 - Migration docs: !`c=$(find . -maxdepth 2 -name '.n2i-dev-cycle.env' 2>/dev/null | head -1); [ -n "$c" ] && . "$c" 2>/dev/null; if [ -n "${MIGRATION_DOC:-}" ]; then d=$(find . -maxdepth 3 -name "$MIGRATION_DOC" 2>/dev/null | head -1); [ -n "$d" ] && echo "MIGRATION_DOCS=$d" || echo "MIGRATION_DOCS=none"; else echo "MIGRATION_DOCS=none"; fi`
 - Config: !`f=$(find . -maxdepth 2 -name '.n2i-dev-cycle.env' -not -path '*/node_modules/*' 2>/dev/null | head -1); if [ -n "$f" ]; then . "$f" 2>/dev/null; echo "CONFIG=$f; BRANCH_PREFIX=${BRANCH_PREFIX:-unset}; DEFAULT_SCOPE=${DEFAULT_SCOPE:-unset}; FORGE_OVERRIDE=${FORGE:-unset}"; else echo "CONFIG=none (see .n2i-dev-cycle.env.example)"; fi`
+- E2E: !`E2ECFG=$(find . -maxdepth 3 \( -name 'playwright.config.*' -o -name 'cypress.config.*' \) -not -path '*/node_modules/*' 2>/dev/null | head -1); if [ -n "$E2ECFG" ]; then echo "E2E=$(dirname "$E2ECFG")"; else E2EDIR=$(find . -maxdepth 3 -type d \( -name 'e2e' -o -path '*/tests/e2e' \) -not -path '*/node_modules/*' 2>/dev/null | head -1); [ -n "$E2EDIR" ] && echo "E2E=$E2EDIR" || echo "E2E=none"; fi`
 
 > **Note:** values above are *detected context*, not exported shell variables. In later
 > Bash steps, substitute the literal detected path/value (or re-`source .n2i-dev-cycle.env`
@@ -79,6 +80,9 @@ If no token: infer from detection —
    - Which entities/features are involved
    - Key constraints or dependencies
    - Prior work found in memory (if any)
+
+5. **Set session title** via `set_session_title`: `<ticket-number>: <short desc>`
+   (e.g. `17: add user name to Kashaf PDF`). Skip silently if the tool is unavailable.
 
 ---
 
@@ -236,6 +240,13 @@ Summarize for user:
 ### Known Limitations
 - Anything deferred or out of scope
 - Dependencies on other work
+
+### E2E Coverage
+Only if `E2E != none`:
+- Check existing specs under `E2E` for the flows touched by this change
+- If a changed flow has no matching spec, flag it and ask user: "No e2e coverage for
+  [flow] — want me to add a spec now, or file it separately?"
+- If flows are already covered, note that briefly — no action needed
 
 ### Memory
 - Record handover observation with key details for cross-session continuity

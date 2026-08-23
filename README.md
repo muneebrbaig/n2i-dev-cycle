@@ -13,7 +13,7 @@ Guides development through 8 structured phases:
 | **3. Plan** | Produces a structured implementation plan: entities, services, controllers, migrations, frontend components, tests. Waits for your approval. |
 | **4. Implement** | Executes the plan following embedded coding standards and conventions. |
 | **5. Validate** | Runs `dotnet format`, `dotnet build`, `dotnet test`, `ng build`, `ng test`. Loops until all green. Once green, offers a code review of the local diff before anything gets pushed. |
-| **6. Handover** | Summarizes changes, lists what to test locally, notes known limitations. |
+| **6. Handover** | Summarizes changes, lists what to test locally, notes known limitations, flags e2e gaps. |
 | **7. Feedback** | Accepts your findings from local testing, fixes issues, re-validates. Repeatable. |
 | **8. Ship** | Pushes code on your command. Helps fix CI failures if they occur. |
 
@@ -28,6 +28,20 @@ by reviewing before the MR/PR exists.
 If `engineering:code-review` (or `caveman:caveman-review` for compressing findings into the
 handover summary) isn't installed, the skill skips the step silently — same best-effort pattern
 used for the memory/`claude-mem` integration.
+
+### Session naming
+
+Once requirements are known (end of Phase 1), the skill renames the session to
+`<ticket-number>: <short desc>` via `set_session_title`. Keeps the session list readable when
+multiple `n2i-dev-cycle` sessions are running — otherwise every session shows the same
+skill+ticket-number name and none are distinguishable. Skips silently if the tool isn't available.
+
+### E2E coverage suggestions
+
+If an e2e config or `e2e/` dir is detected in the project (see Project Detection), Phase 6
+Handover checks existing specs against the flows the change touched. Flows without a matching
+spec are flagged, and you're asked whether to add one now or file it separately — this is a
+suggestion, not a gate, and no e2e suite runs automatically as part of Phase 5 Validate.
 
 ## Installation
 
@@ -115,6 +129,7 @@ The skill auto-detects your project from the current working directory — no ha
 | Backend | first `*.slnx`/`*.sln` found (≤3 levels deep); its dir = backend, basename = project |
 | Frontend | dir containing `angular.json` (else nearest `package.json`) |
 | Forge | `gitlab`/`github` from `origin` remote, with `glab`/`gh` fallback |
+| E2E | `playwright.config.*`/`cypress.config.*`, else nearest `e2e/`/`tests/e2e` dir (≤3 levels deep) |
 
 Each project's own `CLAUDE.md` is loaded for project-specific overrides. Optional local hints
 live in a gitignored `projects.local.md` (see `projects.local.md.example`) and config in
