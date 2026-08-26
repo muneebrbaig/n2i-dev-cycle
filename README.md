@@ -1,6 +1,6 @@
 # n2i-dev-cycle
 
-A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill that orchestrates the full development lifecycle — from ticket or prompt to shipped code. Built for vertical-slice .NET + Angular projects with multi-tenant architecture.
+A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill that runs the full development lifecycle, from ticket or prompt to shipped code. Built for vertical-slice .NET + Angular projects with multi-tenant architecture, originally for [Null2Infinity](https://null2infinity.com)'s own projects (N2I).
 
 ## What It Does
 
@@ -19,29 +19,29 @@ Guides development through 8 structured phases:
 
 ### Why review happens before push
 
-Reviewing the local diff at the end of Phase 5 — after build/test are green, before anything is
-pushed — means a finding is still a clean amend or pre-push commit, not a fix-up commit stuck
-permanently in the MR/PR's history, and CI only has to run once against a reviewed state.
-`engineering:code-review` works directly on a `git diff`, no PR URL required, so nothing is lost
-by reviewing before the MR/PR exists.
+The skill runs code review at the end of Phase 5, after build and test are green, before anything
+gets pushed. Catch a finding there and it's a clean amend or a pre-push commit, not a fix-up
+commit stuck in the MR/PR's history for good. CI also only has to run once against a state
+you've already reviewed. `engineering:code-review` works straight off a `git diff`, no PR URL
+needed, so reviewing before the MR/PR exists costs nothing.
 
-If `engineering:code-review` (or `caveman:caveman-review` for compressing findings into the
-handover summary) isn't installed, the skill skips the step silently — same best-effort pattern
-used for the memory/`claude-mem` integration.
+If `engineering:code-review` isn't installed (or `caveman:caveman-review`, which compresses
+findings into the handover summary), the skill skips the step and keeps going. Same best-effort
+pattern the memory/`claude-mem` integration uses.
 
 ### Session naming
 
-Once requirements are known (end of Phase 1), the skill renames the session to
-`<ticket-number>: <short desc>` via `set_session_title`. Keeps the session list readable when
-multiple `n2i-dev-cycle` sessions are running — otherwise every session shows the same
-skill+ticket-number name and none are distinguishable. Skips silently if the tool isn't available.
+Once the skill knows the requirements, at the end of Phase 1, it renames the session to
+`<ticket-number>: <short desc>` via `set_session_title`. Run several `n2i-dev-cycle` sessions at
+once and the session list stays readable instead of showing the same name for all of them.
+Skips silently if the tool isn't available.
 
 ### E2E coverage suggestions
 
-If an e2e config or `e2e/` dir is detected in the project (see Project Detection), Phase 6
-Handover checks existing specs against the flows the change touched. Flows without a matching
-spec are flagged, and you're asked whether to add one now or file it separately — this is a
-suggestion, not a gate, and no e2e suite runs automatically as part of Phase 5 Validate.
+When the skill detects an e2e config or `e2e/` dir (see Project Detection), Phase 6 Handover
+checks existing specs against the flows the change touched. It flags any flow without a matching
+spec and asks whether to add one now or file it separately. This is a suggestion, not a gate:
+no e2e suite runs automatically during Phase 5 Validate.
 
 ## Installation
 
@@ -122,7 +122,7 @@ Skips planning, searches memory for prior context, and goes straight to diagnosi
 
 ## Project Detection
 
-The skill auto-detects your project from the current working directory — no hardcoded names:
+The skill auto-detects your project from the current working directory. No hardcoded names.
 
 | What | How |
 |------|-----|
@@ -152,17 +152,17 @@ These serve as the baseline. Project-specific `CLAUDE.md` instructions override 
 - **`SKILL.md`** — for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (Claude agent backend)
 - **`SKILL.qwen.md`** — for [Qwen agent](https://www.alibabacloud.com/) (parallel implementation, same lifecycle)
 
-Both variants share the same lifecycle and coding standards; copy the appropriate manifest into your agent platform.
+Both variants share the same lifecycle and coding standards. Copy the appropriate manifest into your agent platform.
 
 The skill integrates with [claude-mem](https://github.com/anthropics/claude-mem) (if available) to:
 
 - **Search** prior work on the same ticket/feature at the start of each cycle
 - **Record** observations at key milestones (plan approved, implementation done, validation pass, shipped)
-- **Resume** across sessions — start a new session with `"fix: ..."` and memory fills in prior context
+- **Resume** across sessions. Start a new session with `"fix: ..."` and memory fills in prior context
 
 ## Adapting for Your Projects
 
-The skill is designed for vertical-slice .NET + Angular projects but can be adapted:
+The skill targets vertical-slice .NET + Angular projects, but you can adapt it:
 
 1. **Fork this repo**
 2. **Edit `SKILL.md`**:
