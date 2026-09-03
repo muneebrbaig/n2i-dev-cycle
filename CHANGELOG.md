@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.1.0 (2026-09-03)
 
 ### Added
 - `DB_ENGINE` config key (`postgres` default, `sqlserver` for legacy apps, `auto` to detect)
@@ -11,6 +11,12 @@
   `timestamptz`, `IF NOT EXISTS`, no `GO`) alongside the existing SQL Server form
 
 ### Changed
+- Development standards moved out of `SKILL.md` into `references/backend-standards.md`,
+  `references/security.md`, `references/migrations.md`, `references/frontend-standards.md`.
+  Phase 3 loads only the files matching the active scope, so a frontend-only ticket no longer
+  pays for backend/security/migration text. `SKILL.md` drops from ~750 to ~390 lines. Each
+  reference file carries its own scoped "Common Mistakes to Avoid" list. Qwen variant unchanged
+  (single-file, keeps standards inline).
 - Per-repo config now lives in a gitignored `.n2i-dev-cycle/` folder at the repo root
   (`config` inside it, plus an optional hand-written `notes.md`) — one `.gitignore` line,
   room for future repo-scoped state.

@@ -11,7 +11,7 @@ Guides development through 8 structured phases:
 | **1. Ingest** | Fetches ticket from GitLab, reads a prompt, or picks up a migration sub-phase. Searches memory for prior work. |
 | **2. Branch** | Detects if current branch matches the task. Suggests a branch name or lets you create your own. |
 | **3. Plan** | Produces a structured implementation plan: entities, services, controllers, migrations, frontend components, tests. Waits for your approval. |
-| **4. Implement** | Executes the plan following embedded coding standards and conventions. |
+| **4. Implement** | Executes the plan following the scope-relevant `references/*.md` standards. |
 | **5. Validate** | Runs `dotnet format`, `dotnet build`, `dotnet test`, `ng build`, `ng test`. Loops until all green. Once green, offers a code review of the local diff before anything gets pushed. |
 | **6. Handover** | Summarizes changes, lists what to test locally, notes known limitations, flags e2e gaps. |
 | **7. Feedback** | Accepts your findings from local testing, fixes issues, re-validates. Repeatable. |
@@ -157,15 +157,16 @@ Postgres), the skill flags the mismatch and asks before changing the key.
 
 ## Embedded Standards
 
-The skill ships with general development standards covering:
+Development standards live in `references/`, loaded on demand by scope so a frontend-only ticket
+never pulls in backend rules:
 
-- **Backend**: 7-file entity scaffold, service patterns (multi-tenant, org-scoped queries), controller patterns, DbUp migrations (Postgres by default; `DB_ENGINE=sqlserver` for legacy apps)
-- **Frontend**: Angular service/component patterns, cascading dropdowns, mobile-first UI, PrimeNG conventions
-- **Testing**: xUnit + Moq setup patterns, minimum test coverage per service
-- **Security**: Multi-tenancy enforcement, FK validation, cross-org access control
-- **Code quality**: Naming conventions, formatting rules, common mistakes to avoid
+- **`references/backend-standards.md`** — 7-file entity scaffold, service/controller patterns, DbUp wire-up, xUnit + Moq testing, C# code quality
+- **`references/security.md`** — multi-tenancy enforcement, `ResolveWriteContext` pattern, cross-org write checks, FK validation
+- **`references/migrations.md`** — DbUp, Postgres (default) + SQL Server (`DB_ENGINE=sqlserver`) dialects, naming rules
+- **`references/frontend-standards.md`** — Angular service/component patterns, cascading dropdowns, mobile-first UI, PrimeNG conventions
 
-These serve as the baseline. Project-specific `CLAUDE.md` instructions override when conflicts arise.
+Each file ends with its own scoped "Common Mistakes to Avoid" list. `SKILL.md` Phase 3 loads the
+files matching the active scope. Project-specific `CLAUDE.md` instructions override on conflict.
 
 ## Variants
 
@@ -187,16 +188,15 @@ The skill targets vertical-slice .NET + Angular projects, but you can adapt it:
 1. **Fork this repo**
 2. **Edit `SKILL.md`**:
    - Update the project detection section (Dynamic Context) with your solution file names
-   - Modify the General Development Standards to match your conventions
    - Add/remove phases as needed
-3. **Symlink** your fork into `~/.claude/skills/`
+3. **Edit `references/*.md`** to match your conventions
+4. **Symlink** your fork into `~/.claude/skills/`
 
 ### Key sections to customize:
 
-- **Dynamic Context** — project detection logic
-- **General Development Standards** — your coding conventions
-- **Project-Specific Overrides** — per-project settings
-- **Common Mistakes to Avoid** — your team's known pitfalls
+- **Dynamic Context** (`SKILL.md`) — project detection logic
+- **`references/*.md`** — your coding conventions and per-domain "Common Mistakes to Avoid"
+- **Project-Specific Overrides** (`SKILL.md`) — per-project settings
 
 ## License
 
