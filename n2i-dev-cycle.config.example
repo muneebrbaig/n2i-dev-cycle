@@ -4,7 +4,8 @@
 # The whole .n2i-dev-cycle/ folder is per-developer local state — add one line to the
 # target repo's .gitignore:
 #   .n2i-dev-cycle/
-# The folder may also hold an optional hand-written notes.md (personal repo gotchas).
+# The folder may also hold an optional hand-written notes.md (personal repo gotchas)
+# and the skill-generated progress.md checkpoint ledger.
 # All keys optional — skill falls back to defaults when unset. Format: KEY=value, one per line.
 
 # Branch name prefix for new feature branches (e.g. "mb/" -> mb/17-add-foo).
@@ -22,8 +23,31 @@ BRANCH_PREFIX=mb/
 # Database engine for new migration scripts. One of: postgres | sqlserver | auto.
 # Default: postgres. Set sqlserver only for legacy apps not yet migrated to PG.
 # 'auto' detects from the migrator call / csproj packages, falling back to postgres.
+# Ignore entirely if the project doesn't use DbUp — see MIGRATION_STANDARDS.
 # DB_ENGINE=postgres
 
 # Migration-mode status doc filename (searched within the repo). Optional.
 # Enables Migration input mode + status-table updates. Default: migration mode off.
 # MIGRATION_DOC=migration-status.md
+
+# --- Stack adaptation (set these to run the skill on any tech stack) ---------
+# When unset, the skill auto-detects a .NET solution + an Angular/Node frontend
+# and uses `dotnet` / `npm` commands. Set the keys below for any other stack.
+
+# Validation command(s) per side — a shell snippet run in Phase 5, looped until it
+# exits 0. Include format + build + unit tests for that side. Runs from the repo root
+# ($SLN / $FRONTEND are available). Only the in-scope side's snippet runs.
+# BACKEND_VALIDATE_CMD=cargo fmt --check && cargo build && cargo test
+# FRONTEND_VALIDATE_CMD=cd "$FRONTEND" && pnpm lint && pnpm build && pnpm test
+
+# End-to-end command — run in Phase 6 against the affected specs. Optional.
+# E2E_CMD=npx playwright test
+
+# Repo-owned standards files — a path (relative to repo root) to the project's own
+# backend / frontend / migration conventions, when the repo keeps its own instead of
+# using the skill's references/*.md defaults. Common choice: backend/CLAUDE.md etc.
+# Phase 3 reads the pointed-at file as authoritative and skips the matching skill
+# reference. The working dir's own CLAUDE.md still auto-loads and wins on conflict.
+# BACKEND_STANDARDS=src/Api/CLAUDE.md
+# FRONTEND_STANDARDS=web/CLAUDE.md
+# MIGRATION_STANDARDS=db/migrations/README.md

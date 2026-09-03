@@ -6,7 +6,7 @@ form for a repo whose `.n2i-dev-cycle/config` sets `DB_ENGINE=sqlserver`.
 A `MIGRATION_DOC` describing a legacy SQL Server source does **not** change the target —
 new DDL follows the current `DB_ENGINE`, not the legacy dialect.
 
-## Postgres (KoolHub / KhatahApp / OrbitApp and all current work)
+## Postgres (all current work)
 
 ```sql
 -- 2026-09-03 Add MyEntities (#NN)

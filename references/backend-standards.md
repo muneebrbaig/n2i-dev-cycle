@@ -50,8 +50,8 @@ public static void ConfigureMyEntity(this ModelBuilder builder)
 
 ## Service Patterns
 
-**Context resolution — check for a shared helper before writing a local one.** A real
-codebase (KoolHub, ticket #18) hit 30 services that each hand-rolled their own private
+**Context resolution — check for a shared helper before writing a local one.** One
+multi-tenant codebase hit ~30 services that each hand-rolled their own private
 `ResolveContext`/`ResolveOrg` method with this exact body, because the reference pattern
 below used to show it as step 1 of every new service. Before adding one:
 
