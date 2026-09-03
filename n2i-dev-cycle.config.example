@@ -1,0 +1,29 @@
+# n2i-dev-cycle skill config.
+# Copy to  <target repo root>/.n2i-dev-cycle/config  (next to the .git / .slnx).
+# The skill reads this file if present; Phase 1 offers to create it on the first run.
+# The whole .n2i-dev-cycle/ folder is per-developer local state — add one line to the
+# target repo's .gitignore:
+#   .n2i-dev-cycle/
+# The folder may also hold an optional hand-written notes.md (personal repo gotchas).
+# All keys optional — skill falls back to defaults when unset. Format: KEY=value, one per line.
+
+# Branch name prefix for new feature branches (e.g. "mb/" -> mb/17-add-foo).
+# Default: derived from git user initials, else "dev/".
+BRANCH_PREFIX=mb/
+
+# Default scope when BOTH backend and frontend are detected and no scope token given.
+# One of: backend | frontend | both. Default: ask (skill prompts when unset).
+# DEFAULT_SCOPE=both
+
+# Force forge instead of auto-detecting from git remote. Optional.
+# One of: gitlab | github. Default: auto-detect from remote URL.
+# FORGE=gitlab
+
+# Database engine for new migration scripts. One of: postgres | sqlserver | auto.
+# Default: postgres. Set sqlserver only for legacy apps not yet migrated to PG.
+# 'auto' detects from the migrator call / csproj packages, falling back to postgres.
+# DB_ENGINE=postgres
+
+# Migration-mode status doc filename (searched within the repo). Optional.
+# Enables Migration input mode + status-table updates. Default: migration mode off.
+# MIGRATION_DOC=migration-status.md

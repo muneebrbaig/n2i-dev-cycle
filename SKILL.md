@@ -15,15 +15,23 @@ Full-lifecycle development skill. Phases: Ingest → Branch → Plan → Impleme
 - Current branch: !`git branch --show-current 2>/dev/null || echo "not-a-repo"`
 - Git remote: !`git remote get-url origin 2>/dev/null || echo "no-remote"`
 - Forge: !`URL=$(git remote get-url origin 2>/dev/null); case "$URL" in *gitlab*) F=gitlab;; *github*) F=github;; *) F=unknown;; esac; CLI=none; if [ "$F" = gitlab ] && command -v glab >/dev/null 2>&1; then CLI=glab; elif [ "$F" = github ] && command -v gh >/dev/null 2>&1; then CLI=gh; elif command -v glab >/dev/null 2>&1; then CLI=glab; elif command -v gh >/dev/null 2>&1; then CLI=gh; fi; echo "FORGE=$F; FORGE_CLI=$CLI"`
-- Migration docs: !`c=$(find . -maxdepth 2 -name '.n2i-dev-cycle.env' 2>/dev/null | head -1); [ -n "$c" ] && . "$c" 2>/dev/null; if [ -n "${MIGRATION_DOC:-}" ]; then d=$(find . -maxdepth 3 -name "$MIGRATION_DOC" 2>/dev/null | head -1); [ -n "$d" ] && echo "MIGRATION_DOCS=$d" || echo "MIGRATION_DOCS=none"; else echo "MIGRATION_DOCS=none"; fi`
-- Config: !`f=$(find . -maxdepth 2 -name '.n2i-dev-cycle.env' -not -path '*/node_modules/*' 2>/dev/null | head -1); if [ -n "$f" ]; then . "$f" 2>/dev/null; echo "CONFIG=$f; BRANCH_PREFIX=${BRANCH_PREFIX:-unset}; DEFAULT_SCOPE=${DEFAULT_SCOPE:-unset}; FORGE_OVERRIDE=${FORGE:-unset}"; else echo "CONFIG=none (see .n2i-dev-cycle.env.example)"; fi`
+- DB engine: !`f=$(find . -maxdepth 3 -path '*/.n2i-dev-cycle/config' 2>/dev/null | head -1); [ -n "$f" ] && . "$f" 2>/dev/null; E=${DB_ENGINE:-}; if [ -n "$E" ] && [ "$E" != auto ]; then echo "DB_ENGINE=$E (config)"; else FILES=$(grep -rlE 'PostgresqlDatabase\(|SqlServerDatabase\(|\.SqlDatabase\(|UseNpgsql|UseSqlServer' --include='*.cs' . 2>/dev/null | grep -v '/old/'); MIG=$(echo "$FILES" | xargs grep -hoE 'PostgresqlDatabase\(|SqlServerDatabase\(|\.SqlDatabase\(|UseNpgsql|UseSqlServer' 2>/dev/null | sort -u | tr -d '\n'); if echo "$MIG" | grep -qE 'Postgresql|Npgsql'; then echo "DB_ENGINE=postgres (migrator)"; elif echo "$MIG" | grep -qE 'SqlServer|SqlDatabase'; then echo "DB_ENGINE=sqlserver (migrator)"; else P=$(grep -rhi -E 'Npgsql\.EntityFrameworkCore|dbup-postgresql' --include='*.csproj' . 2>/dev/null); S=$(grep -rhi -E 'EntityFrameworkCore\.SqlServer|dbup-sqlserver' --include='*.csproj' . 2>/dev/null); if [ -n "$P" ] && [ -z "$S" ]; then echo "DB_ENGINE=postgres (pkg)"; elif [ -n "$S" ] && [ -z "$P" ]; then echo "DB_ENGINE=sqlserver (pkg)"; else echo "DB_ENGINE=postgres (default; confirm in Phase 1)"; fi; fi; fi`
+- Migration docs: !`c=$(find . -maxdepth 3 -path '*/.n2i-dev-cycle/config' 2>/dev/null | head -1); [ -n "$c" ] && . "$c" 2>/dev/null; if [ -n "${MIGRATION_DOC:-}" ]; then d=$(find . -maxdepth 3 -name "$MIGRATION_DOC" 2>/dev/null | head -1); [ -n "$d" ] && echo "MIGRATION_DOCS=$d" || echo "MIGRATION_DOCS=none"; else echo "MIGRATION_DOCS=none"; fi`
+- Config: !`f=$(find . -maxdepth 3 -path '*/.n2i-dev-cycle/config' -not -path '*/node_modules/*' 2>/dev/null | head -1); if [ -n "$f" ]; then . "$f" 2>/dev/null; echo "CONFIG=$f; BRANCH_PREFIX=${BRANCH_PREFIX:-unset}; DEFAULT_SCOPE=${DEFAULT_SCOPE:-unset}; FORGE_OVERRIDE=${FORGE:-unset}"; else echo "CONFIG=none (see n2i-dev-cycle.config.example)"; fi`
 - E2E: !`E2ECFG=$(find . -maxdepth 3 \( -name 'playwright.config.*' -o -name 'cypress.config.*' \) -not -path '*/node_modules/*' 2>/dev/null | head -1); if [ -n "$E2ECFG" ]; then echo "E2E=$(dirname "$E2ECFG")"; else E2EDIR=$(find . -maxdepth 3 -type d \( -name 'e2e' -o -path '*/tests/e2e' \) -not -path '*/node_modules/*' 2>/dev/null | head -1); [ -n "$E2EDIR" ] && echo "E2E=$E2EDIR" || echo "E2E=none"; fi`
 
 > **Note:** values above are *detected context*, not exported shell variables. In later
-> Bash steps, substitute the literal detected path/value (or re-`source .n2i-dev-cycle.env`
+> Bash steps, substitute the literal detected path/value (or re-`source` the config file
 > and re-derive `SLN`/`FRONTEND`) — do not rely on `$SLN`, `$FRONTEND`, `$FORGE_CLI`, etc.
 > persisting across tool calls.
+> Per-repo config lives in `.n2i-dev-cycle/config` at the repo root (a gitignored
+> `.n2i-dev-cycle/` folder — anything repo-scoped and skill-generated goes there).
 > If a `FORGE` override is set in config, it wins over remote-URL detection.
+> `DB_ENGINE` resolves as: config value (`postgres`/`sqlserver`) → else migrator call in
+> code → else csproj packages → else **default `postgres`**. Postgres is the current
+> standard; only legacy apps still on SQL Server set `DB_ENGINE=sqlserver` in their repo's
+> `.n2i-dev-cycle/config`. When detection lands on the ambiguous default, confirm with the
+> user in Phase 1 before emitting any DDL.
 
 ## Input Parsing
 
@@ -64,24 +72,52 @@ If no token: infer from detection —
 ## Phase 1 — Ingest & Understand
 
 1. **Detect project** from dynamic context above. Read project CLAUDE.md if present
-   (try `CLAUDE.md`, then `claude.md` in repo root). If `MIGRATION_DOCS` found, read it
-   (plus `docs/phase3-porting-guide.md` if present).
-   If BACKEND=none and FRONTEND=none → ask user for project context.
+   (try `CLAUDE.md`, then `claude.md` in repo root), and `.n2i-dev-cycle/notes.md` if
+   present. If `MIGRATION_DOCS` found, read it (plus `docs/phase3-porting-guide.md` if
+   present). If BACKEND=none and FRONTEND=none → ask user for project context.
 
-2. **Fetch requirements** based on input mode (see Input Parsing above).
+2. **Sync project config** — `.n2i-dev-cycle/config` under the repo root
+   (`git rev-parse --show-toplevel`). The `.n2i-dev-cycle/` folder is gitignored and holds
+   everything repo-scoped the skill generates (today: `config`; room for a resume/checkpoint
+   file later). Skip this whole step if not in a git repo — carry detected values in memory.
 
-3. **Search memory** for prior work on this ticket/topic:
+   **First run for this repo** (`CONFIG=none`): propose a `config` file from detected values:
+   - `DB_ENGINE` — from the detection chain; if it landed on the ambiguous default (both
+     Npgsql and SqlServer packages, e.g. KoolHub) ask "Postgres or SQL Server?" first
+   - `BRANCH_PREFIX` — config value, else git-user initials if derivable, else omit
+   - `MIGRATION_DOC` / `FORGE` — only if already known (migration doc read this run, or
+     remote detection was `unknown` and the user named a forge)
+
+   Show the exact file contents and target path (`<root>/.n2i-dev-cycle/config`), plus the
+   one `.gitignore` line (`.n2i-dev-cycle/`). Ask once.
+   - **Yes** → create the folder + file; append `.n2i-dev-cycle/` to the repo's `.gitignore`
+     if missing and tell the user to commit that `.gitignore` change (the only tracked file
+     touched).
+   - **No** → carry the detected values in memory for this run; don't re-ask this session.
+
+   **Later runs** (config exists): it's the source of truth. If `DB_ENGINE` holds an
+   explicit value and code detection now disagrees (e.g. the repo finished migrating to
+   Postgres), surface the mismatch and ask whether to update that key. Never rewrite the
+   file without consent.
+
+   A `MIGRATION_DOC` describing a legacy SQL Server source does **not** change the target —
+   new DDL follows the current `DB_ENGINE`, not the legacy dialect.
+
+3. **Fetch requirements** based on input mode (see Input Parsing above).
+
+4. **Search memory** for prior work on this ticket/topic:
    - Use `observation_search` with ticket number or key terms
    - Use `memory_search` for related past decisions
    - Surface relevant context to avoid re-deriving
 
-4. **Summarize understanding** to user in 3-5 bullets:
+5. **Summarize understanding** to user in 3-5 bullets:
    - What needs to be built/changed
    - Which entities/features are involved
    - Key constraints or dependencies
+   - Target DB engine (`DB_ENGINE`)
    - Prior work found in memory (if any)
 
-5. **Set session title** via `set_session_title`: `<ticket-number>: <short desc>`
+6. **Set session title** via `set_session_title`: `<ticket-number>: <short desc>`
    (e.g. `17: add user name to Kashaf PDF`). Skip silently if the tool is unavailable.
 
 ---
@@ -117,7 +153,7 @@ Produce a structured implementation plan. Format:
 - Entities to create/modify (list fields, FKs, business rules)
 - Services to create/modify (list methods, validation logic)
 - Controllers to create/modify (list endpoints, auth levels)
-- Migration scripts needed (table creates/alters)
+- Migration scripts needed (table creates/alters) — note target dialect (`DB_ENGINE`)
 - Wire-up steps (DI, ModelBuilder)
 
 **Frontend:**
@@ -417,6 +453,52 @@ public class MyEntityController(IMyEntityService service) : BaseController
 
 #### Database Migration (DbUp)
 
+Pick the dialect from `DB_ENGINE`. **Postgres is the default** — only use the SQL Server
+form for a repo whose `.n2i-dev-cycle/config` sets `DB_ENGINE=sqlserver`.
+
+**Postgres** (KoolHub / KhatahApp / OrbitApp and all current work):
+
+```sql
+-- 2026-09-03 Add MyEntities (#NN)
+
+CREATE TABLE IF NOT EXISTS "MyEntities" (
+  "Id"              bigint GENERATED BY DEFAULT AS IDENTITY NOT NULL,
+  "Name"            varchar(100) NOT NULL,
+  "SomeForeignKey"  bigint NOT NULL,
+  "OptionalFk"      bigint,
+  "OrganizationId"  char(26) NOT NULL,
+  "CreatedBy"       varchar(450) NOT NULL,
+  "CreatedOn"       timestamptz NOT NULL DEFAULT now(),
+  "UpdatedBy"       varchar(450),
+  "UpdatedOn"       timestamptz,
+  CONSTRAINT "PK_MyEntities" PRIMARY KEY ("Id"),
+  CONSTRAINT "FK_MyEntities_Organizations" FOREIGN KEY ("OrganizationId")
+    REFERENCES "Organizations" ("Id") ON DELETE CASCADE,
+  CONSTRAINT "FK_MyEntities_SomeParent" FOREIGN KEY ("SomeForeignKey")
+    REFERENCES "SomeParents" ("Id")
+);
+
+CREATE INDEX IF NOT EXISTS "IX_MyEntities_OrganizationId" ON "MyEntities" ("OrganizationId");
+CREATE INDEX IF NOT EXISTS "IX_MyEntities_SomeForeignKey" ON "MyEntities" ("SomeForeignKey");
+```
+
+Postgres rules:
+- **Quoted PascalCase** identifiers everywhere — tables, columns, constraints, indexes.
+  EF maps `MyEntity` → table `"MyEntities"`, property `Name` → column `"Name"`. No snake_case,
+  no `dbo.`/`public.` prefix.
+- `bigint GENERATED BY DEFAULT AS IDENTITY` for `Id` (not `ALWAYS`, not serial).
+- `varchar(n)` / `text` for strings; `timestamptz` for dates with `DEFAULT now()`; `boolean`
+  with `DEFAULT true|false`; `numeric(p,s)` for money.
+- `CREATE TABLE IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`, `ADD COLUMN IF NOT EXISTS` —
+  scripts are idempotent.
+- No `GO`. DbUp runs each script with `NoTransactionStrategy`, so a destructive bulk
+  data script wraps its own `BEGIN; ... COMMIT;` (plain single-statement DDL does not need it).
+- Constraint/index naming unchanged: `PK_<Table>`, `FK_<Table>_<Ref>`, `IX_<Table>_<Cols>`.
+- Migrator: `DeployChanges.To.PostgresqlDatabase(...)`, scripts embedded in the `Migration`
+  project; runs on `dotnet run --project backend/Migration`.
+
+**SQL Server** (legacy apps only, `DB_ENGINE=sqlserver`):
+
 ```sql
 CREATE TABLE dbo.MyEntities (
   Id              BIGINT IDENTITY(1,1) NOT NULL,
@@ -440,11 +522,13 @@ CREATE INDEX IX_MyEntities_SomeForeignKey ON dbo.MyEntities(SomeForeignKey);
 GO
 ```
 
+SQL Server rules: `dbo.` schema, `IDENTITY(1,1)`, `NVARCHAR` for text (not `VARCHAR`),
+`DATETIME2 DEFAULT GETUTCDATE()`, end every batch with `GO`.
+
+Both dialects:
 - Filename: `YYYYMMDD_HHMMSS_NN_<Area>_<Description>.sql` — monotonically increasing
 - OrganizationId CHAR(26) + FK ON DELETE CASCADE + index — always
 - Non-org FKs: no CASCADE
-- NVARCHAR for text, not VARCHAR
-- End with `GO`
 - Never edit shipped scripts
 
 ### Frontend — Angular Patterns
@@ -605,7 +689,7 @@ Minimum per service: create happy path, create invalid (name + each FK), GetAll 
 ### Common Mistakes to Avoid
 
 - `int` instead of `long` for IDs
-- `VARCHAR` instead of `NVARCHAR` in SQL
+- Wrong SQL dialect for `DB_ENGINE` — snake_case or `VARCHAR` on Postgres; `varchar`/no-`GO` on SQL Server (should be `NVARCHAR` + `GO`)
 - Missing `ConfigureAwait(false)`
 - FK validation only in controller (must be in service)
 - Missing `appendTo="body"` on overlays in dialogs
@@ -650,12 +734,13 @@ Also search memory at skill start (`observation_search`, `memory_search`) to sur
 
 ## Project-Specific Overrides
 
-Detection (Dynamic Context) handles paths generically — no project name needed.
-Per-repo notes (known repos, migration doc names, legacy paths) live in a gitignored
-local file, **not** in this public skill.
+Detection (Dynamic Context) handles paths generically — no project name needed. Everything
+project-specific is read from the repo you're in, nothing from a cross-repo file:
 
-After loading general standards:
-1. If `projects.local.md` exists in the skill dir, read it for repo-specific overrides.
-2. Always read the active project's own CLAUDE.md for overrides (wins on conflict).
+1. `.n2i-dev-cycle/config` — the KEY=VALUE settings (already loaded in Dynamic Context).
+2. `.n2i-dev-cycle/notes.md` in the repo, if present — free-text personal gotchas
+   (gitignored, this repo only). Read it when it exists; never require it.
+3. The repo's own `CLAUDE.md` — team-shared conventions and overrides, wins on conflict.
 
-See `projects.local.md.example` for the format.
+Repo quirks worth writing down: team-facing ones go in `CLAUDE.md`, personal ones in
+`.n2i-dev-cycle/notes.md`. There is no skill-dir roster of repos.

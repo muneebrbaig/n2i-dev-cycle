@@ -4,5 +4,7 @@
 *~
 .idea/
 .vscode/
-.n2i-dev-cycle.env
-projects.local.md
+.n2i-dev-cycle/
+
+# marketing working context (local)
+.agents/

@@ -131,15 +131,35 @@ The skill auto-detects your project from the current working directory. No hardc
 | Forge | `gitlab`/`github` from `origin` remote, with `glab`/`gh` fallback |
 | E2E | `playwright.config.*`/`cypress.config.*`, else nearest `e2e/`/`tests/e2e` dir (≤3 levels deep) |
 
-Each project's own `CLAUDE.md` is loaded for project-specific overrides. Optional local hints
-live in a gitignored `projects.local.md` (see `projects.local.md.example`) and config in
-`.n2i-dev-cycle.env` (see `.n2i-dev-cycle.env.example`).
+All project-specific input comes from the repo you're in — there is no cross-repo file:
+the repo's own `CLAUDE.md` (team conventions) and an optional `.n2i-dev-cycle/notes.md`
+(personal gotchas, gitignored).
+
+### Per-repo config: `.n2i-dev-cycle/`
+
+Each target repo gets a gitignored `.n2i-dev-cycle/` folder at its root holding everything
+repo-scoped the skill generates: `config` (see `n2i-dev-cycle.config.example`) —
+`KEY=value` lines for `DB_ENGINE`, `BRANCH_PREFIX`, `MIGRATION_DOC`, `FORGE`,
+`DEFAULT_SCOPE` — and an optional `notes.md` you write yourself.
+
+On the **first run in a repo** (no config found), Phase 1 proposes the file from detected
+values and, with your consent, creates `.n2i-dev-cycle/config` at the git root and appends
+one line to the repo's `.gitignore`:
+
+```
+.n2i-dev-cycle/
+```
+
+That `.gitignore` change is the only tracked file touched — you commit it. Decline and the
+skill just uses detected values for that run. On later runs the config is the source of
+truth; if `DB_ENGINE` is pinned and the codebase later disagrees (e.g. finished migrating to
+Postgres), the skill flags the mismatch and asks before changing the key.
 
 ## Embedded Standards
 
 The skill ships with general development standards covering:
 
-- **Backend**: 7-file entity scaffold, service patterns (multi-tenant, org-scoped queries), controller patterns, DbUp migrations
+- **Backend**: 7-file entity scaffold, service patterns (multi-tenant, org-scoped queries), controller patterns, DbUp migrations (Postgres by default; `DB_ENGINE=sqlserver` for legacy apps)
 - **Frontend**: Angular service/component patterns, cascading dropdowns, mobile-first UI, PrimeNG conventions
 - **Testing**: xUnit + Moq setup patterns, minimum test coverage per service
 - **Security**: Multi-tenancy enforcement, FK validation, cross-org access control
