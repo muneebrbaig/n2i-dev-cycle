@@ -15,7 +15,7 @@ clean finish):
 | **3. Plan** | Structured implementation plan with concrete field lists, method signatures, and named test cases — no placeholders. Self-reviewed against the spec. Waits for your approval. |
 | **4. Implement** | Business logic is test-first (RED → GREEN → REFACTOR); scaffolding is exempt but exercised by the tests that follow. Intra-phase review checkpoints. |
 | **5. Validate** | Runs the project's format + build + test — `dotnet` / `ng` by default, or the `BACKEND_VALIDATE_CMD` / `FRONTEND_VALIDATE_CMD` config snippets on any other stack. Evidence-before-claims gate: no "green" without a fresh run in hand. Then a code review of the local diff (findings verified, not rubber-stamped; a real bug routes through the debugging + TDD refs) before anything gets pushed. |
-| **6. Handover** | Summarizes changes, lists what to test locally, notes limitations. Builds and runs affected e2e specs against a dev or throwaway DB where possible. |
+| **6. Handover** | Summarizes changes, lists what to test locally, notes limitations. Builds and runs affected e2e specs (in a subagent) against a dev or throwaway DB where possible. |
 | **7. Feedback** | Root-cause-first debugging (three failed fixes → question the design, not fix #4). Independent findings dispatched in parallel. Failing repro test before each fix. Re-validates. Repeatable. |
 | **8. Ship** | Full suite green → confirm base branch → push + MR → root-cause any CI failure → clean up local branch and worktree after merge. |
 
@@ -50,12 +50,48 @@ Affected specs run against a dev or fresh throwaway DB where the project support
 Phase 8; where a real run isn't possible it says so rather than claiming coverage. Phase 5
 Validate still runs unit/build only.
 
+### What runs in a subagent, and what doesn't
+
+The skill offloads work to a subagent only when the input is bulky, the output is
+a short conclusion, and the task is independent of the rest of the lifecycle:
+end-to-end runs in Phase 6 (the runner log can be hundreds of lines; what comes
+back is pass/fail per spec plus traces for the failures), independent findings in
+Phase 7, and separate failing CI jobs in Phase 8. The pre-push code review is
+already its own skill.
+
+Everything that carries the specification stays in the main agent on purpose:
+
+- **Reading the ticket, wiki pages, and linked docs.** The alignment gate, the
+  plan self-review, and every test written in Phase 4 are checked back against the
+  exact wording of the spec. A subagent would hand back a summary, and the
+  distance between that summary and the real text is where scope quietly drifts.
+- **Writing the ticket draft and the MR/PR description.** These are written from
+  context the main agent already holds, and the wording matters. Delegating means
+  re-supplying nearly everything for almost no saving.
+- **The Phase 4 test-first loop.** RED→GREEN cycles run many times in quick
+  succession; a subagent round-trip on each one would stall the loop, and the
+  verification gate requires the main agent to run the command and read its output
+  first-hand.
+
+Phase 5 also asks for the quietest test reporter and keeps only the summary line
+on a green run, expanding the full output only when something fails. A
+`PreToolUse`/`Bash` filter hook — the one in
+[claude-code-starter-kit](https://github.com/muneebrbaig/claude-code-starter-kit#hooks),
+or `rtk` — does the same job automatically for every command; the skill's
+instruction is the fallback for setups without one.
+
+The mechanism that actually keeps the main context lean is the checkpoint ledger
+(`.n2i-dev-cycle/progress.md`) plus memory observations — state is written down as
+each checkpoint lands, so a later session reconstructs it from the ledger and
+`git log` rather than from a long transcript.
+
 ## Installation
 
 ### Prerequisites
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI installed
 - (Optional) [glab](https://gitlab.com/gitlab-org/cli) for GitLab ticket fetching, or [gh](https://cli.github.com/) for GitHub. If neither installed, paste ticket text / CI logs manually.
+- (Optional) a `PreToolUse`/`Bash` hook that filters noisy build and test output before it reaches context — e.g. the one in [claude-code-starter-kit](https://github.com/muneebrbaig/claude-code-starter-kit#hooks), or `rtk`. Without one, Phase 5 falls back to quiet-reporter instructions (see below).
 
 ### Setup
 

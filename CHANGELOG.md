@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.3.0 (2026-09-09)
+
+### Added
+- `SKILL.md` **Delegation & Context** section — what goes to a subagent (E2E runs,
+  independent Phase 7/8 failures, pre-push review) vs what stays in the main agent
+  (reading the ticket/wiki/docs, writing the ticket draft and MR/PR description, the
+  Phase 4 TDD loop), with the reasoning.
+- Phase 5 guidance to keep test-runner output out of context — quietest reporter,
+  summary line only on green, full output only on a non-zero exit (fallback for
+  setups without a token-trimming hook).
+- `references/verification.md` claim→proof row for subagent-run E2E specs.
+- README optional prerequisite + notes: a `PreToolUse`/`Bash` output-filter hook
+  ([claude-code-starter-kit](https://github.com/muneebrbaig/claude-code-starter-kit#hooks)
+  or `rtk`) for automatic test/build noise trimming, and a section on what the
+  lifecycle delegates to subagents versus what stays in the main agent.
+
+### Changed
+- Phase 6 runs affected E2E specs via a subagent (minimum context in, pass/fail +
+  failure traces out) instead of in the main agent.
+
 ## 1.2.0 (2026-09-03)
 
 ### Added

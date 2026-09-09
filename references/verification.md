@@ -38,6 +38,7 @@ Commands are the .NET + Angular default — substitute `BACKEND_VALIDATE_CMD` /
 | Regression test works | red-green verified — revert fix, test fails, restore, passes | test passes once |
 | Requirements met | line-by-line check against the ticket / plan | tests passing |
 | Subagent done | the VCS diff shows the change | the agent said "success" |
+| E2E specs pass (subagent-run) | the run output the agent returns — specs executed, 0 failed | the agent's summary sentence alone |
 
 ## Red Flags — Stop
 

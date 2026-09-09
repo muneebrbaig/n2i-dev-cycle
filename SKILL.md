@@ -322,6 +322,13 @@ npm run build                       # ng build → zero errors
 npm test -- --watch=false           # all pass
 ```
 
+**Keep the runner noise out of context.** Use the quietest reporter that still
+shows exit code and failure count (`-v minimal` / `--watch=false` above; add
+`--reporters` / `--logger` equivalents on other stacks). On a green run keep only
+the summary line. Read the full output only when it exits non-zero, and then only
+the failing cases. (A token-trimming hook, where installed, does this
+automatically — this instruction is the fallback for setups without one.)
+
 If validation fails:
 1. Fix the issue
 2. Re-run validation
@@ -379,9 +386,14 @@ new spec is not always.**
 - A touched flow with **no** spec → build one now (test-first applies), unless
   it's a minor change and the user agrees a spec isn't warranted — record that
   call in the handover.
-- Run the affected specs before Phase 8 (via `E2E_CMD` if set, else the project's
-  runner) — against a dev DB, or a fresh throwaway DB where the project supports
-  one. Where a real run isn't possible, say so rather than claiming coverage.
+- Run the affected specs before Phase 8 **via a subagent** — hand it the minimum:
+  the spec paths to run, `E2E_CMD` (or the detected runner), the DB target (dev, or
+  a fresh throwaway DB where the project supports one). It returns pass/fail per
+  spec plus the failure trace for failures only — the full runner log stays out of
+  the main context. State the model on dispatch (see **Model Selection**). Where a
+  real run isn't possible, say so rather than claiming coverage. Per
+  `verification.md`: a passing report is not evidence — confirm against the run
+  output the agent returns.
 - Flows already covered and passing → note briefly, no action.
 
 ### Memory
@@ -454,6 +466,35 @@ subagent — an omitted model inherits this session's, usually the priciest.
 | Scaffolding, migration DDL, single-file mechanical edits, transcription from a detailed plan | cheap / fast |
 | Service/controller/component logic, multi-file integration, test design | standard |
 | Architecture, ambiguous debugging, the Phase 5 pre-push review, CI root-cause on a multi-layer failure | most capable |
+
+## Delegation & Context
+
+Delegate to a subagent only work that is **verbose-in / small-conclusion-out and
+independent**:
+
+| Delegate | Why |
+|---|---|
+| E2E runs (Phase 6) | slow, huge log, result is pass/fail + failure traces |
+| Independent Phase 7 findings / Phase 8 CI jobs (`debugging.md` → Parallel Dispatch) | separate root causes, run concurrently |
+| Pre-push code review (Phase 5) | already its own skill |
+
+**Keep in the main agent** — do not hand off:
+
+- **Reading the ticket / wiki / linked docs (Phase 1).** The spec is the artifact
+  the alignment gate, plan self-review, and every TDD assertion check back
+  against. A subagent returns a lossy summary; the gap between the summary and the
+  real wording is where scope drift enters — the same reason `brainstorming.md`
+  keeps the restate in-session.
+- **Writing the ticket draft / MR/PR description.** Synthesis from context the
+  main agent already holds, and quality-sensitive (product-facing tone,
+  stop-slop). Handing off means re-passing almost everything for near-zero saving.
+- **The Phase 4 TDD loop.** Rapid RED→GREEN iterations; per-run subagent latency
+  kills the loop, and the verification gate requires the main agent to run and
+  read the command itself.
+
+The real context lever is the **checkpoint ledger** + memory observations, not
+delegation — write the ledger line at each checkpoint and don't re-read what it
+already captured.
 
 ## Checkpoint Ledger
 

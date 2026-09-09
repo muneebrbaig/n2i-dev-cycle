@@ -241,6 +241,12 @@ npm test -- --watch=false
 
 If validation fails: fix → re-run → repeat until green. Never skip failures.
 
+**Keep runner noise out of context.** Use the quietest reporter that still shows
+exit code + failure count (`-v minimal` / `--watch=false`; equivalent flags on
+other stacks). Green run → keep the summary line only. Read full output only on a
+non-zero exit, and only the failing cases. (A token-trimming hook does this
+automatically where installed; this is the fallback.)
+
 ### Pre-push review
 
 Once green, before Phase 6: run a code review against the local diff
@@ -277,9 +283,12 @@ mandatory; a new spec is not always.**
   however small the change.
 - A touched flow with **no** spec → build one (test-first), unless it's minor and
   the user agrees no spec is warranted — record that call in the handover.
-- Run affected specs before Phase 8 (via `E2E_CMD` if set, else the project's
-  runner) — against a dev DB or a fresh throwaway DB where the project supports
-  one. Can't run for real → say so, don't claim coverage.
+- Run affected specs before Phase 8 **via a subagent** — hand it the minimum
+  (spec paths, `E2E_CMD` or detected runner, DB target: dev or fresh throwaway
+  where supported). It returns pass/fail per spec + traces for failures only; the
+  full runner log stays out of main context. A passing report is not evidence —
+  confirm against the run output it returns. Can't run for real → say so, don't
+  claim coverage.
 
 ### Memory
 - Save Qwen memory observation + a ledger line with key details.
@@ -353,6 +362,19 @@ subagent (omitted = inherits this session's, usually priciest).
 | Scaffolding, migration DDL, single-file mechanical edits, transcription from a detailed plan | cheap / fast |
 | Service/controller/component logic, multi-file integration, test design | standard |
 | Architecture, ambiguous debugging, pre-push review, CI root-cause on a multi-layer failure | most capable |
+
+## Delegation & Context
+
+Delegate to a subagent only **verbose-in / small-conclusion-out and independent**
+work: E2E runs (Phase 6), independent Phase 7 findings / Phase 8 CI jobs (Parallel
+Dispatch), the pre-push review.
+
+Keep in the main agent: **reading the ticket / wiki / linked docs** (the spec is
+what the alignment gate and every Phase 4 test check against — a summary drifts);
+**writing the ticket draft / MR-PR description** (synthesis from context already
+held, wording-sensitive); **the Phase 4 TDD loop** (per-run round-trip stalls it,
+and the gate needs the main agent to run + read the command). The real context
+lever is the checkpoint ledger + memory observations, not delegation.
 
 ## Checkpoint Ledger
 
