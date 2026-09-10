@@ -4,9 +4,9 @@ A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill that runs 
 
 ## What It Does
 
-Guides development through 8 structured phases, each carrying its own discipline
+Guides development through 9 structured phases, each carrying its own discipline
 (classification + approval gate, TDD, evidence-before-claims, systematic debugging,
-clean finish):
+clean finish, pattern capture):
 
 | Phase | What Happens |
 |-------|-------------|
@@ -18,6 +18,7 @@ clean finish):
 | **6. Handover** | Summarizes changes, lists what to test locally, notes limitations. Builds and runs affected e2e specs (in a subagent) against a dev or throwaway DB where possible. |
 | **7. Feedback** | Root-cause-first debugging (three failed fixes → question the design, not fix #4). Independent findings dispatched in parallel. Failing repro test before each fix. Re-validates. Repeatable. |
 | **8. Ship** | Full suite green → confirm base branch → push + MR → root-cause any CI failure → clean up local branch and worktree after merge. |
+| **9. Improve** | Distills 1–3 reusable patterns from the cycle into `#instinct`-tagged memory observations (statement / trigger / confidence / stack scope), read back at Phase 1 of the next cycle. A pattern that recurs across cycles gets proposed as a one-line PR to the matching reference file. Archives the checkpoint ledger so the next ticket starts clean. |
 
 Cross-cutting mechanics — model selection (cheap model for scaffolding, capable for architecture / debugging / review), subagent delegation, the **checkpoint ledger** (`.n2i-dev-cycle/progress.md`, survives context compaction and cross-session re-entry), and memory milestones — live in `references/execution.md`, loaded once at Phase 1 so `SKILL.md` itself stays lean.
 
@@ -251,6 +252,7 @@ holds the cross-cutting machinery pulled out of `SKILL.md` to keep the always-lo
 - **`references/verification.md`** — evidence-before-claims gate, claim→proof table
 - **`references/debugging.md`** — root-cause-first steps, boundary instrumentation, 3-fix rule, parallel dispatch
 - **`references/finishing.md`** — suite green → base confirm → push + MR → CI → cleanup
+- **`references/improve.md`** — Phase 9: what to distill, instinct shape, near-duplicate search, promotion-to-reference PR, ledger archive
 
 **Standards (stack-specific — .NET + Angular defaults)**:
 
@@ -276,6 +278,7 @@ The skill integrates with [claude-mem](https://github.com/anthropics/claude-mem)
 - **Search** prior work on the same ticket/feature at the start of each cycle
 - **Record** observations at key milestones (plan approved, implementation done, validation pass, shipped)
 - **Resume** across sessions. Start a new session with `"fix: ..."` and memory fills in prior context
+- **Learn** — Phase 9 distills reusable patterns into `#instinct`-tagged observations, surfaced (stack-filtered) at Phase 1 of later cycles; a recurring one gets proposed as a PR to the matching reference file
 
 ## Using with a different stack
 

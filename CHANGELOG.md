@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+### Added
+- **Phase 9 — Improve.** After a branch merges, the cycle distills 1–3 reusable
+  patterns into `#instinct`-tagged memory observations (statement / trigger /
+  confidence `low`–`high` / stack + domain scope tags). Phase 1 step 5 reads them
+  back, filtered to the detected stack, as working rules for the new cycle. A
+  pattern that recurs across cycles at `med`+ confidence is proposed as a one-line
+  PR to the matching `references/*.md` "Common Mistakes" list — never an automatic
+  edit. New `references/improve.md`; `SKILL.md` + `SKILL.qwen.md` Phase 9 and Phase
+  1 step 5; `references/execution.md` memory-milestone table; README.
+- Checkpoint-ledger lifecycle. Phase 9 archives `progress.md` to
+  `progress.<slug>.md` as its last step, so the next ticket in the repo starts on a
+  clean ledger. Phase 1 step 8 also archives a stale ledger left by a different,
+  already-shipped ticket instead of trying to resume it. `finishing.md`,
+  `execution.md`, both manifests.
+
 ### Changed
 - Cross-cutting machinery (model selection, subagent delegation, the checkpoint
   ledger, memory milestones) moved from `SKILL.md` into a new

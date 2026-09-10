@@ -49,6 +49,9 @@ list, ask whether to commit, move, or drop them. Never `--force` on your own.
 
 Other local `[gone]` branches → mention them, don't delete unasked.
 
+The checkpoint ledger is **not** archived here — Phase 9 does that as its last
+step, after writing its final line.
+
 ## Common Mistakes to Avoid
 
 - Shipping off a suite run from before the last fix.

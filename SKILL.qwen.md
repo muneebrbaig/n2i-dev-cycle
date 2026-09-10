@@ -6,10 +6,11 @@ type: skill
 
 # N2I Development Cycle (Qwen Variant)
 
-Full-lifecycle development skill. 8 phases: Ingest/Classify/Align → Branch → Plan → Implement → Validate → Handover → Feedback → Ship.
+Full-lifecycle development skill. 9 phases: Ingest/Classify/Align → Branch → Plan → Implement → Validate → Handover → Feedback → Ship → Improve.
 
 Discipline layer (inline below, no separate files): classification gate, TDD,
-verification gate, systematic debugging, finishing, model selection, checkpoint ledger.
+verification gate, systematic debugging, finishing, model selection, checkpoint
+ledger, improve loop.
 
 ## Dynamic Context
 
@@ -95,7 +96,10 @@ Ceremony scales with the task; the gate never does.
    - **Architectural**: new project/subsystem, or a change that reshapes interfaces others depend on. Written spec under `docs/`, self-reviewed, user-reviewed, then Phase 3.
    - Unsure between two → take the heavier. Hidden complexity mid-task upgrades the class; nothing downgrades.
 
-5. **Search Qwen memory** for prior work on this ticket/topic. Surface relevant context.
+5. **Search Qwen memory** for prior work on this ticket/topic. Surface relevant
+   context. Also search `#instinct` filtered to the detected stack
+   (`#stack:<stack>`, `#stack:any`) — surface the top ~5 by confidence as working
+   rules for this cycle (Phase 9 records them).
 
 6. **Take the path:**
    - **Discussion mode** (no finalized ticket): explore context, decompose if multi-subsystem, ask clarifying questions one at a time, propose 2-3 approaches for architectural work, present a design (spec doc for architectural). Produce the **ticket / sub-ticket draft** for Product review — problem → proposed direction → scope (covered vs adjacent-excluded) → out of scope, PM tone. **Stop** unless told to continue.
@@ -103,7 +107,7 @@ Ceremony scales with the task; the gate never does.
 
 7. **Set session title** (if the runtime supports it): `<ticket-number>: <short desc>`.
 
-8. **Start / resume the checkpoint ledger** (see Checkpoint Ledger below). If `.n2i-dev-cycle/progress.md` names this ticket, resume at the first incomplete phase.
+8. **Start / resume the checkpoint ledger** (see Checkpoint Ledger below). If `.n2i-dev-cycle/progress.md` names this ticket, resume at the first incomplete phase. If it names a *different* ticket whose last line shows shipped/merged, archive it (`progress.<slug>.md`) and start fresh.
 
 ---
 
@@ -358,6 +362,31 @@ Only on explicit user request:
    user, ask; never `--force`.
 
 **Save Qwen memory observation + final ledger line** (shipped, CI green, merged).
+The ledger is archived at the end of Phase 9.
+
+---
+
+## Phase 9 — Improve
+
+Runs once, after the branch is merged and Phase 8 cleanup is done. Default-on;
+skip only if the user says so or the cycle produced nothing reusable.
+
+1. **Distill** 1-3 patterns that will recur — a wrong assumption that cost time, a
+   convention you missed, a decision worth not re-litigating. Only if it
+   generalizes past this ticket. Not ticket-specific facts; not things already in
+   General Development Standards → Common Mistakes.
+2. **De-dupe** — search Qwen memory `#instinct` for a near-duplicate of each.
+3. **Record** each as an `#instinct`-tagged observation: statement (imperative
+   rule), trigger (when it applies), confidence (`low`/`med`/`high`), scope tags
+   (`#stack:… #domain:…`).
+4. **Promote** — near-duplicate exists and the pair reaches `med`+ confidence →
+   propose a one-line addition to the relevant Common Mistakes list as a PR to the
+   skill repo (exact line shown). Never edit the skill silently.
+5. **Ledger** — final line `Phase 9: <N> instincts recorded[, promotion proposed for <X>]`,
+   then archive: `mv .n2i-dev-cycle/progress.md .n2i-dev-cycle/progress.<slug>.md`
+   so the next ticket starts clean.
+
+Memory unavailable → skip steps 1-4, still archive the ledger.
 
 ---
 
@@ -397,7 +426,10 @@ Skip if not in a git repo.
 - Phase 4 test-first units record the RED failure line before the GREEN commit —
   that's where test-first order is proven across sessions/machines.
 - On skill start (Phase 1 step 8): first line matches this ticket → resume at the
-  first incomplete phase.
+  first incomplete phase. First line is a *different*, already-shipped ticket →
+  archive it (`progress.<slug>.md`) and start fresh.
+- Phase 9 archives the ledger as its last step, after Phase 8's merge cleanup.
+  Archived copies stay gitignored — delete whenever.
 - After compaction, `git log` + this ledger outrank recollection.
 
 ## Discipline Red Flags — Stop
@@ -714,8 +746,10 @@ Use Qwen's built-in memory system. Save observations at milestones:
 | Feedback received | User findings, issues reported |
 | Fix applied | What fixed and how |
 | Shipped / CI green | Final status, branch pushed, CI result |
+| Improve (Phase 9) | `#instinct`-tagged: statement, trigger, confidence (`low`/`med`/`high`), scope tags (`#stack:… #domain:…`) |
 
-Search Qwen memory at skill start to surface prior work on same ticket/feature.
+Search Qwen memory at skill start to surface prior work on same ticket/feature,
+and `#instinct` (stack-filtered) for reusable rules from past cycles.
 The `.n2i-dev-cycle/progress.md` ledger is the durable fallback when memory is unavailable.
 
 ---

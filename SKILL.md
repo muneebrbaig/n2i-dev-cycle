@@ -6,7 +6,7 @@ allowed-tools: Bash, Read, Edit, Write, Agent, Grep, Glob, mcp__plugin_claude-me
 
 # N2I Development Cycle
 
-Full-lifecycle development skill. 8 phases: Ingest/Classify/Align → Branch → Plan → Implement → Validate → Handover → Feedback → Ship.
+Full-lifecycle development skill. 9 phases: Ingest/Classify/Align → Branch → Plan → Implement → Validate → Handover → Feedback → Ship → Improve.
 
 Start every discussion, ticket, or fix with this skill — Phase 1 classifies the
 work and decides how much process it needs, so brainstorming a topic and shipping
@@ -137,6 +137,9 @@ mode).
 5. **Search memory** for prior work on this ticket/topic:
    - `observation_search` with ticket number or key terms
    - `memory_search` for related past decisions
+   - `observation_search` `#instinct` filtered to the detected stack
+     (`#stack:<backend/frontend stack>`, `#stack:any`) — surface the top ~5 by
+     confidence as working rules for this cycle (`references/improve.md`)
    - Surface relevant context to avoid re-deriving
 
 6. **Take the path** (`brainstorming.md`):
@@ -155,7 +158,9 @@ mode).
 8. **Load `references/execution.md`** (model selection, delegation, checkpoint
    ledger, memory milestones — stays relevant through Ship). **Start / resume the
    checkpoint ledger:** if `.n2i-dev-cycle/progress.md` already names this ticket,
-   read it and resume at the first incomplete phase instead of restarting.
+   read it and resume at the first incomplete phase instead of restarting. If it
+   names a *different* ticket whose last line shows shipped/merged, archive it
+   (`progress.<slug>.md`) and start a fresh ledger.
 
 ---
 
@@ -461,9 +466,34 @@ Repeat until user is satisfied.
 5. **Migration mode:** update the `MIGRATION_DOC` status table before the push.
 6. **After merge** (with the user's go-ahead): clean up the local branch
    (`git branch -d`, never `-D` unasked) and the worktree if one was created
-   (`finishing.md` Step 5).
+   (`finishing.md` Step 5). The ledger is archived at the end of Phase 9.
 
 **Record memory observation** and a final ledger line (shipped, CI green, merged).
+
+---
+
+## Phase 9 — Improve
+
+**Load `references/improve.md`.** Runs once, after the branch is merged and Phase 8
+cleanup is done. Default-on; skip only if the user says so or the cycle produced
+nothing worth keeping.
+
+1. **Distill** 1-3 reusable patterns or gotchas from this cycle (`improve.md`
+   criteria) — a wrong assumption that cost time, a convention you missed, a
+   decision worth not re-litigating. Each only if it generalizes past this ticket.
+2. **De-dupe** — `observation_search` `#instinct` for a near-duplicate of each.
+3. **Record** each as an `#instinct`-tagged observation: statement, trigger,
+   confidence (`low`/`med`/`high`), scope tags (`#stack:… #domain:…`).
+4. **Promote** — where a near-duplicate exists and the pair reaches `med`+
+   confidence, propose a one-line addition to the matching `references/*.md`
+   "Common Mistakes to Avoid" as a PR (exact file + line shown). Never edit a
+   reference silently.
+5. **Ledger** — final line: `Phase 9: <N> instincts recorded[, promotion proposed for <X>]`,
+   then archive it: `mv .n2i-dev-cycle/progress.md .n2i-dev-cycle/progress.<slug>.md`
+   so the next ticket in this repo starts clean (`improve.md`).
+
+Memory tools unavailable → skip the instinct steps, but still archive the ledger.
+The ledger isn't the place for cross-ticket patterns.
 
 ---
 
@@ -499,6 +529,7 @@ The repo's own `CLAUDE.md` wins on any conflict.
 | `references/verification.md` | Phase 5, any "done" claim | evidence-before-claims gate, claim→proof table, red flags |
 | `references/debugging.md` | Phase 7, Phase 8 CI | root-cause-first 4 steps, boundary instrumentation, 3-fix→question-design rule, parallel dispatch |
 | `references/finishing.md` | Phase 8 | suite green → base confirm → push + MR → CI → branch/worktree cleanup |
+| `references/improve.md` | Phase 9 | what to distill, instinct shape (statement/trigger/confidence/scope), near-duplicate search, promotion-to-reference PR |
 | `references/backend-standards.md` | backend in scope | 7-file entity scaffold, entity/ModelConfiguration/service/controller patterns, wire-up, unit testing, C# code quality, backend mistakes |
 | `references/security.md` | backend in scope | tenant isolation, `ResolveWriteContext` pattern, cross-org write checks, FK validation — non-negotiable |
 | `references/migrations.md` | plan has a migration script | DbUp, Postgres + SQL Server dialects, filename/naming rules, migration mistakes |

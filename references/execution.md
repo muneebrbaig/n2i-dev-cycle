@@ -57,7 +57,11 @@ in a git repo.
   (`references/tdd.md`) — the ledger is where test-first order is proven across
   sessions and machines.
 - On skill start (Phase 1 step 8): if the first line matches the current ticket,
-  resume at the first incomplete phase instead of restarting.
+  resume at the first incomplete phase instead of restarting. If it names a
+  *different* ticket whose last line shows shipped/merged, archive it to
+  `progress.<slug>.md` and start fresh — don't "resume" a done cycle.
+- Phase 9 archives the ledger as its last step (`mv progress.md progress.<slug>.md`),
+  after Phase 8's merge cleanup; the archived copies stay gitignored, delete whenever.
 - After compaction, `git log` and this ledger outrank your own recollection.
 
 ## Memory Integration
@@ -78,5 +82,6 @@ Record observations at these milestones using `observation_add`:
 | Feedback received | `○` (discovery) | User findings, issues reported |
 | Fix applied | `●` (bugfix) | What was fixed and how |
 | Shipped / CI green | `✓` (change) | Final status, branch pushed, CI result |
+| Improve (Phase 9) | `⚖` / `○` + `#instinct` | Reusable pattern: statement, trigger, confidence, scope tags (`references/improve.md`) |
 
 Also search memory at skill start (`observation_search`, `memory_search`) to surface prior work on same ticket/feature.
