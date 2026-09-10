@@ -40,12 +40,14 @@ context, and enforcement hooks.
   blocks. `SKILL.md` + `SKILL.qwen.md` Phase 1, README.
 
 ### Changed
-- **Cross-cutting machinery moved out of `SKILL.md`** — model selection, subagent
-  delegation, the checkpoint ledger, and memory milestones now live in a new
+- **`SKILL.md` slimmed further.** The cross-cutting machinery (model selection,
+  subagent delegation, the checkpoint ledger, memory milestones) moved to a new
   `references/execution.md`, loaded once at Phase 1 step 8 and kept through Ship.
-  `SKILL.md` keeps a short pointer block and sheds ~55 lines of always-loaded
-  context. No behaviour change. `SKILL.qwen.md` is unchanged — the Qwen variant is
-  a deliberately single-file manifest.
+  The Phase 3 implementation-plan format (the long backend/frontend/tests template,
+  no-placeholders rule, plan self-review) moved to `references/planning.md`, loaded
+  at Phase 3. Together ~100 lines of always-loaded context gone; `SKILL.md` keeps
+  short pointer blocks. No behaviour change. `SKILL.qwen.md` is unchanged — the
+  Qwen variant is a deliberately single-file manifest.
 - **Checkpoint-ledger lifecycle.** Phase 9 archives `progress.md` to
   `.n2i-dev-cycle/archive/progress.<slug>.md` as its last step, so the next ticket
   in the repo starts on a clean ledger and finished ledgers stay out of routine

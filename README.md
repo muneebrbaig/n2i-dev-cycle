@@ -268,6 +268,7 @@ holds the cross-cutting machinery pulled out of `SKILL.md` to keep the always-lo
 **Discipline (stack-agnostic)** — the methodology, works with any language or framework:
 
 - **`references/brainstorming.md`** — spike/bounded/architectural classification, approval gate, discussion→ticket and spec'd→alignment flows
+- **`references/planning.md`** — Phase 3 implementation-plan format, no-placeholders rule, plan self-review
 - **`references/tdd.md`** — RED-GREEN-REFACTOR, test-first vs exempt scaffolding, rationalization table
 - **`references/verification.md`** — evidence-before-claims gate, claim→proof table
 - **`references/debugging.md`** — root-cause-first steps, boundary instrumentation, 3-fix rule, parallel dispatch
