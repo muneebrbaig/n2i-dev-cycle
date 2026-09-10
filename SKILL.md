@@ -120,6 +120,14 @@ mode).
    A `MIGRATION_DOC` describing a legacy SQL Server source does **not** change the target —
    new DDL follows the current `DB_ENGINE`, not the legacy dialect.
 
+   **Skill-state hygiene** (every run, before the folder is used): confirm `.n2i-dev-cycle/`
+   is in the repo's `.gitignore` — add the line and tell the user to commit it if it's
+   missing (an older repo, or the folder predates the entry). If `.n2i-dev-cycle/notes.md`
+   exists, scan it for credential shapes — a password in a URL, `Bearer ` tokens, PEM
+   headers, long `key=` / `secret=` literals. `notes.md` content flows into ledger lines,
+   memory observations, and handover summaries, so a secret left there leaks into durable
+   stores. Warn the user; don't block.
+
 3. **Fetch requirements** based on input mode (see Input Parsing above). Read the
    ticket and every linked wiki page / `docs/` markdown in full.
 
@@ -278,7 +286,9 @@ RED→GREEN before the next:
 8. **Route + nav wiring**
 
 **Record memory observation** and **append a ledger line** after each major
-milestone (entity done, service+tests green, frontend done, etc.).
+milestone (entity done, service+tests green, frontend done, etc.). For a
+test-first unit the ledger line carries the RED proof:
+`Phase 4: <unit> — RED <test> failed "<reason>" → GREEN (<commit>)`.
 
 If something goes sideways mid-implementation — STOP, reassess, inform user, re-plan if needed. Don't push through blindly.
 
@@ -505,6 +515,9 @@ in a git repo.
 - First line: `# <ticket-or-slug> — <one-line goal>`
 - One line per phase as it completes: `Phase N: <what landed> (<commit range>)`
 - Phase 4 intra-phase checkpoints get a line too.
+- Phase 4 test-first units record the RED failure line before the GREEN commit
+  (`references/tdd.md`) — the ledger is where test-first order is proven across
+  sessions and machines.
 - On skill start (Phase 1 step 8): if the first line matches the current ticket,
   resume at the first incomplete phase instead of restarting.
 - After compaction, `git log` and this ledger outrank your own recollection.
@@ -544,7 +557,7 @@ Record observations at these milestones using `observation_add`:
 | Milestone | Type | What to record |
 |---|---|---|
 | Plan approved | `⚖` (decision) | Key decisions, scope, approach chosen |
-| Entity/feature implemented | `◆` (feature) | What was built, files created, key design choices |
+| Entity/feature implemented | `◆` (feature) | What was built, files created, key design choices, RED evidence (test + failure reason) per logic unit |
 | Validation pass | `○` (discovery) | Build/test status, any issues found and fixed |
 | Handover | `✓` (change) | Summary of all changes, what to test |
 | Feedback received | `○` (discovery) | User findings, issues reported |

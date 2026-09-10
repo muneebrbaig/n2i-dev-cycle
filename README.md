@@ -10,10 +10,10 @@ clean finish):
 
 | Phase | What Happens |
 |-------|-------------|
-| **1. Ingest, Classify & Align** | Classifies the work (spike / bounded / architectural). No ticket yet → brainstorms a ticket draft for Product review and stops. Ticket already finalized → restates the spec, flags every gap or ambiguity, gets one approval. Searches memory; starts a checkpoint ledger. |
+| **1. Ingest, Classify & Align** | Classifies the work (spike / bounded / architectural). No ticket yet → brainstorms a ticket draft for Product review and stops. Ticket already finalized → restates the spec, flags every gap or ambiguity, gets one approval. Searches memory; starts a checkpoint ledger; checks skill-state hygiene (`.n2i-dev-cycle/` gitignored, no secrets in `notes.md`). |
 | **2. Branch** | Suggests a branch name or lets you create your own, and offers an isolated git worktree for long or multi-session work. |
 | **3. Plan** | Structured implementation plan with concrete field lists, method signatures, and named test cases — no placeholders. Self-reviewed against the spec. Waits for your approval. |
-| **4. Implement** | Business logic is test-first (RED → GREEN → REFACTOR); scaffolding is exempt but exercised by the tests that follow. Intra-phase review checkpoints. |
+| **4. Implement** | Business logic is test-first (RED → GREEN → REFACTOR); scaffolding is exempt but exercised by the tests that follow. Intra-phase review checkpoints. The RED failure line is recorded in the ledger before each GREEN commit, so test-first order survives a session or machine switch. |
 | **5. Validate** | Runs the project's format + build + test — `dotnet` / `ng` by default, or the `BACKEND_VALIDATE_CMD` / `FRONTEND_VALIDATE_CMD` config snippets on any other stack. Evidence-before-claims gate: no "green" without a fresh run in hand. Then a code review of the local diff (findings verified, not rubber-stamped; a real bug routes through the debugging + TDD refs) before anything gets pushed. |
 | **6. Handover** | Summarizes changes, lists what to test locally, notes limitations. Builds and runs affected e2e specs (in a subagent) against a dev or throwaway DB where possible. |
 | **7. Feedback** | Root-cause-first debugging (three failed fixes → question the design, not fix #4). Independent findings dispatched in parallel. Failing repro test before each fix. Re-validates. Repeatable. |
@@ -232,6 +232,10 @@ That `.gitignore` change is the only tracked file touched — you commit it. Dec
 skill just uses detected values for that run. On later runs the config is the source of
 truth; if `DB_ENGINE` is pinned and the codebase later disagrees (e.g. finished migrating to
 Postgres), the skill flags the mismatch and asks before changing the key.
+
+Every run, Phase 1 also confirms `.n2i-dev-cycle/` is still in `.gitignore` and scans an
+existing `notes.md` for accidentally-pasted secrets — its text flows into ledger lines,
+memory, and handover summaries. A warning, never a block.
 
 ## Embedded References
 

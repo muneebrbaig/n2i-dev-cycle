@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- RED evidence in the checkpoint ledger. Each Phase 4 test-first unit records the
+  failing test name and reason before its GREEN commit
+  (`Phase 4: <unit> — RED <test> failed "<reason>" → GREEN (<commit>)`), so a later
+  session or a different machine can confirm test-first order from the ledger rather
+  than trust recollection. `references/tdd.md` (Verify RED step + red flag),
+  `references/verification.md` (claim→proof row + common mistake), `SKILL.md` Phase 4 /
+  Checkpoint Ledger / Memory Integration, and the same points in `SKILL.qwen.md`.
+- Phase 1 skill-state hygiene check. Every run confirms `.n2i-dev-cycle/` is in the
+  repo's `.gitignore` (adds the line if missing) and scans an existing
+  `.n2i-dev-cycle/notes.md` for credential shapes, since `notes.md` content flows into
+  ledger lines, memory observations, and handover summaries. Warns, never blocks.
+  `SKILL.md` + `SKILL.qwen.md` Phase 1, README.
+
 ## 1.3.0 (2026-09-09)
 
 ### Added

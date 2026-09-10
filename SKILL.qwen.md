@@ -81,6 +81,11 @@ Ceremony scales with the task; the gate never does.
    - **First run (`CONFIG=none`):** propose a `config` from detected values (`DB_ENGINE` from detection — ask "Postgres or SQL Server?" if ambiguous default; `BRANCH_PREFIX` if derivable; `MIGRATION_DOC`/`FORGE` if already known). Show file + path + the `.gitignore` line (`.n2i-dev-cycle/`), ask once. Yes → create folder+file, append `.n2i-dev-cycle/` to repo `.gitignore` if missing (user commits that). No → in-memory for this run, don't re-ask.
    - **Later runs (config exists):** config is source of truth. If explicit `DB_ENGINE` disagrees with current code detection (repo migrated), surface it, ask to update. Never rewrite without consent.
    - Legacy SQL Server `MIGRATION_DOC` source does not change the target dialect.
+   - **Skill-state hygiene** (every run): confirm `.n2i-dev-cycle/` is in the repo's
+     `.gitignore` (add + ask the user to commit if missing). If `.n2i-dev-cycle/notes.md`
+     exists, scan for credential shapes (password in a URL, `Bearer ` tokens, PEM headers,
+     long `key=`/`secret=` literals) — its content flows into ledger lines, observations,
+     and handover summaries. Warn; don't block.
 
 3. **Fetch requirements** based on input mode. Read the ticket and every linked wiki / `docs/` page in full.
 
@@ -179,7 +184,9 @@ Before presenting: re-read the spec, confirm every requirement maps to an item
 **TDD (iron law):** no business logic without a failing test first. Write the
 test, run it, watch it fail for the right reason, write minimal code to pass,
 refactor while green. Code written before its test → delete it, redo from the
-test. "Keep as reference" / "test after" are violations.
+test. "Keep as reference" / "test after" are violations. Record each RED failure —
+test name + reason — in the ledger line for that unit; a GREEN commit with no
+preceding RED line reads identical to tests-after.
 
 Test-first: service methods, controller endpoints, component behaviour, bug
 repros. Exempt (but exercised by the tests that follow): entity properties,
@@ -196,7 +203,9 @@ Order — each logic step RED→GREEN before the next:
 7. Frontend components — test-first where the project tests component behaviour
 8. Route + nav wiring
 
-**Save Qwen memory observation + append a ledger line** after each milestone.
+**Save Qwen memory observation + append a ledger line** after each milestone. A
+test-first unit's ledger line carries the RED proof:
+`Phase 4: <unit> — RED <test> failed "<reason>" → GREEN (<commit>)`.
 
 If something breaks — STOP, reassess, inform user, re-plan. No blind pushes.
 
@@ -385,6 +394,8 @@ Skip if not in a git repo.
 - First line: `# <ticket-or-slug> — <one-line goal>`
 - One line per phase as it completes: `Phase N: <what landed> (<commit range>)`
 - Phase 4 intra-phase checkpoints get a line too.
+- Phase 4 test-first units record the RED failure line before the GREEN commit —
+  that's where test-first order is proven across sessions/machines.
 - On skill start (Phase 1 step 8): first line matches this ticket → resume at the
   first incomplete phase.
 - After compaction, `git log` + this ledger outrank recollection.
@@ -392,6 +403,7 @@ Skip if not in a git repo.
 ## Discipline Red Flags — Stop
 
 - Code before test / "test after achieves the same" / "keep as reference"
+- A GREEN commit with no RED failure line recorded before it
 - "should pass" / "looks right" / "Great!" / "Done!" before running the command
 - Proposing a fix before tracing data flow; fix #4 after three failures
 - Claiming green off a run from before the last edit
@@ -696,7 +708,7 @@ Use Qwen's built-in memory system. Save observations at milestones:
 | Milestone | What to record |
 |---|---|
 | Plan approved | Key decisions, scope, approach |
-| Entity/feature implemented | What built, files created, key design choices |
+| Entity/feature implemented | What built, files created, key design choices, RED evidence (test + failure reason) per logic unit |
 | Validation pass | Build/test status, issues found and fixed |
 | Handover | Summary of changes, what to test |
 | Feedback received | User findings, issues reported |

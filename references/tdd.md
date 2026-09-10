@@ -37,6 +37,9 @@ the production change that would make this test fail before you write it.
 
 **Verify RED** — run it. It must *fail*, not error, and fail because the feature
 is missing. Passes immediately → you're testing existing behaviour, fix the test.
+Record the failure — test name + the assertion message / reason — in this unit's
+ledger line (`SKILL.md` Checkpoint Ledger). A GREEN commit with no RED line before
+it is indistinguishable from tests-after.
 
 **GREEN** — simplest code that passes. No extra params, no options objects, no
 "while I'm here". YAGNI.
@@ -72,5 +75,6 @@ behaviour.
 - Test written after implementation
 - Test passed on first run
 - Can't explain why the test failed
+- No RED failure line recorded before the GREEN commit
 - "Tests-after achieve the same thing"
 - "It's about spirit not ritual"
