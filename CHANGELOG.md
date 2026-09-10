@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Changed
+- Cross-cutting machinery (model selection, subagent delegation, the checkpoint
+  ledger, memory milestones) moved from `SKILL.md` into a new
+  `references/execution.md`, loaded once at Phase 1 step 8 and kept through Ship.
+  `SKILL.md` keeps a short pointer block and drops ~55 lines of always-loaded
+  context. No behaviour change. `SKILL.qwen.md` is unchanged — the Qwen variant is
+  a deliberately single-file manifest.
+
 ### Added
 - RED evidence in the checkpoint ledger. Each Phase 4 test-first unit records the
   failing test name and reason before its GREEN commit

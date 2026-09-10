@@ -19,7 +19,7 @@ clean finish):
 | **7. Feedback** | Root-cause-first debugging (three failed fixes → question the design, not fix #4). Independent findings dispatched in parallel. Failing repro test before each fix. Re-validates. Repeatable. |
 | **8. Ship** | Full suite green → confirm base branch → push + MR → root-cause any CI failure → clean up local branch and worktree after merge. |
 
-Cross-cutting: a **model-selection** table (cheap model for scaffolding, capable for architecture / debugging / review) and a **checkpoint ledger** (`.n2i-dev-cycle/progress.md`) that survives context compaction and cross-session re-entry.
+Cross-cutting mechanics — model selection (cheap model for scaffolding, capable for architecture / debugging / review), subagent delegation, the **checkpoint ledger** (`.n2i-dev-cycle/progress.md`, survives context compaction and cross-session re-entry), and memory milestones — live in `references/execution.md`, loaded once at Phase 1 so `SKILL.md` itself stays lean.
 
 ### Why review happens before push
 
@@ -240,7 +240,9 @@ memory, and handover summaries. A warning, never a block.
 ## Embedded References
 
 Loaded on demand — a phase names the files it needs; a frontend-only ticket never pulls in
-backend rules.
+backend rules. The one exception is `references/execution.md` (model selection, delegation,
+checkpoint ledger, memory milestones), loaded once at Phase 1 and kept through Ship — it
+holds the cross-cutting machinery pulled out of `SKILL.md` to keep the always-loaded manifest lean.
 
 **Discipline (stack-agnostic)** — the methodology, works with any language or framework:
 
