@@ -40,14 +40,19 @@ context, and enforcement hooks.
   blocks. `SKILL.md` + `SKILL.qwen.md` Phase 1, README.
 
 ### Changed
-- **`SKILL.md` slimmed further.** The cross-cutting machinery (model selection,
-  subagent delegation, the checkpoint ledger, memory milestones) moved to a new
-  `references/execution.md`, loaded once at Phase 1 step 8 and kept through Ship.
-  The Phase 3 implementation-plan format (the long backend/frontend/tests template,
-  no-placeholders rule, plan self-review) moved to `references/planning.md`, loaded
-  at Phase 3. Together ~100 lines of always-loaded context gone; `SKILL.md` keeps
-  short pointer blocks. No behaviour change. `SKILL.qwen.md` is unchanged — the
-  Qwen variant is a deliberately single-file manifest.
+- **`SKILL.md` is now a lean spine — every phase procedure moved to a reference.**
+  `SKILL.md` keeps the phase list, detection, input parsing, and the two always-on
+  phases (1 Ingest, 2 Branch); each later phase is a short pointer to the reference
+  that carries its steps, loaded only when that phase runs. New files:
+  `references/execution.md` (model selection, delegation, ledger, memory milestones —
+  the one always-on reference, loaded at Phase 1), `references/planning.md` (Phase 3
+  plan format), `references/build-loop.md` (Phases 4–6: build order + RED→GREEN loop,
+  review checkpoints, validate commands + noise handling + pre-push review, handover
+  format). Phase 7 orchestration folded into `references/debugging.md`, Phase 8 into
+  `references/finishing.md`. `SKILL.md` drops from 583 to ~330 lines; a discussion-
+  or planning-only invocation no longer loads the build/ship/improve machinery at
+  all. No behaviour change. `SKILL.qwen.md` is unchanged — the Qwen variant is a
+  deliberately single-file manifest.
 - **Checkpoint-ledger lifecycle.** Phase 9 archives `progress.md` to
   `.n2i-dev-cycle/archive/progress.<slug>.md` as its last step, so the next ticket
   in the repo starts on a clean ledger and finished ledgers stay out of routine

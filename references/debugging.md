@@ -67,6 +67,29 @@ broken.
 On return: read each summary, check the diffs don't conflict, run the **full**
 suite, spot-check.
 
+## Phase 7 orchestration (Feedback Loop)
+
+The skill's Feedback phase applies the steps above per finding:
+
+1. **Root cause first** (Step 1) — read the error, reproduce, check recent
+   changes, instrument boundaries on a multi-layer path, trace the bad value back.
+2. **Failing repro test** (`tdd.md`), then **one fix** at the root cause — no
+   bundled refactoring.
+3. **Re-validate** through the Phase 5 gate (`build-loop.md` → Validate).
+4. **Report** what changed; append a ledger line.
+
+**Three fixes that don't hold → STOP.** Question the design with the user, not fix #4.
+
+**Independent findings** (different subsystems, unrelated) → Parallel Dispatch
+below. Not for findings that might share a cause.
+
+Starting a new session with `"fix: [details]"`:
+- Read `.n2i-dev-cycle/progress.md` and recent `git log` — they outrank memory.
+- Search memory for prior context on this feature/ticket.
+- Resume from the ledger's first incomplete phase.
+
+Repeat until the user is satisfied.
+
 ## Common Mistakes to Avoid
 
 - Proposing a fix before tracing data flow.

@@ -1,6 +1,7 @@
 # Finishing a Development Branch
 
-Read in Phase 8, once the user asks to ship.
+Read in Phase 8. **Only when the user explicitly asks to ship** — nothing here runs
+otherwise.
 
 ## Step 1 — Full Suite Green
 
@@ -55,6 +56,8 @@ Other local `[gone]` branches → mention them, don't delete unasked.
 
 The checkpoint ledger is **not** archived here — Phase 9 does that as its last
 step, after writing its final line.
+
+Record a memory observation and a final ledger line (shipped, CI green, merged).
 
 ## Common Mistakes to Avoid
 

@@ -217,207 +217,38 @@ estimate, and a self-review against the spec before you present it.
 
 ---
 
-## Phase 4 — Implement
+## Phases 4–6 — Implement · Validate · Handover
 
-**Load `references/tdd.md`.** Business logic is test-first: failing test → run it
-→ watch it fail for the right reason → minimal code → green → refactor. Code
-written before its test gets deleted and redone from the test. Scaffolding (entity
-props, `ModelConfiguration`, DI wire-up, migration DDL) is exempt — but the
-service/controller/component tests that follow must fail if the scaffold is wrong.
+**Load `references/build-loop.md`.** It carries the full procedure for all three
+phases — the build order and RED→GREEN loop, intra-phase review checkpoints, the
+validate commands + noise handling + pre-push review, and the handover summary
+(what changed / what to test / limitations / E2E coverage / memory). Discipline
+refs still load per phase: `references/tdd.md` at Phase 4, `references/verification.md`
+at Phase 5.
 
-Execute the approved plan following the `references/` standards loaded in Phase 3
-(re-read a file if it dropped out of context). Order — each logic step is
-RED→GREEN before the next:
-
-1. **Backend entity** + `ModelConfiguration` (scaffold, exempt)
-2. **Migration script** (DbUp SQL — scaffold, exempt)
-3. **Wire-up** (DI + ModelBuilder — scaffold, exempt)
-4. **Service** — test-first per method
-5. **Controller** — test-first per endpoint (auth, shape, status)
-6. **Frontend models + service**
-7. **Frontend components** — test-first where the project tests component behaviour
-8. **Route + nav wiring**
-
-**Record memory observation** and **append a ledger line** after each major
-milestone (entity done, service+tests green, frontend done, etc.). For a
-test-first unit the ledger line carries the RED proof:
-`Phase 4: <unit> — RED <test> failed "<reason>" → GREEN (<commit>)`.
-
-If something goes sideways mid-implementation — STOP, reassess, inform user, re-plan if needed. Don't push through blindly.
-
-### Intra-phase checkpoints (mandatory)
-
-After completing each logical unit, **stop and ask the user to review** before continuing. This keeps human reviewers and AI agents in sync — especially across machines and sessions.
-
-| Checkpoint | After completing |
-|---|---|
-| Backend scaffold | Entity, DTOs, requests, config, migration, DI + wire-up, build clean |
-| Backend service + controller | Methods and endpoints built test-first, all tests green |
-| Frontend models + service | TypeScript interfaces/enums, service class, barrel exports |
-| Frontend components | List + form components built (test-first where applicable), routes swapped, sidebar/nav wired, `ng build` clean |
-
-At each checkpoint, summarize what was built, **append the ledger line**, and ask: **"[Unit] done. Want to review before I continue?"** The user may review, request changes, push/commit, or say continue. **Never skip ahead silently.**
-
----
-
-## Phase 5 — Validate
-
-**Load `references/verification.md`.** The gate: before saying "green" / "passing"
-/ "done", you must have run the exact command **in this message** and read its
-output — exit code, failure count. No "should pass", no run from before the last
-edit, no "linter passed" standing in for "build passed".
-
-Run all validation commands for the active `SCOPE`. Loop until green.
-
-**If `BACKEND_VALIDATE_CMD` / `FRONTEND_VALIDATE_CMD` is set in config, run that
-snippet for the side instead of the block below** (it should cover format + build +
-unit tests and exit non-zero on any failure). Otherwise the .NET + Angular default:
-
-```bash
-# Backend — only if SCOPE includes backend && BACKEND != none
-dotnet format "$SLN"
-dotnet build "$SLN" -v minimal      # zero new errors
-dotnet test "$SLN" -v minimal       # all pass, 0 failed
-
-# Frontend — only if SCOPE includes frontend && FRONTEND != none
-cd "$FRONTEND"
-npm run build                       # ng build → zero errors
-npm test -- --watch=false           # all pass
-```
-
-**Keep the runner noise out of context.** Use the quietest reporter that still
-shows exit code and failure count (`-v minimal` / `--watch=false` above; add
-`--reporters` / `--logger` equivalents on other stacks). On a green run keep only
-the summary line. Read the full output only when it exits non-zero, and then only
-the failing cases. (A token-trimming hook, where installed, does this
-automatically — this instruction is the fallback for setups without one.)
-
-If validation fails:
-1. Fix the issue
-2. Re-run validation
-3. Repeat until all green
-4. Never skip or ignore failures
-
-### Pre-push review
-
-Once green, before Phase 6: ask user "Run engineering:code-review on this diff before pushing?"
-Default yes if unsure. Reviewing here — against the local diff, before an MR/PR exists — catches
-scope-creep and correctness issues while they're still a `git commit --amend` or a clean follow-up
-commit away, instead of a fix-up commit sitting permanently in MR history after the fact. It also
-skips triggering a CI run against a state you already know you're about to patch.
-
-- If `engineering:code-review` isn't in the available-skills list this session, say so and skip
-  silently — don't block the lifecycle. Offer a manual review pass instead if the user still wants one.
-- If accepted and available, invoke it against the diff: `git diff <base-branch>...HEAD` (backend
-  and/or frontend paths per SCOPE), not a PR URL — no MR/PR exists yet at this point.
-- Handle findings with technical rigor, not performative agreement: restate each finding, verify
-  it against the codebase, push back with reasoning if it's wrong or YAGNI, ask the user if it
-  conflicts with a prior decision. A finding that's a real bug goes through `references/debugging.md`
-  (root cause first) and `references/tdd.md` (failing test first).
-- Fix the accepted findings, then **re-run this Phase 5 validation loop** (verification gate)
-  before moving to Phase 6.
-- Optionally ask: "Compress findings into caveman-review one-liners for the MR/PR description?"
-  If yes and `caveman:caveman-review` is available, run it over the findings and fold the output
-  into Phase 6's handover summary. If not available, skip silently — the raw findings still stand.
-  (No MR comment thread exists yet to post to — that's why this differs from posting comments.)
-
----
-
-## Phase 6 — Handover
-
-Summarize for user:
-
-### What Changed
-- Files created/modified (grouped by concern)
-- Migration scripts added
-
-### What to Test Locally
-- Specific flows to verify (step-by-step)
-- Edge cases to check
-- Mobile/responsive checks if UI was touched
-
-### Known Limitations
-- Anything deferred or out of scope
-- Dependencies on other work
-
-### E2E Coverage
-Only if `E2E != none`. **Reviewing the change's e2e impact is mandatory; writing a
-new spec is not always.**
-- Map every flow the change touches to the existing specs under `E2E`.
-- A spec the change **breaks or makes stale** → fix or update it. Not optional,
-  no matter how small the change.
-- A touched flow with **no** spec → build one now (test-first applies), unless
-  it's a minor change and the user agrees a spec isn't warranted — record that
-  call in the handover.
-- Run the affected specs before Phase 8 **via a subagent** — hand it the minimum:
-  the spec paths to run, `E2E_CMD` (or the detected runner), the DB target (dev, or
-  a fresh throwaway DB where the project supports one). It returns pass/fail per
-  spec plus the failure trace for failures only — the full runner log stays out of
-  the main context. State the model on dispatch (see `references/execution.md`). Where a
-  real run isn't possible, say so rather than claiming coverage. Per
-  `verification.md`: a passing report is not evidence — confirm against the run
-  output the agent returns.
-- Flows already covered and passing → note briefly, no action.
-
-### Memory
-- Record handover observation with key details for cross-session continuity
+Nothing in Phases 4–6 runs until the Phase 3 plan is approved — a discussion- or
+planning-only invocation never loads `build-loop.md`.
 
 ---
 
 ## Phase 7 — Feedback Loop
 
-**Load `references/debugging.md`.** No fix without root-cause investigation first —
-symptom fixes are failure.
-
-User reports findings from local testing. For each finding:
-
-1. **Root cause first** — read the error fully, reproduce, check recent changes,
-   instrument component boundaries on a multi-layer path, trace the bad value
-   back to its source (`debugging.md` Steps 1-3).
-2. **Failing test** that reproduces it (`tdd.md`).
-3. **One fix** at the root cause — no bundled refactoring.
-4. **Re-validate** (Phase 5 gate).
-5. **Report** what changed; append a ledger line.
-
-**Three fixes that don't hold → STOP.** Question the design with the user, don't
-try fix #4.
-
-**Independent findings** (different subsystems, unrelated) → parallel-dispatch one
-`Agent` per domain (`debugging.md` → Parallel Dispatch). Not for findings that
-might share a cause.
-
-If starting a new session with `"fix: [details]"`:
-- Read `.n2i-dev-cycle/progress.md` and recent `git log` — they outrank memory
-- Search memory for prior context on this feature/ticket
-- Resume from the ledger's first incomplete phase
-
-Repeat until user is satisfied.
+**Load `references/debugging.md`.** No fix without root-cause investigation first;
+symptom fixes are failure. Its "Phase 7 orchestration" section holds the per-finding
+loop (root cause → failing repro test → one fix → re-validate → report), the
+three-failed-fixes stop rule, parallel dispatch for independent findings, and the
+`"fix: [details]"` cold-start resume (read `progress.md` + `git log`, search memory,
+resume at the first incomplete phase). Repeat until the user is satisfied.
 
 ---
 
 ## Phase 8 — Ship & CI
 
-**Load `references/finishing.md`.** Only when the user explicitly asks to ship:
-
-1. **Full suite green** — the whole suite for the active scope (not `--filter`),
-   through the Phase 5 gate. Failures stop the ship.
-2. **Confirm the base branch** with the user before the MR — merging or targeting
-   the wrong base is expensive to undo.
-3. **Push** (ask for confirmation with the exact command shown), then create the
-   MR/PR against the confirmed base via the forge CLI, following repo conventions.
-   Code review already happened at the end of Phase 5 — this should be clean.
-   (Where installed, `hooks/pre-push-secret-scan.py` blocks the push if a secret is
-   about to leave the machine.)
-4. **CI failures:** read logs by forge (`glab ci trace` / `gh run view
-   --log-failed`; `FORGE_CLI=none` → ask user to paste). Root-cause per
-   `debugging.md` — no blind re-push. Multiple independent job failures →
-   parallel dispatch. Fix, re-validate locally, push.
-5. **Migration mode:** update the `MIGRATION_DOC` status table before the push.
-6. **After merge** (with the user's go-ahead): clean up the local branch
-   (`git branch -d`, never `-D` unasked) and the worktree if one was created
-   (`finishing.md` Step 5). The ledger is archived at the end of Phase 9.
-
-**Record memory observation** and a final ledger line (shipped, CI green, merged).
+**Load `references/finishing.md`.** Only when the user explicitly asks to ship. It
+holds all six steps: full suite green → confirm base branch → push + MR (secret-scan
+hook where installed) → CI root-cause → migration-doc update → after-merge branch and
+worktree cleanup, plus the final memory observation and ledger line. The ledger is
+archived at the end of Phase 9.
 
 ---
 
@@ -425,25 +256,12 @@ Repeat until user is satisfied.
 
 **Load `references/improve.md`.** Runs once, after the branch is merged and Phase 8
 cleanup is done. Default-on; skip only if the user says so or the cycle produced
-nothing worth keeping.
-
-1. **Distill** 1-3 reusable patterns or gotchas from this cycle (`improve.md`
-   criteria) — a wrong assumption that cost time, a convention you missed, a
-   decision worth not re-litigating. Each only if it generalizes past this ticket.
-2. **De-dupe** — `observation_search` `#instinct` for a near-duplicate of each.
-3. **Record** each as an `#instinct`-tagged observation: statement, trigger,
-   confidence (`low`/`med`/`high`), scope tags (`#stack:… #domain:…`).
-4. **Promote** — where a near-duplicate exists and the pair reaches `med`+
-   confidence, propose a one-line addition to the matching `references/*.md`
-   "Common Mistakes to Avoid" as a PR (exact file + line shown). Never edit a
-   reference silently.
-5. **Ledger** — final line: `Phase 9: <N> instincts recorded[, promotion proposed for <X>]`,
-   then archive it:
-   `mkdir -p .n2i-dev-cycle/archive && mv .n2i-dev-cycle/progress.md .n2i-dev-cycle/archive/progress.<slug>.md`
-   so the next ticket in this repo starts clean (`improve.md`).
-
-Memory tools unavailable → skip the instinct steps, but still archive the ledger.
-The ledger isn't the place for cross-ticket patterns.
+nothing reusable. It holds the flow: distill 1–3 patterns that will recur →
+de-dupe against existing `#instinct` observations → record each (statement /
+trigger / confidence / scope tags) → propose a promotion PR when one recurs at
+`med`+ confidence → write the final ledger line and archive `progress.md` to
+`.n2i-dev-cycle/archive/`. Memory tools unavailable → skip the instinct steps,
+still archive the ledger.
 
 ---
 
@@ -476,18 +294,19 @@ The repo's own `CLAUDE.md` wins on any conflict.
 |---|---|---|
 | `references/brainstorming.md` | Phase 1, always | spike/bounded/architectural classification, hard approval gate, discussion→ticket flow, spec'd→alignment gate |
 | `references/planning.md` | Phase 3, always | implementation-plan format (backend/frontend/tests/migration), no-placeholders rule, plan self-review |
+| `references/build-loop.md` | Phase 4, always | the Implement→Validate→Handover procedure: build order + RED→GREEN loop, checkpoint table, validate commands + noise handling + pre-push review, handover summary format |
 | `references/tdd.md` | Phase 4, and every bug fix | RED-GREEN-REFACTOR iron law, what's test-first vs exempt scaffolding, rationalization table, red flags |
 | `references/verification.md` | Phase 5, any "done" claim | evidence-before-claims gate, claim→proof table, red flags |
-| `references/debugging.md` | Phase 7, Phase 8 CI | root-cause-first 4 steps, boundary instrumentation, 3-fix→question-design rule, parallel dispatch |
-| `references/finishing.md` | Phase 8 | suite green → base confirm → push + MR → CI → branch/worktree cleanup |
+| `references/debugging.md` | Phase 7, Phase 8 CI | root-cause-first 4 steps, boundary instrumentation, 3-fix→question-design rule, parallel dispatch, Phase 7 per-finding loop + `fix:` resume |
+| `references/finishing.md` | Phase 8 | ship gate, suite green → base confirm → push + MR → CI → branch/worktree cleanup → final memory + ledger line |
 | `references/improve.md` | Phase 9 | what to distill, instinct shape (statement/trigger/confidence/scope), near-duplicate search, promotion-to-reference PR |
 | `references/backend-standards.md` | backend in scope | 7-file entity scaffold, entity/ModelConfiguration/service/controller patterns, wire-up, unit testing, C# code quality, backend mistakes |
 | `references/security.md` | backend in scope | tenant isolation, `ResolveWriteContext` pattern, cross-org write checks, FK validation — non-negotiable |
 | `references/migrations.md` | plan has a migration script | DbUp, Postgres + SQL Server dialects, filename/naming rules, migration mistakes |
 | `references/frontend-standards.md` | frontend in scope | Angular file structure, service/component patterns, rich-UI choices, mobile-first, frontend mistakes |
 
-Each reference file ends with its own "Common Mistakes to Avoid" list — scoped to that domain,
-so a frontend-only ticket never loads backend/security/migration gotchas.
+The standards and discipline references each end with a scoped "Common Mistakes to Avoid"
+list, so a frontend-only ticket never loads backend/security/migration gotchas.
 
 `references/execution.md` is the exception to lazy-loading — it loads once at
 Phase 1 step 8 and stays through Ship (see Cross-Cutting Mechanics above).

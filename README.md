@@ -260,20 +260,27 @@ memory, and handover summaries. A warning, never a block.
 
 ## Embedded References
 
-Loaded on demand — a phase names the files it needs; a frontend-only ticket never pulls in
-backend rules. The one exception is `references/execution.md` (model selection, delegation,
-checkpoint ledger, memory milestones), loaded once at Phase 1 and kept through Ship — it
-holds the cross-cutting machinery pulled out of `SKILL.md` to keep the always-loaded manifest lean.
+`SKILL.md` is a lean spine — the phase list, detection, input parsing, and the two
+always-on phases (1 Ingest, 2 Branch). Every phase's actual procedure lives in a
+reference it names and loads only when that phase runs, so a discussion- or
+planning-only invocation never pulls in the build, ship, or improve machinery.
+`references/execution.md` is the one always-on reference — loaded at Phase 1, kept
+through Ship — holding the cross-cutting bits (model selection, delegation, ledger,
+memory milestones).
 
-**Discipline (stack-agnostic)** — the methodology, works with any language or framework:
+**Lifecycle procedure** — one reference per phase (or phase group):
 
-- **`references/brainstorming.md`** — spike/bounded/architectural classification, approval gate, discussion→ticket and spec'd→alignment flows
-- **`references/planning.md`** — Phase 3 implementation-plan format, no-placeholders rule, plan self-review
+- **`references/brainstorming.md`** — Phase 1: spike/bounded/architectural classification, approval gate, discussion→ticket and spec'd→alignment flows
+- **`references/planning.md`** — Phase 3: implementation-plan format, no-placeholders rule, plan self-review
+- **`references/build-loop.md`** — Phases 4–6: build order + RED→GREEN loop, review checkpoints, validate commands + noise handling + pre-push review, handover summary format
+- **`references/debugging.md`** — Phase 7 (+ Phase 8 CI): root-cause-first steps, boundary instrumentation, 3-fix rule, parallel dispatch, per-finding loop, `fix:` cold-start resume
+- **`references/finishing.md`** — Phase 8: ship gate, suite green → base confirm → push + MR → CI → cleanup → final memory + ledger line
+- **`references/improve.md`** — Phase 9: what to distill, instinct shape, near-duplicate search, promotion-to-reference PR, ledger archive
+
+**Discipline (stack-agnostic)** — the iron laws, loaded alongside the phase procedure:
+
 - **`references/tdd.md`** — RED-GREEN-REFACTOR, test-first vs exempt scaffolding, rationalization table
 - **`references/verification.md`** — evidence-before-claims gate, claim→proof table
-- **`references/debugging.md`** — root-cause-first steps, boundary instrumentation, 3-fix rule, parallel dispatch
-- **`references/finishing.md`** — suite green → base confirm → push + MR → CI → cleanup
-- **`references/improve.md`** — Phase 9: what to distill, instinct shape, near-duplicate search, promotion-to-reference PR, ledger archive
 
 **Standards (stack-specific — .NET + Angular defaults)**:
 
@@ -282,8 +289,8 @@ holds the cross-cutting machinery pulled out of `SKILL.md` to keep the always-lo
 - **`references/migrations.md`** — DbUp, Postgres (default) + SQL Server (`DB_ENGINE=sqlserver`) dialects, naming rules
 - **`references/frontend-standards.md`** — Angular service/component patterns, cascading dropdowns, mobile-first UI, PrimeNG conventions
 
-Each file ends with its own scoped "Common Mistakes to Avoid" list. Project-specific `CLAUDE.md`
-instructions override on conflict. A repo that keeps its own conventions (often in
+The standards and discipline references each end with a scoped "Common Mistakes to Avoid"
+list. Project-specific `CLAUDE.md` instructions override on conflict. A repo that keeps its own conventions (often in
 `backend/CLAUDE.md` etc.) points the `BACKEND_STANDARDS` / `FRONTEND_STANDARDS` /
 `MIGRATION_STANDARDS` config keys at them, and Phase 3 treats those as authoritative.
 

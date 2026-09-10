@@ -46,7 +46,13 @@ Never edit a `references/*.md` file silently — promotion is always a proposed 
 
 ## Archive the ledger
 
-Phase 9's last action, after its final ledger line:
+Phase 9's last action. First the final ledger line:
+
+```
+Phase 9: <N> instincts recorded[, promotion proposed for <file>]
+```
+
+then archive:
 
 ```bash
 mkdir -p .n2i-dev-cycle/archive
