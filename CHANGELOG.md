@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+Batch of improvements informed by a review of the [ecc](https://github.com/affaan-m/ecc)
+skill — RED-evidence capture, an instinct/learning loop, leaner always-loaded
+context, and enforcement hooks.
+
 ### Added
 - **Phase 9 — Improve.** After a branch merges, the cycle distills 1–3 reusable
   patterns into `#instinct`-tagged memory observations (statement / trigger /
@@ -11,33 +15,43 @@
   PR to the matching `references/*.md` "Common Mistakes" list — never an automatic
   edit. New `references/improve.md`; `SKILL.md` + `SKILL.qwen.md` Phase 9 and Phase
   1 step 5; `references/execution.md` memory-milestone table; README.
-- Checkpoint-ledger lifecycle. Phase 9 archives `progress.md` to
-  `progress.<slug>.md` as its last step, so the next ticket in the repo starts on a
-  clean ledger. Phase 1 step 8 also archives a stale ledger left by a different,
-  already-shipped ticket instead of trying to resume it. `finishing.md`,
-  `execution.md`, both manifests.
+- **Companion hooks** in `hooks/` — two Python hooks that enforce lifecycle gates
+  outside the model. `pre-push-secret-scan.py` (`PreToolUse`/Bash) blocks a `git
+  push` when the outgoing commits or `.n2i-dev-cycle/config` / `notes.md` contain a
+  secret shape (AWS/GitHub/Slack tokens, private keys, passwords in URLs, quoted
+  `api_key=`-style assignments). `verify-gate.py` (`Stop`, opt-in) blocks a stop
+  whose final turn claims a green build/test with no build or test command in that
+  turn. Both additive — the prose gates in `verification.md` / `finishing.md`
+  remain the fallback. A secret block lists each file:line and, for a false
+  positive, echoes the exact `git push` for the user to run in their own terminal
+  (the hook only gates the agent). Install via `hooks/settings.snippet.json`; needs
+  `python3`. Output-noise trimming stays external (`rtk` / starter-kit).
+- **RED evidence in the checkpoint ledger.** Each Phase 4 test-first unit records
+  the failing test name and reason before its GREEN commit
+  (`Phase 4: <unit> — RED <test> failed "<reason>" → GREEN (<commit>)`), so a later
+  session or a different machine can confirm test-first order from the ledger
+  instead of trusting recollection. `references/tdd.md` (Verify RED step + red
+  flag), `references/verification.md` (claim→proof row + common mistake), `SKILL.md`
+  Phase 4 / ledger / memory milestones, mirrored in `SKILL.qwen.md`.
+- **Phase 1 skill-state hygiene check.** Every run confirms `.n2i-dev-cycle/` is in
+  the repo's `.gitignore` (adds the line if missing) and scans an existing
+  `.n2i-dev-cycle/notes.md` for credential shapes, since `notes.md` content flows
+  into ledger lines, memory observations, and handover summaries. Warns, never
+  blocks. `SKILL.md` + `SKILL.qwen.md` Phase 1, README.
 
 ### Changed
-- Cross-cutting machinery (model selection, subagent delegation, the checkpoint
-  ledger, memory milestones) moved from `SKILL.md` into a new
+- **Cross-cutting machinery moved out of `SKILL.md`** — model selection, subagent
+  delegation, the checkpoint ledger, and memory milestones now live in a new
   `references/execution.md`, loaded once at Phase 1 step 8 and kept through Ship.
-  `SKILL.md` keeps a short pointer block and drops ~55 lines of always-loaded
+  `SKILL.md` keeps a short pointer block and sheds ~55 lines of always-loaded
   context. No behaviour change. `SKILL.qwen.md` is unchanged — the Qwen variant is
   a deliberately single-file manifest.
-
-### Added
-- RED evidence in the checkpoint ledger. Each Phase 4 test-first unit records the
-  failing test name and reason before its GREEN commit
-  (`Phase 4: <unit> — RED <test> failed "<reason>" → GREEN (<commit>)`), so a later
-  session or a different machine can confirm test-first order from the ledger rather
-  than trust recollection. `references/tdd.md` (Verify RED step + red flag),
-  `references/verification.md` (claim→proof row + common mistake), `SKILL.md` Phase 4 /
-  Checkpoint Ledger / Memory Integration, and the same points in `SKILL.qwen.md`.
-- Phase 1 skill-state hygiene check. Every run confirms `.n2i-dev-cycle/` is in the
-  repo's `.gitignore` (adds the line if missing) and scans an existing
-  `.n2i-dev-cycle/notes.md` for credential shapes, since `notes.md` content flows into
-  ledger lines, memory observations, and handover summaries. Warns, never blocks.
-  `SKILL.md` + `SKILL.qwen.md` Phase 1, README.
+- **Checkpoint-ledger lifecycle.** Phase 9 archives `progress.md` to
+  `.n2i-dev-cycle/archive/progress.<slug>.md` as its last step, so the next ticket
+  in the repo starts on a clean ledger and finished ledgers stay out of routine
+  `find` / `grep`. Phase 1 step 8 archives a stale ledger left by a different,
+  already-shipped ticket instead of resuming it. `finishing.md`, `execution.md`,
+  both manifests.
 
 ## 1.3.0 (2026-09-09)
 

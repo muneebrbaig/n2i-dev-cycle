@@ -126,7 +126,8 @@ mode).
    exists, scan it for credential shapes — a password in a URL, `Bearer ` tokens, PEM
    headers, long `key=` / `secret=` literals. `notes.md` content flows into ledger lines,
    memory observations, and handover summaries, so a secret left there leaks into durable
-   stores. Warn the user; don't block.
+   stores. Warn the user; don't block. (The `hooks/pre-push-secret-scan.py` companion
+   hook runs this check automatically at push time; this pass is the fallback.)
 
 3. **Fetch requirements** based on input mode (see Input Parsing above). Read the
    ticket and every linked wiki page / `docs/` markdown in full.
@@ -159,8 +160,8 @@ mode).
    ledger, memory milestones — stays relevant through Ship). **Start / resume the
    checkpoint ledger:** if `.n2i-dev-cycle/progress.md` already names this ticket,
    read it and resume at the first incomplete phase instead of restarting. If it
-   names a *different* ticket whose last line shows shipped/merged, archive it
-   (`progress.<slug>.md`) and start a fresh ledger.
+   names a *different* ticket whose last line shows shipped/merged, move it to
+   `.n2i-dev-cycle/archive/progress.<slug>.md` and start a fresh ledger.
 
 ---
 
@@ -459,6 +460,8 @@ Repeat until user is satisfied.
 3. **Push** (ask for confirmation with the exact command shown), then create the
    MR/PR against the confirmed base via the forge CLI, following repo conventions.
    Code review already happened at the end of Phase 5 — this should be clean.
+   (Where installed, `hooks/pre-push-secret-scan.py` blocks the push if a secret is
+   about to leave the machine.)
 4. **CI failures:** read logs by forge (`glab ci trace` / `gh run view
    --log-failed`; `FORGE_CLI=none` → ask user to paste). Root-cause per
    `debugging.md` — no blind re-push. Multiple independent job failures →
@@ -489,7 +492,8 @@ nothing worth keeping.
    "Common Mistakes to Avoid" as a PR (exact file + line shown). Never edit a
    reference silently.
 5. **Ledger** — final line: `Phase 9: <N> instincts recorded[, promotion proposed for <X>]`,
-   then archive it: `mv .n2i-dev-cycle/progress.md .n2i-dev-cycle/progress.<slug>.md`
+   then archive it:
+   `mkdir -p .n2i-dev-cycle/archive && mv .n2i-dev-cycle/progress.md .n2i-dev-cycle/archive/progress.<slug>.md`
    so the next ticket in this repo starts clean (`improve.md`).
 
 Memory tools unavailable → skip the instinct steps, but still archive the ledger.

@@ -27,6 +27,10 @@ one-liners if they were captured in Phase 5. Report the URL.
 
 If migration mode: update the `MIGRATION_DOC` status table **before** the push.
 
+Where the `hooks/pre-push-secret-scan.py` companion hook is installed, it blocks
+this push if the outgoing commits or `.n2i-dev-cycle/` hold something shaped like
+a secret.
+
 ## Step 4 — CI
 
 Read logs by forge: `glab ci trace` / `gh run view --log-failed`. Root-cause per

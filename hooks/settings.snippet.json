@@ -1,0 +1,27 @@
+{
+  "//": "n2i-dev-cycle companion hooks. Merge into ~/.claude/settings.json — add these entries to the matching arrays; do not replace hooks you already have. Assumes the skill is at ~/.claude/skills/n2i-dev-cycle. Both hooks are additive and safe to run alongside the skill's prose gates.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/skills/n2i-dev-cycle/hooks/pre-push-secret-scan.py"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "//": "Heuristic verification gate — opt-in. Remove this entry if the false-positive rate bothers you.",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/skills/n2i-dev-cycle/hooks/verify-gate.py"
+          }
+        ]
+      }
+    ]
+  }
+}

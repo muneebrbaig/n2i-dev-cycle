@@ -107,7 +107,7 @@ Ceremony scales with the task; the gate never does.
 
 7. **Set session title** (if the runtime supports it): `<ticket-number>: <short desc>`.
 
-8. **Start / resume the checkpoint ledger** (see Checkpoint Ledger below). If `.n2i-dev-cycle/progress.md` names this ticket, resume at the first incomplete phase. If it names a *different* ticket whose last line shows shipped/merged, archive it (`progress.<slug>.md`) and start fresh.
+8. **Start / resume the checkpoint ledger** (see Checkpoint Ledger below). If `.n2i-dev-cycle/progress.md` names this ticket, resume at the first incomplete phase. If it names a *different* ticket whose last line shows shipped/merged, move it to `.n2i-dev-cycle/archive/progress.<slug>.md` and start fresh.
 
 ---
 
@@ -383,7 +383,8 @@ skip only if the user says so or the cycle produced nothing reusable.
    propose a one-line addition to the relevant Common Mistakes list as a PR to the
    skill repo (exact line shown). Never edit the skill silently.
 5. **Ledger** — final line `Phase 9: <N> instincts recorded[, promotion proposed for <X>]`,
-   then archive: `mv .n2i-dev-cycle/progress.md .n2i-dev-cycle/progress.<slug>.md`
+   then archive:
+   `mkdir -p .n2i-dev-cycle/archive && mv .n2i-dev-cycle/progress.md .n2i-dev-cycle/archive/progress.<slug>.md`
    so the next ticket starts clean.
 
 Memory unavailable → skip steps 1-4, still archive the ledger.
@@ -427,9 +428,9 @@ Skip if not in a git repo.
   that's where test-first order is proven across sessions/machines.
 - On skill start (Phase 1 step 8): first line matches this ticket → resume at the
   first incomplete phase. First line is a *different*, already-shipped ticket →
-  archive it (`progress.<slug>.md`) and start fresh.
-- Phase 9 archives the ledger as its last step, after Phase 8's merge cleanup.
-  Archived copies stay gitignored — delete whenever.
+  move it to `.n2i-dev-cycle/archive/progress.<slug>.md` and start fresh.
+- Phase 9 archives the ledger into `.n2i-dev-cycle/archive/` as its last step, after
+  Phase 8's merge cleanup. Archived copies stay gitignored — delete whenever.
 - After compaction, `git log` + this ledger outrank recollection.
 
 ## Discipline Red Flags — Stop

@@ -49,10 +49,12 @@ Never edit a `references/*.md` file silently — promotion is always a proposed 
 Phase 9's last action, after its final ledger line:
 
 ```bash
-mv .n2i-dev-cycle/progress.md .n2i-dev-cycle/progress.<ticket-or-slug>.md
+mkdir -p .n2i-dev-cycle/archive
+mv .n2i-dev-cycle/progress.md .n2i-dev-cycle/archive/progress.<ticket-or-slug>.md
 ```
 
-So the next ticket in this repo starts on a clean ledger. The archived copies stay
+So the next ticket in this repo starts on a clean ledger. `.n2i-dev-cycle/archive/`
+keeps finished ledgers out of the way of routine `find` / `grep` while staying
 gitignored (the whole `.n2i-dev-cycle/` folder is) — delete them whenever. Skip if
 not in a git repo. Do this even when the instinct steps were skipped for missing
 memory tools.

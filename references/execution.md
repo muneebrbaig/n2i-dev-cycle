@@ -58,10 +58,10 @@ in a git repo.
   sessions and machines.
 - On skill start (Phase 1 step 8): if the first line matches the current ticket,
   resume at the first incomplete phase instead of restarting. If it names a
-  *different* ticket whose last line shows shipped/merged, archive it to
-  `progress.<slug>.md` and start fresh — don't "resume" a done cycle.
-- Phase 9 archives the ledger as its last step (`mv progress.md progress.<slug>.md`),
-  after Phase 8's merge cleanup; the archived copies stay gitignored, delete whenever.
+  *different* ticket whose last line shows shipped/merged, move it to
+  `.n2i-dev-cycle/archive/progress.<slug>.md` and start fresh — don't "resume" a done cycle.
+- Phase 9 archives the ledger as its last step (into `.n2i-dev-cycle/archive/`),
+  after Phase 8's merge cleanup; archived copies stay gitignored, delete whenever.
 - After compaction, `git log` and this ledger outrank your own recollection.
 
 ## Memory Integration

@@ -10,6 +10,9 @@ NO COMPLETION CLAIM WITHOUT FRESH VERIFICATION EVIDENCE
 
 If you haven't run the command **in this message**, you can't say it passes.
 
+(The `hooks/verify-gate.py` companion hook, where installed, blocks a stop that
+claims green with no run in the turn. This gate is the fallback for setups without it.)
+
 ## The Gate
 
 Before saying any status, or expressing satisfaction:
