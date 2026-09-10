@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.4.0 (2026-09-10)
 
 Batch of improvements informed by a review of the [ecc](https://github.com/affaan-m/ecc)
 skill — RED-evidence capture, an instinct/learning loop, leaner always-loaded
