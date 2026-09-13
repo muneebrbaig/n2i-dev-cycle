@@ -1,5 +1,7 @@
 # n2i-dev-cycle
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/muneebrbaig/n2i-dev-cycle)
+
 A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill that runs the full development lifecycle, from ticket or prompt to shipped code. Built for vertical-slice .NET + Angular projects with multi-tenant architecture, originally for [Null2Infinity](https://null2infinity.com)'s own projects (N2I) — the methodology is stack-agnostic and the .NET/Angular bindings are config-overridable (see [Using with a different stack](#using-with-a-different-stack)).
 
 ## What It Does
