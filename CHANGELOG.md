@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.5.0 (2026-09-24)
+
+Subagent dispatches now name a concrete model, with a fallback when that model
+isn't available.
+
+### Changed
+- **Model tiers map to Agent `model` aliases.** The model-selection table in
+  `references/execution.md` now names the alias to pass on each subagent dispatch:
+  `haiku` for scaffolding, migration DDL, mechanical edits, and E2E runs; `sonnet`
+  for service/component logic, multi-file integration, and test design; `opus` for
+  architecture, ambiguous debugging, the Phase 5 pre-push review, and multi-layer
+  CI root-cause. Previously the tiers were abstract ("cheap / fast", "standard",
+  "most capable") and left the choice to the agent. `SKILL.md` pointer updated.
+  `SKILL.qwen.md` is unchanged, since Claude aliases don't apply to the Qwen
+  harness.
+
+### Added
+- **Unavailable-model fallback.** If a dispatch is rejected because the model is
+  unknown, unavailable, or not permitted for the account, the skill retries once on
+  the adjacent tier (`haiku` → `sonnet` → `opus`; `opus` steps down to `sonnet`),
+  then dispatches with `model` omitted so it inherits the session's model. The
+  dispatch note records which model ran. Rate-limit and overload errors retry the
+  same model instead of changing tiers.
+
 ## 1.4.0 (2026-09-10)
 
 Batch of improvements informed by a review of the [ecc](https://github.com/affaan-m/ecc)
