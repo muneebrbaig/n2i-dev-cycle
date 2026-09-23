@@ -272,7 +272,8 @@ integration live in **`references/execution.md`** — loaded once at Phase 1 ste
 stays relevant through Ship. Pointers:
 
 - **Model** — cheapest model that fits the step; state it when dispatching a
-  subagent (omitted → inherits this session's, usually priciest).
+  subagent as `haiku` / `sonnet` / `opus` (omitted → inherits this session's,
+  usually priciest). Unavailable → adjacent tier, then omit.
 - **Delegate** only verbose-in / small-out / independent work: E2E runs (Phase 6),
   independent Phase 7 findings / Phase 8 CI jobs, the pre-push review. The spec,
   the ticket / MR-PR prose, and the Phase 4 TDD loop stay in the main agent.

@@ -22,7 +22,7 @@ clean finish, pattern capture):
 | **8. Ship** | Full suite green → confirm base branch → push + MR → root-cause any CI failure → clean up local branch and worktree after merge. |
 | **9. Improve** | Distills 1–3 reusable patterns from the cycle into `#instinct`-tagged memory observations (statement / trigger / confidence / stack scope), read back at Phase 1 of the next cycle. A pattern that recurs across cycles gets proposed as a one-line PR to the matching reference file. Archives the checkpoint ledger so the next ticket starts clean. |
 
-Cross-cutting mechanics — model selection (cheap model for scaffolding, capable for architecture / debugging / review), subagent delegation, the **checkpoint ledger** (`.n2i-dev-cycle/progress.md`, survives context compaction and cross-session re-entry), and memory milestones — live in `references/execution.md`, loaded once at Phase 1 so `SKILL.md` itself stays lean.
+Cross-cutting mechanics — model selection (`haiku` for scaffolding, `sonnet` for logic and test design, `opus` for architecture / debugging / review, stepping to the adjacent tier when a model is unavailable), subagent delegation, the **checkpoint ledger** (`.n2i-dev-cycle/progress.md`, survives context compaction and cross-session re-entry), and memory milestones — live in `references/execution.md`, loaded once at Phase 1 so `SKILL.md` itself stays lean.
 
 ### Why review happens before push
 

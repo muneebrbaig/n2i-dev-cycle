@@ -9,11 +9,18 @@ relevant through Ship. `SKILL.md` carries only the one-line pointers; the detail
 Pick the cheapest model that fits the step. State the model when dispatching a
 subagent — an omitted model inherits this session's, usually the priciest.
 
-| Work | Model tier |
-|---|---|
-| Scaffolding, migration DDL, single-file mechanical edits, transcription from a detailed plan | cheap / fast |
-| Service/controller/component logic, multi-file integration, test design | standard |
-| Architecture, ambiguous debugging, the Phase 5 pre-push review, CI root-cause on a multi-layer failure | most capable |
+| Work | Model tier | Agent `model` |
+|---|---|---|
+| Scaffolding, migration DDL, single-file mechanical edits, transcription from a detailed plan, E2E runs | cheap / fast | `haiku` |
+| Service/controller/component logic, multi-file integration, test design | standard | `sonnet` |
+| Architecture, ambiguous debugging, the Phase 5 pre-push review, CI root-cause on a multi-layer failure | most capable | `opus` |
+
+**Unavailable model.** If the dispatch is rejected because the model is unknown,
+unavailable, or not permitted for this account, retry once one tier up
+(`haiku` → `sonnet` → `opus`); for `opus`, step down to `sonnet`. If that also
+fails, dispatch with `model` omitted so it inherits this session's. Say which
+model actually ran in the dispatch note. A rate-limit or overload error is not
+unavailability: retry the same model rather than changing tiers.
 
 ## Delegation & Context
 
