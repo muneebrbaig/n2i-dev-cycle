@@ -89,6 +89,8 @@ Record observations at these milestones using `observation_add`:
 | Feedback received | `○` (discovery) | User findings, issues reported |
 | Fix applied | `●` (bugfix) | What was fixed and how |
 | Shipped / CI green | `✓` (change) | Final status, branch pushed, CI result |
-| Improve (Phase 9) | `⚖` / `○` + `#instinct` | Reusable pattern: statement, trigger, confidence, scope tags (`references/improve.md`) |
 
 Also search memory at skill start (`observation_search`, `memory_search`) to surface prior work on same ticket/feature.
+
+Phase 9 instincts are **not** memory observations: they go to `.n2i-dev-cycle/instincts.md`
+(`references/improve.md`), so they survive a session without memory tools.

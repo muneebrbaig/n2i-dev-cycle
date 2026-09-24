@@ -138,7 +138,7 @@ mode).
 5. **Search memory** for prior work on this ticket/topic:
    - `observation_search` with ticket number or key terms
    - `memory_search` for related past decisions
-   - `observation_search` `#instinct` filtered to the detected stack
+   - Read `.n2i-dev-cycle/instincts.md` if present, filtered to the detected stack
      (`#stack:<backend/frontend stack>`, `#stack:any`) — surface the top ~5 by
      confidence as working rules for this cycle (`references/improve.md`)
    - Surface relevant context to avoid re-deriving
@@ -257,11 +257,11 @@ archived at the end of Phase 9.
 **Load `references/improve.md`.** Runs once, after the branch is merged and Phase 8
 cleanup is done. Default-on; skip only if the user says so or the cycle produced
 nothing reusable. It holds the flow: distill 1–3 patterns that will recur →
-de-dupe against existing `#instinct` observations → record each (statement /
+de-dupe against `.n2i-dev-cycle/instincts.md` → append each (statement /
 trigger / confidence / scope tags) → propose a promotion PR when one recurs at
 `med`+ confidence → write the final ledger line and archive `progress.md` to
-`.n2i-dev-cycle/archive/`. Memory tools unavailable → skip the instinct steps,
-still archive the ledger.
+`.n2i-dev-cycle/archive/`. Instincts live in a file, so this runs whether or not
+memory tools are connected.
 
 ---
 

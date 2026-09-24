@@ -97,9 +97,9 @@ Ceremony scales with the task; the gate never does.
    - Unsure between two → take the heavier. Hidden complexity mid-task upgrades the class; nothing downgrades.
 
 5. **Search Qwen memory** for prior work on this ticket/topic. Surface relevant
-   context. Also search `#instinct` filtered to the detected stack
-   (`#stack:<stack>`, `#stack:any`) — surface the top ~5 by confidence as working
-   rules for this cycle (Phase 9 records them).
+   context. Also read `.n2i-dev-cycle/instincts.md` if present, filtered to the
+   detected stack (`#stack:<stack>`, `#stack:any`) — surface the top ~5 by
+   confidence as working rules for this cycle (Phase 9 records them).
 
 6. **Take the path:**
    - **Discussion mode** (no finalized ticket): explore context, decompose if multi-subsystem, ask clarifying questions one at a time, propose 2-3 approaches for architectural work, present a design (spec doc for architectural). Produce the **ticket / sub-ticket draft** for Product review — problem → proposed direction → scope (covered vs adjacent-excluded) → out of scope, PM tone. **Stop** unless told to continue.
@@ -375,19 +375,22 @@ skip only if the user says so or the cycle produced nothing reusable.
    convention you missed, a decision worth not re-litigating. Only if it
    generalizes past this ticket. Not ticket-specific facts; not things already in
    General Development Standards → Common Mistakes.
-2. **De-dupe** — search Qwen memory `#instinct` for a near-duplicate of each.
-3. **Record** each as an `#instinct`-tagged observation: statement (imperative
-   rule), trigger (when it applies), confidence (`low`/`med`/`high`), scope tags
-   (`#stack:… #domain:…`).
-4. **Promote** — near-duplicate exists and the pair reaches `med`+ confidence →
+2. **De-dupe** — read `.n2i-dev-cycle/instincts.md` for a near-duplicate of each.
+   Match → append the ticket to its `Seen:` line and raise confidence one step
+   instead of adding a second entry.
+3. **Record** each new one by appending to `.n2i-dev-cycle/instincts.md` (create it
+   with a `# Instincts` heading if missing):
+   `## <statement>` then `- Trigger:`, `- Confidence: low|med|high`,
+   `- Tags: #stack:… #domain:…`, `- Seen: <ticket> (<date>)`, `- Why: <one line>`.
+4. **Promote** — a matched instinct now at `med`+ confidence →
    propose a one-line addition to the relevant Common Mistakes list as a PR to the
    skill repo (exact line shown). Never edit the skill silently.
-5. **Ledger** — final line `Phase 9: <N> instincts recorded[, promotion proposed for <X>]`,
+5. **Ledger** — final line `Phase 9: <N> instincts recorded[, <M> bumped][, promotion proposed for <X>]`,
    then archive:
    `mkdir -p .n2i-dev-cycle/archive && mv .n2i-dev-cycle/progress.md .n2i-dev-cycle/archive/progress.<slug>.md`
    so the next ticket starts clean.
 
-Memory unavailable → skip steps 1-4, still archive the ledger.
+Instincts live in a file, so this runs whether or not memory is available.
 
 ---
 
@@ -747,10 +750,10 @@ Use Qwen's built-in memory system. Save observations at milestones:
 | Feedback received | User findings, issues reported |
 | Fix applied | What fixed and how |
 | Shipped / CI green | Final status, branch pushed, CI result |
-| Improve (Phase 9) | `#instinct`-tagged: statement, trigger, confidence (`low`/`med`/`high`), scope tags (`#stack:… #domain:…`) |
 
-Search Qwen memory at skill start to surface prior work on same ticket/feature,
-and `#instinct` (stack-filtered) for reusable rules from past cycles.
+Search Qwen memory at skill start to surface prior work on same ticket/feature.
+Reusable rules from past cycles come from `.n2i-dev-cycle/instincts.md`
+(stack-filtered), not memory.
 The `.n2i-dev-cycle/progress.md` ledger is the durable fallback when memory is unavailable.
 
 ---
