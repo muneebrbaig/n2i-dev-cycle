@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.6.0 (2026-09-24)
+
+Phase 9 lessons now go to a file in the repo instead of memory, so they are saved
+and read back even when no memory write tool is connected.
+
+### Changed
+- **Instincts live in `.n2i-dev-cycle/instincts.md`.** Phase 9 appends each lesson
+  as a short entry (statement, trigger, confidence, tags, tickets seen, why) and
+  Phase 1 reads the file back, filtered to the detected stack. Previously both
+  steps used `#instinct`-tagged memory observations through `observation_add` /
+  `observation_search`, which the current claude-mem MCP doesn't expose, so every
+  cycle skipped them and the lessons were lost. The file sits in the gitignored
+  `.n2i-dev-cycle/` folder: per repo, per machine, greppable and hand-editable.
+- **Near-duplicates bump instead of repeat.** A lesson that matches an existing
+  entry adds the ticket to its `Seen:` line and raises confidence one step
+  (`low` → `med` → `high`). Promotion to a reference file still triggers at
+  `med`+ and is still only ever proposed, never applied.
+- Phase 9 no longer skips the instinct steps when memory tools are missing.
+  Milestone memory observations (plan approved, shipped, …) are unchanged and
+  remain best-effort.
+- `SKILL.md`, `SKILL.qwen.md`, `references/improve.md`,
+  `references/execution.md` and `README.md` updated to match. Claude and Qwen
+  cycles in the same repo now share one instincts file.
+
 ## 1.5.0 (2026-09-24)
 
 Subagent dispatches now name a concrete model, with a fallback when that model
