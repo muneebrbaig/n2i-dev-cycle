@@ -79,3 +79,4 @@ export class MyEntityService extends BaseService<Response<any>> {
 - Fixed-width dialogs (breaks mobile)
 - Forgetting barrel exports (`models/index.ts`, `services/index.ts`)
 - Forgetting the route swap from placeholder to real component
+- A directive that moves focus on Enter (touch keyboards) must leave Enter alone on fields that already own it: search boxes, `(keyup.enter)` handlers, and the only field of an `(ngSubmit)` form
