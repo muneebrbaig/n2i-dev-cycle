@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.6.2 (2026-09-25)
+
+The frontend standards now ask for a device check on input and form-styling changes.
+
+### Changed
+- **New frontend "Common Mistakes" entry.** Input, keyboard or form-styling
+  changes, including DOM a directive inserts next to inputs, need a pass on both
+  the iOS simulator and an Android emulator before review. Promoted from a Phase 9
+  instinct seen in two cycles, where devices caught layout and keyboard bugs that
+  headless specs passed. Mirrored in `SKILL.qwen.md`.
+
 ## 1.6.1 (2026-09-25)
 
 The frontend standards now warn about Enter handling on touch keyboards.
