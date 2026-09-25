@@ -727,6 +727,7 @@ Minimum per service: create happy path, create invalid (name + each FK), GetAll 
 - Forgetting wire-up steps
 - Forgetting barrel exports
 - Forgetting route swap from placeholder to real component
+- Enter-to-next-field on touch keyboards overriding fields that own Enter (search boxes, `(keyup.enter)`, single-field `(ngSubmit)` forms)
 - Naming entity `Task` (conflicts with `System.Threading.Tasks.Task`)
 - Shipping without updating migration docs (when in migration mode)
 - Writing a local `ResolveContext`/`ResolveOrg` per service instead of using/adding a shared `ContextAccessor` extension
