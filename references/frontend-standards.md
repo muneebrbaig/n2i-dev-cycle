@@ -80,3 +80,4 @@ export class MyEntityService extends BaseService<Response<any>> {
 - Forgetting barrel exports (`models/index.ts`, `services/index.ts`)
 - Forgetting the route swap from placeholder to real component
 - A directive that moves focus on Enter (touch keyboards) must leave Enter alone on fields that already own it: search boxes, `(keyup.enter)` handlers, and the only field of an `(ngSubmit)` form
+- Shipping input, keyboard or form-styling changes (including DOM a directive inserts next to inputs) without checking both the iOS simulator and an Android emulator: headless specs miss wrapper, gap and keyboard-accessory bugs
