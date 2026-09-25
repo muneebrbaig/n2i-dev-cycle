@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.6.1 (2026-09-25)
+
+The frontend standards now warn about Enter handling on touch keyboards.
+
+### Changed
+- **New frontend "Common Mistakes" entry.** A directive that turns Enter into
+  "next field" on touch keyboards must leave Enter alone on fields that already
+  own it: search boxes, `(keyup.enter)` handlers, and the only field of an
+  `(ngSubmit)` form. Promoted from a Phase 9 instinct seen in three consecutive
+  cycles, where Enter on a phone stopped running the field's own action.
+  Mirrored in `SKILL.qwen.md`.
+
 ## 1.6.0 (2026-09-24)
 
 Phase 9 lessons now go to a file in the repo instead of memory, so they are saved
