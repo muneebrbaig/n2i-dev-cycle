@@ -289,7 +289,7 @@ memory milestones).
 - **`references/backend-standards.md`** — 7-file entity scaffold, service/controller patterns, DbUp wire-up, xUnit + Moq testing, C# code quality
 - **`references/security.md`** — multi-tenancy enforcement, `ResolveWriteContext` pattern, cross-org write checks, FK validation
 - **`references/migrations.md`** — DbUp, Postgres (default) + SQL Server (`DB_ENGINE=sqlserver`) dialects, naming rules
-- **`references/frontend-standards.md`** — Angular service/component patterns, cascading dropdowns, mobile-first UI, PrimeNG conventions
+- **`references/frontend-standards.md`** — Angular service/component patterns, cascading dropdowns, mobile-first UI, PrimeNG conventions, browser checks for UI verification
 
 The standards and discipline references each end with a scoped "Common Mistakes to Avoid"
 list. Project-specific `CLAUDE.md` instructions override on conflict. A repo that keeps its own conventions (often in

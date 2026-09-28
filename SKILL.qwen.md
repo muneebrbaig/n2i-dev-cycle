@@ -674,6 +674,14 @@ export class MyEntityService extends BaseService<Response<any>> {
 - No horizontal overflow
 - Test at ~360px viewport
 
+#### Browser Checks
+
+When driving the running app to verify a UI change (in-app browser or Playwright):
+
+- Read structure before pixels: `read_page` / `find` refs, or `getByRole` / `getByLabel` locators. Screenshot only for layout, styling or visual bugs
+- Batch predictable steps (navigate → fill → submit → read) in one `browser_batch` call; break where a result decides the next step
+- Wait for the element, URL or response the next step needs; no `sleep` / `waitForTimeout`
+
 ### Unit Testing
 
 ```csharp

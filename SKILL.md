@@ -304,7 +304,7 @@ The repo's own `CLAUDE.md` wins on any conflict.
 | `references/backend-standards.md` | backend in scope | 7-file entity scaffold, entity/ModelConfiguration/service/controller patterns, wire-up, unit testing, C# code quality, backend mistakes |
 | `references/security.md` | backend in scope | tenant isolation, `ResolveWriteContext` pattern, cross-org write checks, FK validation — non-negotiable |
 | `references/migrations.md` | plan has a migration script | DbUp, Postgres + SQL Server dialects, filename/naming rules, migration mistakes |
-| `references/frontend-standards.md` | frontend in scope | Angular file structure, service/component patterns, rich-UI choices, mobile-first, frontend mistakes |
+| `references/frontend-standards.md` | frontend in scope | Angular file structure, service/component patterns, rich-UI choices, mobile-first, browser checks, frontend mistakes |
 
 The standards and discipline references each end with a scoped "Common Mistakes to Avoid"
 list, so a frontend-only ticket never loads backend/security/migration gotchas.

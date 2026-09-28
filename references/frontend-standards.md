@@ -73,6 +73,14 @@ export class MyEntityService extends BaseService<Response<any>> {
 - No horizontal overflow in lists or dialogs
 - Test at ~360px viewport
 
+## Browser Checks
+
+When driving the running app to verify a UI change (in-app browser or Playwright):
+
+- **Read structure before pixels.** Use `read_page` / `find` refs in the in-app browser, or `getByRole` / `getByLabel` locators in Playwright. They give exact text and state for fewer tokens. Take a screenshot only to judge layout, styling or a visual bug.
+- **Batch steps you can predict.** When the next two or more actions are known (navigate → fill → submit → read result), send them in one `browser_batch` call. Break the batch where a result decides the next step.
+- **Wait for state, not time.** Wait on the element, URL or response the next step needs (`expect(...).toBeVisible()`, `waitForURL`, `waitForResponse`). No `sleep` or `waitForTimeout`: a fixed wait is slow when the app is fast and flaky when it's slow.
+
 ## Common Mistakes to Avoid
 
 - Missing `appendTo="body"` on overlays in dialogs
