@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.6.3 (2026-09-28)
+
+The frontend standards now warn about sending business dates as timestamps.
+
+### Changed
+- **New frontend "Common Mistakes" entry.** A date-picker `Date` sent to the API
+  as a timestamp lands on the previous UTC day for users east of UTC, which
+  shifts the date and any fiscal year or period the server derives from it.
+  Send a calendar date (`yyyy-MM-dd`) and pin the request payload with a spec.
+  Promoted from a Phase 9 instinct seen in two cycles: a re-issued fee challan
+  sent the previous day, and invoices dated Jul 1 took the previous fiscal
+  year's number. Mirrored in `SKILL.qwen.md`.
+
 ## 1.6.2 (2026-09-25)
 
 The frontend standards now ask for a device check on input and form-styling changes.
