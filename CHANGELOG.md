@@ -1,5 +1,36 @@
 # Changelog
 
+## 1.6.4 (2026-09-28)
+
+The frontend standards now cover how to drive the browser when verifying a UI
+change. The skill also watches for code that fails silently and tests that can't
+fail, and the companion hooks now have tests.
+
+### Added
+- **Hook tests.** `hooks/tests/` covers `verify-gate.py` and
+  `pre-push-secret-scan.py`: every secret pattern, placeholder lines, commits
+  already on the remote, the skill's config file, and when a success claim does
+  or doesn't count as verified. Standard-library `unittest`, run with
+  `python3 -m unittest discover -s hooks/tests`. The skill never loads them.
+
+### Changed
+- **"Tests That Can't Go Red" in `tdd.md`.** Every test must fail if the
+  implementation is wrong. The section flags tests with no assertion, mock
+  theater, tests that assert their own hard-coded value, and snapshot-only
+  coverage of logic changes.
+- **Silent failures in the standards.** New backend and frontend "Common
+  Mistakes" entries for errors swallowed or turned into defaults: empty
+  `catch`, un-awaited tasks, `catchError(() => of([]))` showing "no records"
+  on an API error. The Phase 5 pre-push review now asks the reviewer to flag
+  both patterns. Both ideas adapted from dotclaude's `silent-failure-hunter`
+  and `pr-test-analyzer` agents.
+- **New frontend "Browser Checks" section.** Read the page through the
+  accessibility tree (`read_page` / `find`, or role and label locators) and
+  screenshot only for layout or visual bugs. Batch predictable steps in one
+  `browser_batch` call. Wait on the element, URL or response the next step
+  needs instead of fixed sleeps. Adapted from the snapshot-first, low round-trip
+  approach in browser-use's jev-ultrafast. Mirrored in `SKILL.qwen.md`.
+
 ## 1.6.3 (2026-09-28)
 
 The frontend standards now warn about sending business dates as timestamps.
