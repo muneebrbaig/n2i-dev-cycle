@@ -166,6 +166,7 @@ Minimum per service: create happy path, create invalid (name + each FK), GetAll 
 - Forgetting barrel exports on the frontend side after adding the entity
 - Forgetting route swap from placeholder to real component
 - Naming entity `Task` (conflicts with `System.Threading.Tasks.Task`)
+- Failing silently: an empty or log-only `catch`, a caught exception turned into a success response or a default value, a fire-and-forget `Task` nobody awaits, a retry loop that never surfaces its last failure. Ask "if this fails in production, who finds out?" — if nobody, let it throw or return an error.
 - Reading an EF-generated identity (`entity.Id`) before `CommitAsync()`/`SaveChangesAsync()` — it's `0`/default until the save actually happens. If a later step in the same method needs the real id (e.g. a post-save re-fetch), commit right after the add, not at the end of the method.
 - Writing a local `ResolveContext`/`ResolveOrg` per service instead of checking for (or adding) a shared `ContextAccessor` extension first. One real codebase hit 30 services with this exact copy before it got caught. See `security.md` rule 3.
 - Calling a scalar context-resolution helper **and** separately re-deriving `role`/`userOrgId` in the same method — the throw-check runs twice per request. Use a tuple-returning variant instead.

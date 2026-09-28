@@ -50,6 +50,17 @@ warnings).
 **REFACTOR** — remove duplication, fix names, extract helpers. Stay green. No new
 behaviour.
 
+## Tests That Can't Go Red
+
+Ask of every test: if the implementation were wrong, would this go red? If not, it
+isn't coverage. Watch for:
+
+- No assertion, or only "doesn't throw" on logic that returns a value
+- Mock theater: asserting the mock was called with what the test just set up, not
+  the behaviour it produced
+- Asserting the value the test itself computed or hard-coded into the fake
+- A snapshot as the only check on a logic change
+
 ## Single-test commands
 
 .NET + Angular default (other stacks: derive the single-test form of

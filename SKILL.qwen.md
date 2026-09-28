@@ -266,7 +266,8 @@ Once green, before Phase 6: run a code review against the local diff
 (`git diff <base-branch>...HEAD`, per SCOPE) — a third-party review skill if
 available, else a manual pass. Reviewing here (before the MR exists) keeps a
 finding a clean amend instead of a fix-up commit in MR history, and avoids a CI
-run against a state you're about to patch. Handle findings with technical rigor:
+run against a state you're about to patch. Also flag silent failures (errors
+swallowed or turned into defaults) and tests that can't go red. Handle findings with technical rigor:
 restate, verify against the codebase, push back on wrong / YAGNI. A finding
 that's a real bug goes through Systematic Debugging (root cause first) + TDD
 (failing test first). Fix accepted findings, re-run the Phase 5 gate.
@@ -440,6 +441,7 @@ Skip if not in a git repo.
 
 - Code before test / "test after achieves the same" / "keep as reference"
 - A GREEN commit with no RED failure line recorded before it
+- A test that stays green if the implementation is wrong: no assertion, mock theater (asserting the mock got what the test set up), asserting its own hard-coded value, snapshot-only coverage of logic
 - "should pass" / "looks right" / "Great!" / "Done!" before running the command
 - Proposing a fix before tracing data flow; fix #4 after three failures
 - Claiming green off a run from before the last edit
@@ -739,6 +741,7 @@ Minimum per service: create happy path, create invalid (name + each FK), GetAll 
 - Shipping input or form-styling changes (incl. DOM inserted next to inputs) without checking both the iOS simulator and an Android emulator
 - Sending a picker `Date` as a timestamp for a business date (UTC+ zones shift it, and any server-derived fiscal year, to the previous day); send `yyyy-MM-dd` and pin the payload with a spec
 - Naming entity `Task` (conflicts with `System.Threading.Tasks.Task`)
+- Failing silently: empty/log-only `catch`, exception turned into success or a default, un-awaited `Task`/promise, `catchError(() => of([]))` showing "no records" on an API error. Ask "if this fails in production, who finds out?"
 - Shipping without updating migration docs (when in migration mode)
 - Writing a local `ResolveContext`/`ResolveOrg` per service instead of using/adding a shared `ContextAccessor` extension
 - Calling a scalar context helper and separately re-deriving role/userOrgId in the same method (double throw-check)

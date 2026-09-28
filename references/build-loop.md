@@ -102,6 +102,8 @@ skips triggering a CI run against a state you already know you're about to patch
   silently — don't block the lifecycle. Offer a manual review pass instead if the user still wants one.
 - If accepted and available, invoke it against the diff: `git diff <base-branch>...HEAD` (backend
   and/or frontend paths per SCOPE), not a PR URL — no MR/PR exists yet at this point.
+  Ask it to also flag silent failures (errors swallowed or turned into defaults) and tests
+  that can't go red (`references/tdd.md`).
 - Handle findings with technical rigor, not performative agreement: restate each finding, verify
   it against the codebase, push back with reasoning if it's wrong or YAGNI, ask the user if it
   conflicts with a prior decision. A finding that's a real bug goes through `references/debugging.md`

@@ -138,6 +138,9 @@ Both need `python3` (already a Claude Code hooks prerequisite). Merge
 the matching `hooks` arrays rather than replacing what's there. Paths in the
 snippet assume the skill lives at `~/.claude/skills/n2i-dev-cycle`.
 
+After changing a hook, run its tests (standard library only, nothing to install):
+`python3 -m unittest discover -s hooks/tests`. The skill never loads these files.
+
 For build/test **output** trimming (a separate concern), use `rtk` or the
 `PreToolUse` filter in
 [claude-code-starter-kit](https://github.com/muneebrbaig/claude-code-starter-kit#hooks) —
@@ -281,7 +284,7 @@ memory milestones).
 
 **Discipline (stack-agnostic)** — the iron laws, loaded alongside the phase procedure:
 
-- **`references/tdd.md`** — RED-GREEN-REFACTOR, test-first vs exempt scaffolding, rationalization table
+- **`references/tdd.md`** — RED-GREEN-REFACTOR, test-first vs exempt scaffolding, tests that can't go red, rationalization table
 - **`references/verification.md`** — evidence-before-claims gate, claim→proof table
 
 **Standards (stack-specific — .NET + Angular defaults)**:

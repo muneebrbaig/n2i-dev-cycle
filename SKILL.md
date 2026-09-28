@@ -296,7 +296,7 @@ The repo's own `CLAUDE.md` wins on any conflict.
 | `references/brainstorming.md` | Phase 1, always | spike/bounded/architectural classification, hard approval gate, discussion→ticket flow, spec'd→alignment gate |
 | `references/planning.md` | Phase 3, always | implementation-plan format (backend/frontend/tests/migration), no-placeholders rule, plan self-review |
 | `references/build-loop.md` | Phase 4, always | the Implement→Validate→Handover procedure: build order + RED→GREEN loop, checkpoint table, validate commands + noise handling + pre-push review, handover summary format |
-| `references/tdd.md` | Phase 4, and every bug fix | RED-GREEN-REFACTOR iron law, what's test-first vs exempt scaffolding, rationalization table, red flags |
+| `references/tdd.md` | Phase 4, and every bug fix | RED-GREEN-REFACTOR iron law, what's test-first vs exempt scaffolding, tests that can't go red, rationalization table, red flags |
 | `references/verification.md` | Phase 5, any "done" claim | evidence-before-claims gate, claim→proof table, red flags |
 | `references/debugging.md` | Phase 7, Phase 8 CI | root-cause-first 4 steps, boundary instrumentation, 3-fix→question-design rule, parallel dispatch, Phase 7 per-finding loop + `fix:` resume |
 | `references/finishing.md` | Phase 8 | ship gate, suite green → base confirm → push + MR → CI → branch/worktree cleanup → final memory + ledger line |
