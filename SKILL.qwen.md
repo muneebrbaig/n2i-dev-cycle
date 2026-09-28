@@ -729,6 +729,7 @@ Minimum per service: create happy path, create invalid (name + each FK), GetAll 
 - Forgetting route swap from placeholder to real component
 - Enter-to-next-field on touch keyboards overriding fields that own Enter (search boxes, `(keyup.enter)`, single-field `(ngSubmit)` forms)
 - Shipping input or form-styling changes (incl. DOM inserted next to inputs) without checking both the iOS simulator and an Android emulator
+- Sending a picker `Date` as a timestamp for a business date (UTC+ zones shift it, and any server-derived fiscal year, to the previous day); send `yyyy-MM-dd` and pin the payload with a spec
 - Naming entity `Task` (conflicts with `System.Threading.Tasks.Task`)
 - Shipping without updating migration docs (when in migration mode)
 - Writing a local `ResolveContext`/`ResolveOrg` per service instead of using/adding a shared `ContextAccessor` extension

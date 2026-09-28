@@ -81,3 +81,4 @@ export class MyEntityService extends BaseService<Response<any>> {
 - Forgetting the route swap from placeholder to real component
 - A directive that moves focus on Enter (touch keyboards) must leave Enter alone on fields that already own it: search boxes, `(keyup.enter)` handlers, and the only field of an `(ngSubmit)` form
 - Shipping input, keyboard or form-styling changes (including DOM a directive inserts next to inputs) without checking both the iOS simulator and an Android emulator: headless specs miss wrapper, gap and keyboard-accessory bugs
+- Sending a picker `Date` to the API as a timestamp for a business date (invoice, voucher or due date): in UTC+ zones local midnight serializes to the previous UTC day, which shifts the date and any fiscal year or period the server derives from it. Send a calendar date (`yyyy-MM-dd`) and pin the payload with a spec
