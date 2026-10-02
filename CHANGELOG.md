@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **`n2i-unit-runner` subagent (haiku).** Phase 5's final validate run (format,
+  build, unit tests) now goes to this agent, one dispatch per side, backend and
+  frontend in parallel. It returns the result, each command with its exit code,
+  totals, and failure traces only, and never edits. The Phase 4 TDD loop stays
+  in the main agent.
+- **Gate evidence from the unit runner.** `verify-gate.py` counts an
+  `n2i-unit-runner` dispatch as a run this turn, since its commands live in the
+  subagent's own transcript and the hook would otherwise block a true "tests pass".
+- Scenario S10 in `evals/scenarios.md`.
+
 ## 1.7.0 (2026-10-02)
 
 The skill now ships three named subagents that pin the model and tools for

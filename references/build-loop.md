@@ -97,6 +97,15 @@ npm run build                       # ng build → zero errors
 npm test -- --watch=false           # all pass
 ```
 
+**Final run via `n2i-unit-runner`.** Iterate in the main agent while fixing. For the
+final green run, dispatch `n2i-unit-runner` once per active side (backend and frontend
+in parallel), handing it the side, the directory, and the exact validate commands. It
+returns `RESULT`, each command with its exit code, totals, and failure traces only. A
+`pass` report counts as evidence only with the commands and exit codes shown
+(`verification.md`). On `fail`, fix in the main agent, then re-dispatch. If the agent
+isn't installed, run the commands yourself per the next paragraph and fall back per
+`references/execution.md` (named agents).
+
 **Keep the runner noise out of context.** Use the quietest reporter that still
 shows exit code and failure count (`-v minimal` / `--watch=false` above; add
 `--reporters` / `--logger` equivalents on other stacks). On a green run keep only

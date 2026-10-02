@@ -24,11 +24,12 @@ unavailability: retry the same model rather than changing tiers.
 
 ### Named agents
 
-The repo ships three subagents in `agents/` that pin the model and tools for the
+The repo ships four subagents in `agents/` that pin the model and tools for the
 delegations below. Prefer them by name (`subagent_type`):
 
 | Agent | Model | Used for |
 |---|---|---|
+| `n2i-unit-runner` | `haiku` | Phase 5 final validate run (format, build, unit tests), one dispatch per side |
 | `n2i-e2e-runner` | `haiku` | Phase 6 E2E runs |
 | `n2i-ci-triage` | `sonnet` | Phase 7/8 root cause for one independent failure domain (no edits) |
 | `n2i-prepush-reviewer` | `opus` | Phase 5 pre-push review when `engineering:code-review` is unavailable |
@@ -45,6 +46,7 @@ independent**:
 
 | Delegate | Why |
 |---|---|
+| Final validate run (Phase 5) — `n2i-unit-runner`, one per side, backend and frontend in parallel | build + test log is verbose, result is pass/fail + failure traces |
 | E2E runs (Phase 6) — `n2i-e2e-runner` | slow, huge log, result is pass/fail + failure traces |
 | Independent Phase 7 findings / Phase 8 CI jobs (`debugging.md` → Parallel Dispatch) — `n2i-ci-triage` | separate root causes, run concurrently |
 | Pre-push code review (Phase 5) — `engineering:code-review`, else `n2i-prepush-reviewer` | already its own skill |
@@ -61,7 +63,7 @@ independent**:
   stop-slop). Handing off means re-passing almost everything for near-zero saving.
 - **The Phase 4 TDD loop.** Rapid RED→GREEN iterations; per-run subagent latency
   kills the loop, and the verification gate requires the main agent to run and
-  read the command itself.
+  read the command itself. Only the Phase 5 final validate run is delegated.
 
 The real context lever is the **checkpoint ledger** + memory observations, not
 delegation — write the ledger line at each checkpoint and don't re-read what it

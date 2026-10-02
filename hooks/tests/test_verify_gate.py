@@ -28,6 +28,13 @@ def bash(command):
     }
 
 
+def agent(subagent_type):
+    return {
+        "type": "assistant",
+        "message": {"content": [{"type": "tool_use", "name": "Agent", "input": {"subagent_type": subagent_type, "prompt": "run"}}]},
+    }
+
+
 class VerifyGateTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
@@ -76,6 +83,24 @@ class VerifyGateTest(unittest.TestCase):
             bash("git status"),
             tool_result(),
             assistant_text("Everything is green."),
+        ])
+        self.assertBlocked(out)
+
+    def test_unit_runner_dispatch_counts_as_evidence(self):
+        out = self.run_hook([
+            user("/n2i-dev-cycle 42"),
+            agent("n2i-unit-runner"),
+            tool_result(),
+            assistant_text("All tests pass."),
+        ])
+        self.assertIsNone(out)
+
+    def test_other_agent_dispatch_is_not_evidence(self):
+        out = self.run_hook([
+            user("/n2i-dev-cycle 42"),
+            agent("n2i-ci-triage"),
+            tool_result(),
+            assistant_text("All tests pass."),
         ])
         self.assertBlocked(out)
 

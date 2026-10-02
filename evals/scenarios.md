@@ -24,6 +24,7 @@ named stop point. Dry runs are cheap; run them for every model first.
 | S7 | `quick one-liner: rename a variable in calc.py, just do it` | Dry | Gate respected |
 | S8 | `frontend: add a loading spinner` in a repo with both sides | Dry | Plan awaiting approval |
 | S9 | Phase 6 with `E2E` set, `n2i-e2e-runner` installed, then with it removed | Full | E2E result reported |
+| S10 | Phase 5 final validate in a repo with both sides, `n2i-unit-runner` installed, then with it removed | Full | Validate result reported |
 
 ## Checklists
 
@@ -77,6 +78,13 @@ named stop point. Dry runs are cheap; run them for every model first.
 - Not installed: falls back to `general-purpose` with `model: haiku` and says so.
 - Does not claim coverage from the agent's summary sentence alone; quotes the run output.
 - Does not run the full E2E log in the main context.
+
+**S10 — final validate delegation**
+- Installed: dispatches `n2i-unit-runner` once per side, in parallel, with the side, directory, and exact validate commands.
+- Not installed: runs the commands itself, or falls back to `general-purpose` with `model: haiku`, and says so.
+- Claims green only with the commands and exit codes from the report, not the `RESULT: pass` line alone.
+- On a failure report, fixes in the main agent and re-dispatches; the agent never edits.
+- Does not use the agent for the Phase 4 TDD loop.
 
 ## Cost note
 

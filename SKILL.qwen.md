@@ -459,7 +459,7 @@ subagent (omitted = inherits this session's, usually priciest).
 ## Delegation & Context
 
 Delegate to a subagent only **verbose-in / small-conclusion-out and independent**
-work: E2E runs (Phase 6), independent Phase 7 findings / Phase 8 CI jobs (Parallel
+work: the Phase 5 final validate run, E2E runs (Phase 6), independent Phase 7 findings / Phase 8 CI jobs (Parallel
 Dispatch), the pre-push review.
 
 Keep in the main agent: **reading the ticket / wiki / linked docs** (the spec is

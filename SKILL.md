@@ -316,10 +316,10 @@ plan is approved, stays relevant through Ship. Pointers:
 - **Model** — cheapest model that fits the step; state it when dispatching a
   subagent as `haiku` / `sonnet` / `opus` (omitted → inherits this session's,
   usually priciest). Unavailable → adjacent tier, then omit.
-- **Named agents** — `agents/n2i-e2e-runner` (haiku), `n2i-ci-triage` (sonnet),
+- **Named agents** — `agents/n2i-unit-runner` (haiku), `n2i-e2e-runner` (haiku), `n2i-ci-triage` (sonnet),
   `n2i-prepush-reviewer` (opus) pin model + tools; prefer them, fall back to
   `general-purpose` + explicit model if not installed (see `execution.md`).
-- **Delegate** only verbose-in / small-out / independent work: E2E runs (Phase 6),
+- **Delegate** only verbose-in / small-out / independent work: the Phase 5 final validate run, E2E runs (Phase 6),
   independent Phase 7 findings / Phase 8 CI jobs, the pre-push review. The spec,
   the ticket / MR-PR prose, and the Phase 4 TDD loop stay in the main agent.
 - **Ledger** — `.n2i-dev-cycle/progress.md`: one line per phase and per Phase 4

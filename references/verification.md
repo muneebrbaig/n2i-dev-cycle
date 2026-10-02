@@ -42,6 +42,7 @@ Commands are the .NET + Angular default — substitute `BACKEND_VALIDATE_CMD` /
 | Test-first was followed | the ledger shows the RED failure line before the GREEN commit for each logic unit | "I wrote tests for it" |
 | Requirements met | line-by-line check against the ticket / plan | tests passing |
 | Subagent done | the VCS diff shows the change; for a propose-only agent (`n2i-ci-triage`), the cited `file:line` evidence for its root cause | the agent said "success" |
+| Unit tests / build pass (subagent-run) | the `n2i-unit-runner` report: each command line with its exit code, 0 failed | the agent's `RESULT: pass` line alone |
 | E2E specs pass (subagent-run) | the run output the agent returns — specs executed, 0 failed | the agent's summary sentence alone |
 
 ## Red Flags — Stop

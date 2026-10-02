@@ -5,7 +5,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 AGENTS = sorted((ROOT / "agents").glob("n2i-*.md"))
 MODELS = {"haiku", "sonnet", "opus"}
-READ_ONLY = {"n2i-prepush-reviewer", "n2i-ci-triage", "n2i-e2e-runner"}
+READ_ONLY = {"n2i-prepush-reviewer", "n2i-ci-triage", "n2i-e2e-runner", "n2i-unit-runner"}
 WRITE_TOOLS = {"Edit", "Write", "NotebookEdit"}
 
 
@@ -16,7 +16,7 @@ def frontmatter(path):
 
 
 class AgentFiles(unittest.TestCase):
-    def test_three_agents_exist(self):
+    def test_expected_agents_exist(self):
         self.assertEqual({p.stem for p in AGENTS}, READ_ONLY)
 
     def test_frontmatter_valid(self):

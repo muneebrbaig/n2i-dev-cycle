@@ -4,7 +4,8 @@
 `references/verification.md` says: no "green" / "passing" / "done" without a
 fresh build or test run in the same turn. This hook is the enforcement fallback
 for that rule. When the final assistant turn claims success but no build/test
-command ran since the last user message, it blocks the stop and asks for the
+command ran since the last user message (a Bash run, or an `n2i-unit-runner`
+dispatch, whose run lives in the subagent's own transcript), it blocks the stop and asks for the
 evidence.
 
 Heuristic and opt-in. It only engages when the transcript mentions
@@ -59,6 +60,7 @@ def main():
 
     last_assistant_text = ""
     bash_since_user = []
+    unit_runner_dispatched = False
     for e in reversed(events):
         role = e.get("type")
         msg = e.get("message", {}) or {}
@@ -77,10 +79,16 @@ def main():
                     last_assistant_text = b.get("text", "")
                 if b.get("type") == "tool_use" and b.get("name") in ("Bash", "BashOutput"):
                     bash_since_user.append(json.dumps(b.get("input", {})))
+                if (
+                    b.get("type") == "tool_use"
+                    and b.get("name") in ("Agent", "Task")
+                    and (b.get("input") or {}).get("subagent_type") == "n2i-unit-runner"
+                ):
+                    unit_runner_dispatched = True
 
     if not last_assistant_text or not CLAIM.search(last_assistant_text):
         sys.exit(0)
-    if any(EVIDENCE.search(c) for c in bash_since_user):
+    if unit_runner_dispatched or any(EVIDENCE.search(c) for c in bash_since_user):
         sys.exit(0)
 
     print(
