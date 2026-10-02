@@ -41,7 +41,7 @@ Commands are the .NET + Angular default — substitute `BACKEND_VALIDATE_CMD` /
 | Regression test works | red-green verified — revert fix, test fails, restore, passes | test passes once |
 | Test-first was followed | the ledger shows the RED failure line before the GREEN commit for each logic unit | "I wrote tests for it" |
 | Requirements met | line-by-line check against the ticket / plan | tests passing |
-| Subagent done | the VCS diff shows the change | the agent said "success" |
+| Subagent done | the VCS diff shows the change; for a propose-only agent (`n2i-ci-triage`), the cited `file:line` evidence for its root cause | the agent said "success" |
 | E2E specs pass (subagent-run) | the run output the agent returns — specs executed, 0 failed | the agent's summary sentence alone |
 
 ## Red Flags — Stop
@@ -49,7 +49,7 @@ Commands are the .NET + Angular default — substitute `BACKEND_VALIDATE_CMD` /
 - "should", "probably", "seems to", "looks right"
 - "Great!" / "Perfect!" / "Done!" before running anything
 - About to commit / push / open an MR without a fresh run
-- Trusting a subagent's success report without checking the diff
+- Trusting a subagent's success report without checking the diff (or, for a propose-only agent, its cited `file:line` evidence)
 - Partial check → extrapolating to the whole
 - "Just this once" / "I'm confident" / "I'm tired"
 
@@ -58,5 +58,5 @@ Commands are the .NET + Angular default — substitute `BACKEND_VALIDATE_CMD` /
 - Claiming the suite is green off a run from before the last edit.
 - "Linter passed" as a stand-in for "build passed" — different tools.
 - Marking a phase complete on tests alone without checking requirements.
-- Accepting "success" from a dispatched agent without reading its diff.
+- Accepting "success" from a dispatched agent without reading its diff, or the cited evidence for a propose-only agent.
 - A GREEN commit with no preceding RED evidence in the ledger — tests-after reads identical.

@@ -1,6 +1,7 @@
 ---
 name: n2i-dev-cycle
-description: Full development lifecycle — ticket/prompt to shipped code. Handles planning, implementation, validation, feedback loops, and CI fixes across N2I projects. Invoke with a ticket number, prompt, or document reference.
+description: Runs the full N2I development lifecycle from ticket to shipped code: classify, plan, test-first implementation, validation, feedback fixes, MR/PR and CI. Use when the user gives a ticket number or link, a feature or bug prompt, or a spec document; sends "fix: ..." feedback on earlier work; or wants to discuss or brainstorm a change before building it.
+argument-hint: "[ticket | prompt | @doc | fix: details]"
 type: skill
 ---
 
@@ -11,6 +12,28 @@ Full-lifecycle development skill. 9 phases: Ingest/Classify/Align → Branch →
 Discipline layer (inline below, no separate files): classification gate, TDD,
 verification gate, systematic debugging, finishing, model selection, checkpoint
 ledger, improve loop.
+
+## Contents
+
+- Dynamic Context
+- Input Parsing
+- Scope Selection
+- Phase 1 — Ingest, Classify & Align
+- Phase 2 — Branch Management
+- Phase 3 — Plan & Approve
+- Phase 4 — Implement
+- Phase 5 — Validate
+- Phase 6 — Handover
+- Phase 7 — Feedback Loop
+- Phase 8 — Ship & CI
+- Phase 9 — Improve
+- Model Selection
+- Delegation & Context
+- Checkpoint Ledger
+- Discipline Red Flags — Stop
+- General Development Standards
+- Memory Integration
+- Project-Specific Overrides
 
 ## Dynamic Context
 
@@ -74,7 +97,16 @@ If no token: infer from detection —
 
 **Hard gate:** no branch, no plan, no code, no scaffold until the user approves
 the intent — the ticket draft (discussion mode) or the restated spec (spec'd mode).
-Ceremony scales with the task; the gate never does.
+Ceremony scales with the task; the gate never does: a one-line change gets a
+two-bullet design in chat, then approval. "Just do it", "quick one-liner", or
+"it's trivial" is not approval of the intent — state the class and the restated
+change, then wait.
+
+**First line of your Phase 1 reply, before anything else, in every mode:**
+`Class: spike | bounded | architectural — <one-line reason>`. Spike = a feasibility
+question ("can we…", "is X possible"); bounded = a change to something that already
+exists (a rename, a field, one endpoint, a fix); architectural = a new subsystem or an
+interface others depend on.
 
 1. **Detect project** from dynamic context. Read project AGENTS.md/claude.md and `.n2i-dev-cycle/notes.md` if present. If migration doc configured, read it (plus `docs/phase3-porting-guide.md` if present). If BACKEND=none and FRONTEND=none → ask for project context.
 
@@ -207,22 +239,29 @@ Order — each logic step RED→GREEN before the next:
 7. Frontend components — test-first where the project tests component behaviour
 8. Route + nav wiring
 
-**Save Qwen memory observation + append a ledger line** after each milestone. A
+**Append a ledger line** after each milestone. A
 test-first unit's ledger line carries the RED proof:
 `Phase 4: <unit> — RED <test> failed "<reason>" → GREEN (<commit>)`.
 
 If something breaks — STOP, reassess, inform user, re-plan. No blind pushes.
 
-### Intra-phase checkpoints (mandatory)
+### Intra-phase checkpoints (scaled by class)
 
-After completing each logical unit, **stop and ask the user to review** before continuing. This keeps human reviewers and AI agents in sync — especially across machines and sessions.
+Every stop costs a user turn, so checkpoints scale with the Phase 1 class:
+
+- **Bounded:** no mid-phase stops. Append the ledger line per unit and keep going; the
+  Phase 6 handover is the review stop. One exception: pause before running or applying a
+  migration script, since that is hard to undo.
+- **Architectural:** stop after each unit below, to keep human reviewers and AI agents in
+  sync across machines and sessions.
+- **Either class:** the user can say "no checkpoints" or "checkpoint every unit". Record the
+  choice in the ledger and follow it for the rest of the cycle.
 
 | Checkpoint | After completing |
 |---|---|
 | Backend scaffold | Entity, DTOs, requests, config, migration, DI + wire-up, build clean |
 | Backend service + controller | Methods and endpoints built test-first, all tests green |
-| Frontend models + service | TypeScript interfaces/enums, service class, barrel exports |
-| Frontend components | List + form components built (test-first where applicable), routes swapped, sidebar/nav wired, `ng build` clean |
+| Frontend | Models, service, list + form components built (test-first where applicable), routes swapped, sidebar/nav wired, `ng build` clean |
 
 At each checkpoint, summarize what was built, **append the ledger line**, and ask: **"[Unit] done. Want to review before I continue?"** The user may review, request changes, push/commit, or say continue. **Never skip ahead silently.**
 
@@ -262,8 +301,12 @@ automatically where installed; this is the fallback.)
 
 ### Pre-push review
 
-Once green, before Phase 6: run a code review against the local diff
-(`git diff <base-branch>...HEAD`, per SCOPE) — a third-party review skill if
+Once green, before Phase 6, scale the review to the Phase 1 class. **Bounded** with a small
+diff (roughly under 100 changed lines) touching no tenant-isolation, auth, or migration code:
+skip it, note "review skipped: bounded, small diff" in the handover, run it only if the user
+asks. Otherwise run a code review against the local diff
+(`git diff <base-branch>...HEAD` plus uncommitted work via `git diff HEAD` and untracked
+files via `git status --porcelain`, per SCOPE) — a third-party review skill if
 available, else a manual pass. Reviewing here (before the MR exists) keeps a
 finding a clean amend instead of a fix-up commit in MR history, and avoids a CI
 run against a state you're about to patch. Also flag silent failures (errors
@@ -305,11 +348,15 @@ mandatory; a new spec is not always.**
   claim coverage.
 
 ### Memory
-- Save Qwen memory observation + a ledger line with key details.
+- Append a ledger line with key details.
 
 ---
 
 ## Phase 7 — Feedback Loop
+
+**Before touching any code:** read `.n2i-dev-cycle/progress.md` and
+`git log --oneline -10`, and resume from the ledger's first incomplete phase. **After
+each fix:** append a `Phase 7: <what was fixed> (RED → GREEN)` line to the ledger.
 
 **Systematic debugging (iron law): no fix without root-cause investigation first.**
 Symptom fixes are failure.
@@ -329,9 +376,12 @@ try fix #4.
 
 **Independent findings** (different subsystems, unrelated) → dispatch one agent
 per domain concurrently (one message), each scoped to its domain, "find root
-cause, don't just loosen asserts / bump timeouts", "don't touch other code",
-"return root cause + change". Not for findings that might share a cause. On
-return: read summaries, check diffs don't conflict, run the full suite.
+cause, don't just loosen asserts / bump timeouts", "stay inside this domain",
+"return root cause + proposed fix". Agents share one working tree, so they read
+logs and code only — no local builds or test runs; reproduce in the main agent.
+Not for findings that might share a cause. On return: read each root cause,
+check the proposed fixes don't overlap, apply each one test-first, run the full
+suite.
 
 If starting a new session with `"fix: [details]"`:
 - Read `.n2i-dev-cycle/progress.md` + recent `git log` — they outrank memory
@@ -445,7 +495,7 @@ Skip if not in a git repo.
 - "should pass" / "looks right" / "Great!" / "Done!" before running the command
 - Proposing a fix before tracing data flow; fix #4 after three failures
 - Claiming green off a run from before the last edit
-- Trusting a subagent "success" without reading its diff
+- Trusting a subagent "success" without reading its diff (propose-only agents: its cited `file:line` evidence)
 - Starting a branch/plan/code before the user approved the intent
 
 ## General Development Standards
@@ -753,16 +803,12 @@ Minimum per service: create happy path, create invalid (name + each FK), GetAll 
 
 ## Memory Integration
 
-Use Qwen's built-in memory system. Save observations at milestones:
+Use Qwen's built-in memory system. Save observations at these three milestones only (everything else is a ledger line):
 
 | Milestone | What to record |
 |---|---|
 | Plan approved | Key decisions, scope, approach |
-| Entity/feature implemented | What built, files created, key design choices, RED evidence (test + failure reason) per logic unit |
-| Validation pass | Build/test status, issues found and fixed |
-| Handover | Summary of changes, what to test |
-| Feedback received | User findings, issues reported |
-| Fix applied | What fixed and how |
+| Handover | Summary of changes, what to test, RED evidence (test + failure reason) per logic unit |
 | Shipped / CI green | Final status, branch pushed, CI result |
 
 Search Qwen memory at skill start to surface prior work on same ticket/feature.

@@ -3,6 +3,18 @@
 Baseline conventions for all N2I backend work. Project-specific `CLAUDE.md` overrides on conflict.
 Migrations: see `migrations.md`. Security: see `security.md`.
 
+## Contents
+
+- Entity Scaffold (7 files per entity)
+- Entity Rules
+- ModelConfiguration Rules
+- Service Patterns
+- Controller Pattern
+- Wire-Up (3 steps, every entity)
+- Unit Testing
+- C# Code Quality
+- Common Mistakes to Avoid
+
 ## Entity Scaffold (7 files per entity)
 
 ```

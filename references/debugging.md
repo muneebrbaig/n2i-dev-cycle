@@ -56,16 +56,22 @@ When there are **2+ genuinely independent failures** — different subsystems,
 unrelated test files, separate CI jobs with different root causes — dispatch one
 `Agent` per failure domain in a single message so they run concurrently.
 
-Each agent gets: one failure domain, the error text + failing names, "find the
-root cause, don't just increase timeouts / loosen asserts", "don't touch code
-outside this domain", "return root cause + what you changed".
+Use the `n2i-ci-triage` agent (root cause + proposed fix, no edits; fall back per
+`execution.md` if not installed) — the main agent applies the fixes, so parallel
+agents never edit the same files. Each agent gets: one failure domain, the error text + failing names, "find the
+root cause, don't just increase timeouts / loosen asserts", "stay inside this
+domain", "return root cause + proposed fix".
+
+Parallel agents share one working tree, so they read CI logs and code only; tell
+each agent not to build or run tests locally. Reproduce in the main agent, or
+dispatch a single agent and say it may reproduce.
 
 Do **not** parallel-dispatch when failures might share a cause (fixing one could
 fix the rest — investigate together first) or when you don't yet know what's
 broken.
 
-On return: read each summary, check the diffs don't conflict, run the **full**
-suite, spot-check.
+On return: read each root cause, check the proposed fixes don't overlap, apply
+each one test-first, then run the **full** suite and spot-check.
 
 ## Phase 7 orchestration (Feedback Loop)
 

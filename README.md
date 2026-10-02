@@ -15,14 +15,14 @@ clean finish, pattern capture):
 | **1. Ingest, Classify & Align** | Classifies the work (spike / bounded / architectural). No ticket yet → brainstorms a ticket draft for Product review and stops. Ticket already finalized → restates the spec, flags every gap or ambiguity, gets one approval. Searches memory; starts a checkpoint ledger; checks skill-state hygiene (`.n2i-dev-cycle/` gitignored, no secrets in `notes.md`). |
 | **2. Branch** | Suggests a branch name or lets you create your own, and offers an isolated git worktree for long or multi-session work. |
 | **3. Plan** | Structured implementation plan with concrete field lists, method signatures, and named test cases — no placeholders. Self-reviewed against the spec. Waits for your approval. |
-| **4. Implement** | Business logic is test-first (RED → GREEN → REFACTOR); scaffolding is exempt but exercised by the tests that follow. Intra-phase review checkpoints. The RED failure line is recorded in the ledger before each GREEN commit, so test-first order survives a session or machine switch. |
+| **4. Implement** | Business logic is test-first (RED → GREEN → REFACTOR); scaffolding is exempt but exercised by the tests that follow. Intra-phase review checkpoints (all of them for architectural work, none for bounded changes, adjustable on request). The RED failure line is recorded in the ledger before each GREEN commit, so test-first order survives a session or machine switch. |
 | **5. Validate** | Runs the project's format + build + test — `dotnet` / `ng` by default, or the `BACKEND_VALIDATE_CMD` / `FRONTEND_VALIDATE_CMD` config snippets on any other stack. Evidence-before-claims gate: no "green" without a fresh run in hand. Then a code review of the local diff (findings verified, not rubber-stamped; a real bug routes through the debugging + TDD refs) before anything gets pushed. |
 | **6. Handover** | Summarizes changes, lists what to test locally, notes limitations. Builds and runs affected e2e specs (in a subagent) against a dev or throwaway DB where possible. |
 | **7. Feedback** | Root-cause-first debugging (three failed fixes → question the design, not fix #4). Independent findings dispatched in parallel. Failing repro test before each fix. Re-validates. Repeatable. |
 | **8. Ship** | Full suite green → confirm base branch → push + MR → root-cause any CI failure → clean up local branch and worktree after merge. |
 | **9. Improve** | Distills 1–3 reusable patterns from the cycle into `.n2i-dev-cycle/instincts.md` (statement / trigger / confidence / stack scope), read back at Phase 1 of the next cycle. A plain file, so it works without memory tools. A pattern that recurs across cycles gets proposed as a one-line PR to the matching reference file. Archives the checkpoint ledger so the next ticket starts clean. |
 
-Cross-cutting mechanics — model selection (`haiku` for scaffolding, `sonnet` for logic and test design, `opus` for architecture / debugging / review, stepping to the adjacent tier when a model is unavailable), subagent delegation, the **checkpoint ledger** (`.n2i-dev-cycle/progress.md`, survives context compaction and cross-session re-entry), and memory milestones — live in `references/execution.md`, loaded once at Phase 1 so `SKILL.md` itself stays lean.
+Cross-cutting mechanics — model selection (`haiku` for scaffolding, `sonnet` for logic and test design, `opus` for architecture / debugging / review, stepping to the adjacent tier when a model is unavailable), subagent delegation, the **checkpoint ledger** (`.n2i-dev-cycle/progress.md`, survives context compaction and cross-session re-entry), and memory milestones — live in `references/execution.md`, loaded once the plan is approved so discussion and spike runs never pay for it and `SKILL.md` itself stays lean.
 
 ### Why review happens before push
 
@@ -32,9 +32,15 @@ commit stuck in the MR/PR's history for good. CI also only has to run once again
 you've already reviewed. `engineering:code-review` works straight off a `git diff`, no PR URL
 needed, so reviewing before the MR/PR exists costs nothing.
 
-If `engineering:code-review` isn't installed (or `caveman:caveman-review`, which compresses
-findings into the handover summary), the skill skips the step and keeps going. Same best-effort
-pattern the memory/`claude-mem` integration uses.
+The review scales with the change. A bounded change under roughly 100 changed lines that
+touches no tenant-isolation, auth, or migration code skips the prompt, and the handover notes
+it. Architectural changes, larger diffs, and anything touching those areas still ask, defaulting
+to yes.
+
+If `engineering:code-review` isn't installed, the skill dispatches the read-only
+`n2i-prepush-reviewer` agent instead; if that is missing too, it skips the step and keeps going
+(`caveman:caveman-review`, which compresses findings into the handover summary, is optional
+in the same way). Same best-effort pattern the memory/`claude-mem` integration uses.
 
 ### Session naming
 
@@ -60,7 +66,8 @@ a short conclusion, and the task is independent of the rest of the lifecycle:
 end-to-end runs in Phase 6 (the runner log can be hundreds of lines; what comes
 back is pass/fail per spec plus traces for the failures), independent findings in
 Phase 7, and separate failing CI jobs in Phase 8. The pre-push code review is
-already its own skill.
+already its own skill. Three named agents in `agents/` back these delegations and pin
+each one's model and tools (see [Subagents](#subagents)).
 
 Everything that carries the specification stays in the main agent on purpose:
 
@@ -114,6 +121,75 @@ Or install directly (without separate clone location):
 git clone https://github.com/muneebrbaig/n2i-dev-cycle.git ~/.claude/skills/n2i-dev-cycle
 ```
 
+### Subagents
+
+`agents/` holds three subagents that pin the model and tools for delegated work:
+
+- `n2i-e2e-runner` (haiku) — E2E runs
+- `n2i-ci-triage` (sonnet) — root cause for one failing CI job or failure domain
+- `n2i-prepush-reviewer` (opus) — read-only pre-push review
+
+None has Edit or Write. All three keep Bash (for git, test runners, CI CLIs), so
+"read-only" beyond that rests on each agent's instructions, not on a hard block.
+
+Claude Code doesn't read agents from inside a skill folder, so link them into
+`~/.claude/agents/` with the install script (the path below exists under both install
+options above):
+
+```bash
+~/.claude/skills/n2i-dev-cycle/scripts/install-agents.sh
+```
+
+It is safe to re-run. It links each `agents/n2i-*.md` and removes links whose target no
+longer exists.
+
+Without them the skill still works: it falls back to the `general-purpose` agent with
+an explicit model. Restart Claude Code after linking, since agents load at session start.
+
+### Updating
+
+Pull the new release, then re-run the install script, because a release can add agents and
+only the script links them:
+
+```bash
+git -C ~/.claude/skills/n2i-dev-cycle pull
+~/.claude/skills/n2i-dev-cycle/scripts/install-agents.sh
+```
+
+Agents you already linked update on their own, since the links point at the repo files. If
+you installed the hooks, check `hooks/settings.snippet.json` for new entries to merge and
+read the release's "Upgrading" notes in `CHANGELOG.md`. The skill also checks at the start of
+every run and tells you once if an agent isn't linked. It never updates itself or links
+anything without asking.
+
+### Choosing a session model
+
+The session model drives how reliably the skill's gates hold. In our evals, Opus followed
+the approval gate, the class line and the ledger resume consistently. Sonnet followed
+them most of the time but skipped steps more often, at roughly half the cost per turn.
+A practical split: run Phases 1–3 (classify, align, plan) on Opus or in plan mode, then
+switch to Sonnet for implementation with `/model`. Subagents already pin their own models,
+so the switch only affects the main session.
+
+One bounded ticket (add a range check to a function) run end to end, three turns each:
+
+| Check | Sonnet | Opus |
+|---|---|---|
+| `Class:` line first, approval before code | Yes | Yes |
+| Test-first (RED before GREEN) | Yes | Yes |
+| No mid-phase stops (bounded change) | Yes | Yes |
+| Phase 2 branch | No, stayed on `main` | Yes |
+| Separate Phase 3 plan approval | No, merged into the first gate | Yes |
+| Ledger (`progress.md`) | Not written | Complete, with RED evidence |
+| Pre-push review skipped for a small bounded change | Not shown | Yes |
+| Phase 6 handover | Condensed | Full |
+| Cost for the three turns | about $0.70 | about $1.30 |
+
+Sonnet gets the code and tests right and holds the approval gate, but it compresses the
+surrounding process. If you rely on the ledger or the branch step, use Opus for
+orchestration. These are single runs on one fixture, so read them as a pattern, not a
+benchmark.
+
 ### Verify
 
 Start Claude Code and check the skill is listed:
@@ -121,6 +197,7 @@ Start Claude Code and check the skill is listed:
 ```
 claude
 # Type /n2i-dev-cycle — should appear in skill suggestions
+# Type /agents — n2i-e2e-runner, n2i-ci-triage, n2i-prepush-reviewer should be listed
 ```
 
 ### Companion hooks (optional)
@@ -139,7 +216,8 @@ the matching `hooks` arrays rather than replacing what's there. Paths in the
 snippet assume the skill lives at `~/.claude/skills/n2i-dev-cycle`.
 
 After changing a hook, run its tests (standard library only, nothing to install):
-`python3 -m unittest discover -s hooks/tests`. The skill never loads these files.
+`python3 -m unittest discover -s hooks/tests`. The agent files have their own
+structural test: `python3 -m unittest discover -s tests`. The skill never loads these files.
 
 For build/test **output** trimming (a separate concern), use `rtk` or the
 `PreToolUse` filter in
@@ -269,8 +347,8 @@ memory, and handover summaries. A warning, never a block.
 always-on phases (1 Ingest, 2 Branch). Every phase's actual procedure lives in a
 reference it names and loads only when that phase runs, so a discussion- or
 planning-only invocation never pulls in the build, ship, or improve machinery.
-`references/execution.md` is the one always-on reference — loaded at Phase 1, kept
-through Ship — holding the cross-cutting bits (model selection, delegation, ledger,
+`references/execution.md` is the one always-on reference — loaded once the Phase 3 plan is
+approved, kept through Ship, so discussion and spike runs never pay for it — holding the cross-cutting bits (model selection, delegation, ledger,
 memory milestones).
 
 **Lifecycle procedure** — one reference per phase (or phase group):
@@ -294,6 +372,13 @@ memory milestones).
 - **`references/migrations.md`** — DbUp, Postgres (default) + SQL Server (`DB_ENGINE=sqlserver`) dialects, naming rules
 - **`references/frontend-standards.md`** — Angular service/component patterns, cascading dropdowns, mobile-first UI, PrimeNG conventions, browser checks for UI verification
 
+**Beyond the references** — files the skill never loads, for people maintaining it:
+
+- **`agents/`** — three subagent definitions (`n2i-e2e-runner`, `n2i-ci-triage`, `n2i-prepush-reviewer`); link them into `~/.claude/agents/` (see Installation)
+- **`scripts/install-agents.sh`** — links the agents into `~/.claude/agents/`; re-run after each pull
+- **`tests/`** — structural tests for the agents, the install script and startup check, doc references, and Contents lists: `python3 -m unittest discover -s tests`
+- **`evals/scenarios.md`** — behavior scenarios with pass/fail checklists, for checking the skill on different models
+
 The standards and discipline references each end with a scoped "Common Mistakes to Avoid"
 list. Project-specific `CLAUDE.md` instructions override on conflict. A repo that keeps its own conventions (often in
 `backend/CLAUDE.md` etc.) points the `BACKEND_STANDARDS` / `FRONTEND_STANDARDS` /
@@ -309,7 +394,7 @@ Both variants share the same lifecycle and coding standards. Copy the appropriat
 The skill integrates with [claude-mem](https://github.com/anthropics/claude-mem) (if available) to:
 
 - **Search** prior work on the same ticket/feature at the start of each cycle
-- **Record** observations at key milestones (plan approved, implementation done, validation pass, shipped)
+- **Record** observations at key milestones (plan approved, handover, shipped; everything else goes to the ledger)
 - **Resume** across sessions. Start a new session with `"fix: ..."` and memory fills in prior context
 - **Learn** — Phase 9 distills reusable patterns into `.n2i-dev-cycle/instincts.md`, surfaced (stack-filtered) at Phase 1 of later cycles; a recurring one gets proposed as a PR to the matching reference file
 

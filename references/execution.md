@@ -1,7 +1,7 @@
 # Execution Mechanics
 
 Cross-cutting machinery for every phase: model selection, subagent delegation,
-the checkpoint ledger, memory integration. Load once at Phase 1 step 8 — it stays
+the checkpoint ledger, memory integration. Load once after the Phase 3 plan is approved — it stays
 relevant through Ship. `SKILL.md` carries only the one-line pointers; the detail is here.
 
 ## Model Selection
@@ -22,6 +22,22 @@ fails, dispatch with `model` omitted so it inherits this session's. Say which
 model actually ran in the dispatch note. A rate-limit or overload error is not
 unavailability: retry the same model rather than changing tiers.
 
+### Named agents
+
+The repo ships three subagents in `agents/` that pin the model and tools for the
+delegations below. Prefer them by name (`subagent_type`):
+
+| Agent | Model | Used for |
+|---|---|---|
+| `n2i-e2e-runner` | `haiku` | Phase 6 E2E runs |
+| `n2i-ci-triage` | `sonnet` | Phase 7/8 root cause for one independent failure domain (no edits) |
+| `n2i-prepush-reviewer` | `opus` | Phase 5 pre-push review when `engineering:code-review` is unavailable |
+
+If a named agent isn't installed (dispatch rejects the name), fall back to the
+`general-purpose` agent with the `model` from the table above and the same
+instructions inline, and say so in the dispatch note. The unavailable-model rule
+above still applies.
+
 ## Delegation & Context
 
 Delegate to a subagent only work that is **verbose-in / small-conclusion-out and
@@ -29,9 +45,9 @@ independent**:
 
 | Delegate | Why |
 |---|---|
-| E2E runs (Phase 6) | slow, huge log, result is pass/fail + failure traces |
-| Independent Phase 7 findings / Phase 8 CI jobs (`debugging.md` → Parallel Dispatch) | separate root causes, run concurrently |
-| Pre-push code review (Phase 5) | already its own skill |
+| E2E runs (Phase 6) — `n2i-e2e-runner` | slow, huge log, result is pass/fail + failure traces |
+| Independent Phase 7 findings / Phase 8 CI jobs (`debugging.md` → Parallel Dispatch) — `n2i-ci-triage` | separate root causes, run concurrently |
+| Pre-push code review (Phase 5) — `engineering:code-review`, else `n2i-prepush-reviewer` | already its own skill |
 
 **Keep in the main agent** — do not hand off:
 
@@ -63,7 +79,7 @@ in a git repo.
 - Phase 4 test-first units record the RED failure line before the GREEN commit
   (`references/tdd.md`) — the ledger is where test-first order is proven across
   sessions and machines.
-- On skill start (Phase 1 step 8): if the first line matches the current ticket,
+- On skill start (Phase 1 step 8, ledger rules summarized there): if the first line matches the current ticket,
   resume at the first incomplete phase instead of restarting. If it names a
   *different* ticket whose last line shows shipped/merged, move it to
   `.n2i-dev-cycle/archive/progress.<slug>.md` and start fresh — don't "resume" a done cycle.
@@ -78,16 +94,14 @@ in a git repo.
 > the lifecycle on them. The `.n2i-dev-cycle/progress.md` ledger is the durable fallback:
 > it is plain git-tracked-adjacent text and does not depend on any MCP tool.
 
-Record observations at these milestones using `observation_add`:
+Record observations at these three milestones using `observation_add`. Every other
+milestone (units done, validation, feedback, fixes) is a ledger line only — the ledger
+already holds it.
 
 | Milestone | Type | What to record |
 |---|---|---|
 | Plan approved | `⚖` (decision) | Key decisions, scope, approach chosen |
-| Entity/feature implemented | `◆` (feature) | What was built, files created, key design choices, RED evidence (test + failure reason) per logic unit |
-| Validation pass | `○` (discovery) | Build/test status, any issues found and fixed |
-| Handover | `✓` (change) | Summary of all changes, what to test |
-| Feedback received | `○` (discovery) | User findings, issues reported |
-| Fix applied | `●` (bugfix) | What was fixed and how |
+| Handover | `✓` (change) | Summary of all changes, what to test, RED evidence (test + failure reason) per logic unit |
 | Shipped / CI green | `✓` (change) | Final status, branch pushed, CI result |
 
 Also search memory at skill start (`observation_search`, `memory_search`) to surface prior work on same ticket/feature.

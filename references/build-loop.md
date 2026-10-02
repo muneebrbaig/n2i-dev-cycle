@@ -7,6 +7,19 @@ written. A discussion / planning-only invocation never loads this.
 Discipline refs still load per phase: `tdd.md` at Phase 4, `verification.md` at
 Phase 5.
 
+## Contents
+
+- Phase 4 — Implement
+  - Intra-phase checkpoints (scaled by class)
+- Phase 5 — Validate
+  - Pre-push review
+- Phase 6 — Handover
+  - What Changed
+  - What to Test Locally
+  - Known Limitations
+  - E2E Coverage
+  - Memory
+
 ---
 
 ## Phase 4 — Implement
@@ -30,23 +43,30 @@ RED→GREEN before the next:
 7. **Frontend components** — test-first where the project tests component behaviour
 8. **Route + nav wiring**
 
-**Record memory observation** and **append a ledger line** after each major
+**Append a ledger line** after each major
 milestone (entity done, service+tests green, frontend done, etc.). For a
 test-first unit the ledger line carries the RED proof:
 `Phase 4: <unit> — RED <test> failed "<reason>" → GREEN (<commit>)`.
 
 If something goes sideways mid-implementation — STOP, reassess, inform user, re-plan if needed. Don't push through blindly.
 
-### Intra-phase checkpoints (mandatory)
+### Intra-phase checkpoints (scaled by class)
 
-After completing each logical unit, **stop and ask the user to review** before continuing. This keeps human reviewers and AI agents in sync — especially across machines and sessions.
+Every stop costs a user turn, so checkpoints scale with the Phase 1 class:
+
+- **Bounded:** no mid-phase stops. Append the ledger line per unit and keep going; the
+  Phase 6 handover is the review stop. One exception: pause before running or applying a
+  migration script, since that is hard to undo.
+- **Architectural:** stop after each unit below, to keep human reviewers and AI agents in
+  sync across machines and sessions.
+- **Either class:** the user can say "no checkpoints" or "checkpoint every unit". Record the
+  choice in the ledger and follow it for the rest of the cycle.
 
 | Checkpoint | After completing |
 |---|---|
 | Backend scaffold | Entity, DTOs, requests, config, migration, DI + wire-up, build clean |
 | Backend service + controller | Methods and endpoints built test-first, all tests green |
-| Frontend models + service | TypeScript interfaces/enums, service class, barrel exports |
-| Frontend components | List + form components built (test-first where applicable), routes swapped, sidebar/nav wired, `ng build` clean |
+| Frontend | Models, service, list + form components built (test-first where applicable), routes swapped, sidebar/nav wired, `ng build` clean |
 
 At each checkpoint, summarize what was built, **append the ledger line**, and ask: **"[Unit] done. Want to review before I continue?"** The user may review, request changes, push/commit, or say continue. **Never skip ahead silently.**
 
@@ -92,15 +112,21 @@ If validation fails:
 
 ### Pre-push review
 
-Once green, before Phase 6: ask user "Run engineering:code-review on this diff before pushing?"
-Default yes if unsure. Reviewing here — against the local diff, before an MR/PR exists — catches
+Once green, before Phase 6, scale the review to the Phase 1 class. **Bounded** with a small
+diff (roughly under 100 changed lines) that touches no tenant-isolation, auth, or migration
+code: skip the prompt, note "review skipped: bounded, small diff" in the handover, and run it
+only if the user asks. **Architectural**, a larger diff, or anything touching those areas: ask
+user "Run engineering:code-review on this diff before pushing?" Default yes if unsure. Reviewing here — against the local diff, before an MR/PR exists — catches
 scope-creep and correctness issues while they're still a `git commit --amend` or a clean follow-up
 commit away, instead of a fix-up commit sitting permanently in MR history after the fact. It also
 skips triggering a CI run against a state you already know you're about to patch.
 
-- If `engineering:code-review` isn't in the available-skills list this session, say so and skip
-  silently — don't block the lifecycle. Offer a manual review pass instead if the user still wants one.
-- If accepted and available, invoke it against the diff: `git diff <base-branch>...HEAD` (backend
+- If `engineering:code-review` isn't in the available-skills list this session, say so and
+  dispatch the `n2i-prepush-reviewer` subagent instead (read-only, `opus`; hand it the base
+  branch and the ticket/spec). If that agent isn't installed either, skip silently — don't block
+  the lifecycle — and offer a manual review pass if the user still wants one.
+- If accepted and available, invoke it against the diff: `git diff <base-branch>...HEAD` plus any
+  uncommitted work (`git diff HEAD`) and untracked files (`git status --porcelain`) (backend
   and/or frontend paths per SCOPE), not a PR URL — no MR/PR exists yet at this point.
   Ask it to also flag silent failures (errors swallowed or turned into defaults) and tests
   that can't go red (`references/tdd.md`).
@@ -143,11 +169,12 @@ new spec is not always.**
 - A touched flow with **no** spec → build one now (test-first applies), unless
   it's a minor change and the user agrees a spec isn't warranted — record that
   call in the handover.
-- Run the affected specs before Phase 8 **via a subagent** — hand it the minimum:
+- Run the affected specs before Phase 8 **via the `n2i-e2e-runner` subagent** — hand it the minimum:
   the spec paths to run, `E2E_CMD` (or the detected runner), the DB target (dev, or
   a fresh throwaway DB where the project supports one). It returns pass/fail per
   spec plus the failure trace for failures only — the full runner log stays out of
-  the main context. State the model on dispatch (see `references/execution.md`). Where a
+  the main context. The agent pins `haiku`; if it isn't installed, fall back per
+  `references/execution.md` (named agents). Where a
   real run isn't possible, say so rather than claiming coverage. Per
   `verification.md`: a passing report is not evidence — confirm against the run
   output the agent returns.

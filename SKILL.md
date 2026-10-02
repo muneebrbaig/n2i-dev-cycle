@@ -1,6 +1,7 @@
 ---
 name: n2i-dev-cycle
-description: Full development lifecycle — ticket/prompt to shipped code. Handles planning, implementation, validation, feedback loops, and CI fixes across N2I projects. Invoke with a ticket number, prompt, or document reference.
+description: Runs the full N2I development lifecycle from ticket to shipped code: classify, plan, test-first implementation, validation, feedback fixes, MR/PR and CI. Use when the user gives a ticket number or link, a feature or bug prompt, or a spec document; sends "fix: ..." feedback on earlier work; or wants to discuss or brainstorm a change before building it.
+argument-hint: "[ticket | prompt | @doc | fix: details]"
 allowed-tools: Bash, Read, Edit, Write, Agent, Grep, Glob, mcp__plugin_claude-mem_mcp-search__observation_add, mcp__plugin_claude-mem_mcp-search__observation_search, mcp__plugin_claude-mem_mcp-search__memory_search, mcp__ccd_session_mgmt__set_session_title
 ---
 
@@ -11,6 +12,22 @@ Full-lifecycle development skill. 9 phases: Ingest/Classify/Align → Branch →
 Start every discussion, ticket, or fix with this skill — Phase 1 classifies the
 work and decides how much process it needs, so brainstorming a topic and shipping
 a finalized ticket both enter here.
+
+## Contents
+
+- Dynamic Context
+- Input Parsing
+- Scope Selection
+- Phase 1 — Ingest, Classify & Align
+- Phase 2 — Branch Management
+- Phase 3 — Plan & Approve
+- Phases 4–6 — Implement · Validate · Handover
+- Phase 7 — Feedback Loop
+- Phase 8 — Ship & CI
+- Phase 9 — Improve
+- Cross-Cutting Mechanics
+- General Development Standards
+- Project-Specific Overrides
 
 ## Dynamic Context
 
@@ -23,6 +40,7 @@ a finalized ticket both enter here.
 - Migration docs: !`c=$(find . -maxdepth 3 -path '*/.n2i-dev-cycle/config' 2>/dev/null | head -1); [ -n "$c" ] && . "$c" 2>/dev/null; if [ -n "${MIGRATION_DOC:-}" ]; then d=$(find . -maxdepth 3 -name "$MIGRATION_DOC" 2>/dev/null | head -1); [ -n "$d" ] && echo "MIGRATION_DOCS=$d" || echo "MIGRATION_DOCS=none"; else echo "MIGRATION_DOCS=none"; fi`
 - Config: !`f=$(find . -maxdepth 3 -path '*/.n2i-dev-cycle/config' -not -path '*/node_modules/*' 2>/dev/null | head -1); if [ -n "$f" ]; then . "$f" 2>/dev/null; echo "CONFIG=$f; BRANCH_PREFIX=${BRANCH_PREFIX:-unset}; DEFAULT_SCOPE=${DEFAULT_SCOPE:-unset}; FORGE_OVERRIDE=${FORGE:-unset}; BACKEND_VALIDATE_CMD=${BACKEND_VALIDATE_CMD:+set}; FRONTEND_VALIDATE_CMD=${FRONTEND_VALIDATE_CMD:+set}; E2E_CMD=${E2E_CMD:+set}; BACKEND_STANDARDS=${BACKEND_STANDARDS:-unset}; FRONTEND_STANDARDS=${FRONTEND_STANDARDS:-unset}; MIGRATION_STANDARDS=${MIGRATION_STANDARDS:-unset}"; else echo "CONFIG=none (see n2i-dev-cycle.config.example)"; fi`
 - E2E: !`E2ECFG=$(find . -maxdepth 3 \( -name 'playwright.config.*' -o -name 'cypress.config.*' \) -not -path '*/node_modules/*' 2>/dev/null | head -1); if [ -n "$E2ECFG" ]; then echo "E2E=$(dirname "$E2ECFG")"; else E2EDIR=$(find . -maxdepth 3 -type d \( -name 'e2e' -o -path '*/tests/e2e' \) -not -path '*/node_modules/*' 2>/dev/null | head -1); [ -n "$E2EDIR" ] && echo "E2E=$E2EDIR" || echo "E2E=none"; fi`
+- Agents: !`D="$HOME/.claude/agents"; M=""; for f in "$HOME"/.claude/skills/n2i-dev-cycle/agents/n2i-*.md; do [ -e "$f" ] || continue; [ -e "$D/$(basename "$f")" ] || M="$M $(basename "$f" .md)"; done; if [ -z "$M" ]; then echo "AGENTS=ok"; else echo "AGENTS=missing:$M"; fi`
 
 > **Note:** values above are *detected context*, not exported shell variables. In later
 > Bash steps, substitute the literal detected path/value (or re-`source` the config file
@@ -85,9 +103,20 @@ the hard gate, and both entry flows.
 
 **Hard gate:** no branch, no plan, no code, no scaffold until the user approves
 the intent — the ticket draft (discussion mode) or the restated spec (spec'd
-mode).
+mode). The gate never scales down: a one-line change gets a two-bullet design in
+chat, then approval. "Just do it", "quick one-liner", or "it's trivial" is not
+approval of the intent — state the class and the restated change, then wait.
 
-1. **Detect project** from dynamic context above. Read project CLAUDE.md if present
+**First line of your Phase 1 reply, before anything else, in every mode:**
+`Class: spike | bounded | architectural — <one-line reason>`. Spike = a feasibility
+question ("can we…", "is X possible"); bounded = a change to something that already
+exists (a rename, a field, one endpoint, a fix); architectural = a new subsystem or an
+interface others depend on.
+
+1. **Detect project** from dynamic context above. If `AGENTS=missing:` lists agents, tell
+   the user once: "n2i agents aren't linked (<names>); run
+   `~/.claude/skills/n2i-dev-cycle/scripts/install-agents.sh` to enable them. Until then
+   the skill falls back to `general-purpose`." Don't run it unasked — it writes to `~/.claude`. Read project CLAUDE.md if present
    (try `CLAUDE.md`, then `claude.md` in repo root), and `.n2i-dev-cycle/notes.md` if
    present. If `MIGRATION_DOCS` found, read it (plus `docs/phase3-porting-guide.md` if
    present). If BACKEND=none and FRONTEND=none → ask user for project context.
@@ -151,14 +180,16 @@ mode).
      gate** — restate in 3-5 bullets (what changes, entities/features/endpoints,
      `DB_ENGINE`, prior memory), then list every gap / contradiction / ambiguity
      you actually see. Do not re-brainstorm a finalized spec. Get one explicit
-     approval, then Phase 2.
+     approval, then write the ledger's first line (`# <ticket-or-slug> — <one-line goal>`
+     in `.n2i-dev-cycle/progress.md`) and append one `Phase N: <what landed>` line per
+     phase from here on. If this approval also covers the plan (a bounded change), write it
+     at that approval. Then Phase 2.
 
 7. **Set session title** via `set_session_title`: `<ticket-number>: <short desc>`
    (e.g. `17: add user name to invoice PDF`). Skip silently if the tool is unavailable.
 
-8. **Load `references/execution.md`** (model selection, delegation, checkpoint
-   ledger, memory milestones — stays relevant through Ship). **Start / resume the
-   checkpoint ledger:** if `.n2i-dev-cycle/progress.md` already names this ticket,
+8. **Resume the checkpoint ledger** (`references/execution.md` loads after the
+   Phase 3 plan is approved): if `.n2i-dev-cycle/progress.md` already names this ticket,
    read it and resume at the first incomplete phase instead of restarting. If it
    names a *different* ticket whose last line shows shipped/merged, move it to
    `.n2i-dev-cycle/archive/progress.<slug>.md` and start a fresh ledger.
@@ -215,6 +246,10 @@ estimate, and a self-review against the spec before you present it.
 
 **Wait for user approval before proceeding.** User may refine, add, or remove items.
 
+**After approval, append `Phase 3: plan approved` to the ledger** (writing its first line
+now if Phase 1 hasn't). Then load `references/execution.md` (model selection, delegation,
+ledger format, memory milestones — stays relevant through Ship).
+
 ---
 
 ## Phases 4–6 — Implement · Validate · Handover
@@ -226,12 +261,19 @@ validate commands + noise handling + pre-push review, and the handover summary
 refs still load per phase: `references/tdd.md` at Phase 4, `references/verification.md`
 at Phase 5.
 
+**Every build cycle ends with the Phase 6 handover** — What Changed / What to Test
+Locally / Known Limitations — never just "done".
+
 Nothing in Phases 4–6 runs until the Phase 3 plan is approved — a discussion- or
 planning-only invocation never loads `build-loop.md`.
 
 ---
 
 ## Phase 7 — Feedback Loop
+
+**Before touching any code:** read `.n2i-dev-cycle/progress.md` and
+`git log --oneline -10`, and resume from the ledger's first incomplete phase. **After
+each fix:** append a `Phase 7: <what was fixed> (RED → GREEN)` line to the ledger.
 
 **Load `references/debugging.md`.** No fix without root-cause investigation first;
 symptom fixes are failure. Its "Phase 7 orchestration" section holds the per-finding
@@ -268,12 +310,15 @@ memory tools are connected.
 ## Cross-Cutting Mechanics
 
 Model selection, subagent delegation, the checkpoint ledger, and memory
-integration live in **`references/execution.md`** — loaded once at Phase 1 step 8,
-stays relevant through Ship. Pointers:
+integration live in **`references/execution.md`** — loaded once after the Phase 3
+plan is approved, stays relevant through Ship. Pointers:
 
 - **Model** — cheapest model that fits the step; state it when dispatching a
   subagent as `haiku` / `sonnet` / `opus` (omitted → inherits this session's,
   usually priciest). Unavailable → adjacent tier, then omit.
+- **Named agents** — `agents/n2i-e2e-runner` (haiku), `n2i-ci-triage` (sonnet),
+  `n2i-prepush-reviewer` (opus) pin model + tools; prefer them, fall back to
+  `general-purpose` + explicit model if not installed (see `execution.md`).
 - **Delegate** only verbose-in / small-out / independent work: E2E runs (Phase 6),
   independent Phase 7 findings / Phase 8 CI jobs, the pre-push review. The spec,
   the ticket / MR-PR prose, and the Phase 4 TDD loop stay in the main agent.
@@ -281,7 +326,7 @@ stays relevant through Ship. Pointers:
   checkpoint as it lands (test-first units record the RED line before the GREEN
   commit). On skill start, resume at the first incomplete phase. After compaction,
   it and `git log` outrank recollection.
-- **Memory** — best-effort claude-mem observations at milestones + an
+- **Memory** — best-effort claude-mem observations at plan approved, handover, and ship + an
   `observation_search` / `memory_search` at skill start. Skip silently if the
   tools are unavailable; the ledger is the durable fallback.
 
@@ -310,7 +355,7 @@ The standards and discipline references each end with a scoped "Common Mistakes 
 list, so a frontend-only ticket never loads backend/security/migration gotchas.
 
 `references/execution.md` is the exception to lazy-loading — it loads once at
-Phase 1 step 8 and stays through Ship (see Cross-Cutting Mechanics above).
+plan approval (end of Phase 3) and stays through Ship (see Cross-Cutting Mechanics above).
 
 ---
 
