@@ -1,5 +1,82 @@
 # Changelog
 
+## 1.7.0 (2026-10-02)
+
+The skill now ships three named subagents that pin the model and tools for
+delegated work. Its approval gate holds against "just do it", and runs that stop
+early load less.
+
+### Added
+- **Named subagents in `agents/`.** `n2i-e2e-runner` (haiku) runs E2E specs and
+  returns a short pass/fail report. `n2i-ci-triage` (sonnet) finds the root
+  cause of one failure domain and proposes a fix without editing. `n2i-prepush-reviewer`
+  (opus) reviews the diff read-only. None has Edit or Write. If an agent isn't
+  installed, the skill falls back to `general-purpose` with an explicit model.
+  Claude Code doesn't read agents from inside a skill folder, so the README now
+  has a link step for `~/.claude/agents/`.
+- **Structural tests in `tests/`.** They check each agent's frontmatter and
+  model, that no agent can edit files, that every `n2i-*` name and model in the
+  docs matches a real agent, and that each Contents list matches its file's
+  headings. Run with `python3 -m unittest discover -s tests`.
+- **Behavior scenarios in `evals/scenarios.md`.** Nine scenarios with pass/fail
+  checklists for the gate, classification, `fix:` resume, shipping on a red
+  suite, scope selection, and delegation.
+- **Contents lists** at the top of `SKILL.md`, `SKILL.qwen.md`, `build-loop.md`,
+  and `backend-standards.md`.
+- **`scripts/install-agents.sh`.** Links every `agents/n2i-*.md` into
+  `~/.claude/agents/` and removes links whose target is gone. Safe to re-run.
+- **Start-of-run agent check.** Dynamic Context reports `AGENTS=ok` or
+  `AGENTS=missing:<names>`. When agents aren't linked, Phase 1 tells the user once
+  and points at the install script. It never links anything unasked.
+- **README sections** for installing and updating the agents and for choosing a
+  session model (Opus or plan mode for Phases 1–3, Sonnet for implementation),
+  with an Opus-versus-Sonnet comparison from one bounded ticket.
+
+### Changed
+- **The approval gate no longer bends to "just do it".** In our evals, Sonnet and
+  Opus both skipped the gate and edited on that phrase, because the "too simple"
+  rule lived in a reference neither loaded. `SKILL.md` now says the gate never
+  scales down: a one-line change gets a two-bullet design in chat, then approval.
+- **Phase 1 replies start with `Class: spike | bounded | architectural`**, with a
+  one-line definition of each, so the class is stated even when the
+  brainstorming reference isn't loaded.
+- **Phase 7 starts by reading `progress.md` and `git log`**, and appends a
+  `Phase 7:` ledger line after each fix. Both used to live only in `debugging.md`,
+  which Sonnet often skipped.
+- **Phase 5 review scales with the class.** A bounded change under about 100
+  changed lines that touches no tenant-isolation, auth, or migration code skips
+  the prompt. Anything larger or riskier still asks, defaulting to yes. The
+  review also covers uncommitted and untracked work, and falls back to
+  `n2i-prepush-reviewer` when `engineering:code-review` isn't installed.
+- **Phase 4 checkpoints scale with the class.** Bounded changes run without
+  mid-phase stops and pause only before a migration. Architectural work keeps
+  its stops, now three instead of four. The user can say "no checkpoints" or
+  "checkpoint every unit".
+- **Memory observations drop from seven milestones to three:** plan approved,
+  handover, and shipped. Everything else is a ledger line.
+- **`execution.md` loads after the plan is approved**, not at Phase 1, so
+  discussion, spike, and gate-only runs skip about 1.5k tokens.
+- **Parallel triage is propose-only.** Parallel agents read logs and code, never
+  build or run tests in the shared working tree, and the main agent applies each
+  fix test-first. The verification gate accepts a propose-only agent's cited
+  `file:line` evidence in place of a diff.
+- **New skill description and `argument-hint`.** The description now says when
+  to use the skill, with trigger phrases.
+
+### Upgrading from 1.6.x
+- Run `scripts/install-agents.sh` once after pulling. Releases that add agents
+  need it, because Claude Code reads agents only from `~/.claude/agents/`. Without
+  it the skill still works and falls back to `general-purpose`, and it tells you
+  at the start of a run.
+- `hooks/` is unchanged in this release.
+
+### Known limits
+- **Sonnet compresses bounded runs.** In our end-to-end check of a bounded ticket,
+  Sonnet held the approval gate and wrote test-first code, but it did not write
+  the ledger, create a branch, or load `build-loop.md`, even after the ledger
+  instruction moved to the first approval. Opus ran every phase. Use Opus for
+  orchestration if you rely on the ledger or the branch step.
+
 ## 1.6.4 (2026-09-28)
 
 The frontend standards now cover how to drive the browser when verifying a UI
