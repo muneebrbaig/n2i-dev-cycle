@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.9.0 (2026-10-03)
 
 ### Added
 - **Project bundling.** `PROJECT-INSTALL.md` explains how to carry the skill inside a
