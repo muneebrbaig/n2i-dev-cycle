@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.9.1 (2026-10-03)
 
 ### Fixed
 - **Migration prompt in `PROJECT-INSTALL.md`.** It no longer runs a plain `git pull` on a
