@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- **Migration prompt in `PROJECT-INSTALL.md`.** It no longer runs a plain `git pull` on a
+  feature branch, which pulls that branch's upstream and never delivers the change; it
+  pulls only on `master` and otherwise asks before merging. A failed `git log @{u}..` check
+  on a personal clone (for example no upstream) now counts as unsaved work instead of
+  clean. The submodule check accepts the `+` prefix that a moved pointer produces.
+
 ## 1.9.0 (2026-10-03)
 
 ### Added

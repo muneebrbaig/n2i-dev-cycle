@@ -134,6 +134,19 @@ class ProjectInstallDocs(unittest.TestCase):
         self.assertIn("scripts/project-sync.sh", text)
         self.assertIn("SessionStart", text)
 
+    def test_prompt_does_not_pull_on_feature_branches(self):
+        text = (ROOT / "PROJECT-INSTALL.md").read_text()
+        self.assertIn("git branch --show-current", text)
+        self.assertIn("do NOT pull", text)
+
+    def test_prompt_treats_failed_unpushed_check_as_unsaved_work(self):
+        text = (ROOT / "PROJECT-INSTALL.md").read_text()
+        self.assertIn("the git log command fails", text)
+
+    def test_prompt_accepts_plus_in_submodule_status(self):
+        text = (ROOT / "PROJECT-INSTALL.md").read_text()
+        self.assertIn("leading space or +", text)
+
     def test_readme_points_at_doc(self):
         self.assertIn("PROJECT-INSTALL.md", (ROOT / "README.md").read_text())
 

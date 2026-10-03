@@ -99,9 +99,13 @@ Migrate my machine to the project-bundled n2i-dev-cycle skill in this repo. Work
 
 Background: the n2i-dev-cycle skill and its agents (n2i-*.md) now ship inside this repo as a git submodule at .claude/skills/n2i-dev-cycle, and a SessionStart hook (.claude/hooks/sync-n2i-skill.sh) initializes it, updates it weekly, and links the agents into .claude/agents/. My older personal install in ~/.claude takes priority over the project copy, so it has to go.
 
-1. Locate the repo root (the git repo whose .gitmodules mentions n2i-dev-cycle). If I'm not inside it, ask me for the path. Confirm .gitmodules and .claude/hooks/sync-n2i-skill.sh exist. If not, my branch doesn't have the change yet: run git status -sb and tell me to pull or merge the main branch first.
+1. Locate the repo root (the git repo whose .gitmodules mentions n2i-dev-cycle). If I'm not inside it, ask me for the path.
 
-2. Update the repo. Run git status --short. If my working tree has changes, show them and ask before pulling. If it's clean (or I say go), run git pull and report the result.
+2. Get the change. Run git branch --show-current and git status --short.
+   - If .gitmodules and .claude/hooks/sync-n2i-skill.sh already exist, skip to step 3.
+   - If I'm on master and my working tree is clean: run git pull and report the result.
+   - If I'm on master with uncommitted changes: show them and ask before pulling.
+   - If I'm on another branch: do NOT pull. Tell me my branch doesn't have the change yet and ask whether to merge master into it. Do it only if I say yes.
 
 3. Check for a conflicting project-level path. Inspect .claude/skills/n2i-dev-cycle: it should be an empty folder or a submodule checkout. If it's a symlink or a folder with files that is NOT a submodule (git submodule status shows nothing for it), tell me and ask before moving it aside.
 
@@ -109,14 +113,14 @@ Background: the n2i-dev-cycle skill and its agents (n2i-*.md) now ship inside th
 
 5. Inspect my personal install. Run ls -la on ~/.claude/skills and ~/.claude/agents and report anything named n2i-*.
    - ~/.claude/skills/n2i-dev-cycle is a symlink: note where it points, then remove only the link with rm.
-   - It's a real folder: run git -C on it for git status --short and git log @{u}..; if it has uncommitted changes or unpushed commits, tell me and stop on this item. If clean, ask me, then mv it out of ~/.claude/skills entirely (for example to ~/.claude/n2i-dev-cycle.bak-YYYYMMDD), since a renamed folder left in ~/.claude/skills can still be loaded as a skill.
+   - It's a real folder: run git -C on it for git status --short and git log @{u}..; if it has uncommitted changes, unpushed commits, or the git log command fails (for example no upstream), treat that as unsaved work, tell me, and stop on this item. If clean, ask me, then mv it out of ~/.claude/skills entirely (for example to ~/.claude/n2i-dev-cycle.bak-YYYYMMDD), since a renamed folder left in ~/.claude/skills can still be loaded as a skill.
    - For each ~/.claude/agents/n2i-*.md that is a symlink: remove it (rm). If one is a real file, ask me first.
    - Remove dangling n2i links if found. List every path you removed or moved.
 
 6. Run the sync hook once by hand from the repo root: .claude/hooks/sync-n2i-skill.sh. It is silent by design.
 
 7. Verify and report a short checklist:
-   - git submodule status shows .claude/skills/n2i-dev-cycle checked out (a commit hash with no leading minus).
+   - git submodule status shows .claude/skills/n2i-dev-cycle checked out (a commit hash with a leading space or +; a leading minus means not initialized).
    - .claude/skills/n2i-dev-cycle/SKILL.md exists.
    - .claude/agents/n2i-*.md are symlinks and each resolves (none dangling).
    - ~/.claude/skills and ~/.claude/agents contain no n2i-* entries (unless I chose to keep them in step 4).
