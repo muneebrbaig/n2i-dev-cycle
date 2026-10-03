@@ -163,6 +163,13 @@ read the release's "Upgrading" notes in `CHANGELOG.md`. The skill also checks at
 every run and tells you once if an agent isn't linked. It never updates itself or links
 anything without asking.
 
+### Bundling into a team project
+
+To make the skill part of a team repo, so engineers never pull it by hand, add it as a git
+submodule with a SessionStart hook that keeps it current. See
+[`PROJECT-INSTALL.md`](PROJECT-INSTALL.md) for setup, the copy-in hook
+`scripts/project-sync.sh`, and a migration prompt for engineers who already have a personal install.
+
 ### Choosing a session model
 
 The session model drives how reliably the skill's gates hold. In our evals, Opus followed
@@ -377,7 +384,9 @@ memory milestones).
 
 - **`agents/`** — four subagent definitions (`n2i-unit-runner`, `n2i-e2e-runner`, `n2i-ci-triage`, `n2i-prepush-reviewer`); link them into `~/.claude/agents/` (see Installation)
 - **`scripts/install-agents.sh`** — links the agents into `~/.claude/agents/`; re-run after each pull
-- **`tests/`** — structural tests for the agents, the install script and startup check, doc references, and Contents lists: `python3 -m unittest discover -s tests`
+- **`PROJECT-INSTALL.md`** — how to bundle the skill into a team repo as a submodule, and how engineers migrate from a personal install
+- **`scripts/project-sync.sh`** — SessionStart hook template for that setup; copy it into the project, don't run it from here
+- **`tests/`** — structural tests for the agents, the install script and startup check, the project hook, doc references, and Contents lists: `python3 -m unittest discover -s tests`
 - **`evals/scenarios.md`** — behavior scenarios with pass/fail checklists, for checking the skill on different models
 
 The standards and discipline references each end with a scoped "Common Mistakes to Avoid"

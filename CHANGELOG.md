@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **Project bundling.** `PROJECT-INSTALL.md` explains how to carry the skill inside a
+  team repo as a git submodule, so engineers never pull it by hand. It covers setup,
+  how updates flow, and a safe migration prompt for engineers who already have a
+  personal install.
+- **`scripts/project-sync.sh`.** SessionStart hook template to copy into the project.
+  It initializes the submodule every session, pulls the tip of `main` at most once a
+  week, and links the subagents into the project's `.claude/agents/`. It is silent
+  and always exits 0.
+- Tests for the hook in `tests/test_project_sync.py`.
+
 ## 1.8.0 (2026-10-02)
 
 ### Added
