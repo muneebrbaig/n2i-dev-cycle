@@ -5,7 +5,7 @@ part of the lifecycle that only runs once a plan is approved and code is being
 written. A discussion / planning-only invocation never loads this.
 
 Discipline refs still load per phase: `tdd.md` at Phase 4, `verification.md` at
-Phase 5.
+Phase 5, `diff-review.md` at the Phase 5 pre-push review.
 
 ## Contents
 
@@ -47,6 +47,11 @@ RED→GREEN before the next:
 milestone (entity done, service+tests green, frontend done, etc.). For a
 test-first unit the ledger line carries the RED proof:
 `Phase 4: <unit> — RED <test> failed "<reason>" → GREEN (<commit>)`.
+
+**Noticed but not touching.** Stay inside the approved plan. When you spot something
+outside it (a bug, a smell, pre-existing dead code, a missing test elsewhere), don't
+fix it. Add one line to the ledger — `Phase 4: noticed — <file:line> <issue>` — and
+carry it into the Phase 6 handover under Known Limitations. Phase 9 reads these lines.
 
 If something goes sideways mid-implementation — STOP, reassess, inform user, re-plan if needed. Don't push through blindly.
 
@@ -134,6 +139,11 @@ skips triggering a CI run against a state you already know you're about to patch
   dispatch the `n2i-prepush-reviewer` subagent instead (read-only, `opus`; hand it the base
   branch and the ticket/spec). If that agent isn't installed either, skip silently — don't block
   the lifecycle — and offer a manual review pass if the user still wants one.
+- **Before the review, load `references/diff-review.md` and run its three checks** on
+  your own diff: silenced checks, a mutation spot-check per logic unit, and dead code.
+  Dispatch `n2i-diff-scanner` for the first and last (the mutation stays in the main
+  agent) and review its hit list. They apply whether or not the review itself runs, so a skipped review (bounded, small
+  diff) still gets the silenced-check scan. Hand any hits to the reviewer as context.
 - If accepted and available, invoke it against the diff: `git diff <base-branch>...HEAD` plus any
   uncommitted work (`git diff HEAD`) and untracked files (`git status --porcelain`) (backend
   and/or frontend paths per SCOPE), not a PR URL — no MR/PR exists yet at this point.
@@ -167,6 +177,8 @@ Summarize for user:
 
 ### Known Limitations
 - Anything deferred or out of scope
+- Every `Phase 4: noticed` ledger line, with `file:line`
+- Pre-existing dead code found by `diff-review.md`, awaiting the user's call
 - Dependencies on other work
 
 ### E2E Coverage

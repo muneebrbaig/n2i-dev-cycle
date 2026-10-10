@@ -24,7 +24,7 @@ unavailability: retry the same model rather than changing tiers.
 
 ### Named agents
 
-The repo ships four subagents in `agents/` that pin the model and tools for the
+The repo ships five subagents in `agents/` that pin the model and tools for the
 delegations below. Prefer them by name (`subagent_type`):
 
 | Agent | Model | Used for |
@@ -32,6 +32,7 @@ delegations below. Prefer them by name (`subagent_type`):
 | `n2i-unit-runner` | `haiku` | Phase 5 final validate run (format, build, unit tests), one dispatch per side |
 | `n2i-e2e-runner` | `haiku` | Phase 6 E2E runs |
 | `n2i-ci-triage` | `sonnet` | Phase 7/8 root cause for one independent failure domain (no edits) |
+| `n2i-diff-scanner` | `haiku` | Phase 5 mechanical scan of the diff for silenced checks and dead-code candidates (`diff-review.md`) |
 | `n2i-prepush-reviewer` | `opus` | Phase 5 pre-push review when `engineering:code-review` is unavailable |
 
 If a named agent isn't installed (dispatch rejects the name), fall back to the
@@ -49,6 +50,7 @@ independent**:
 | Final validate run (Phase 5) — `n2i-unit-runner`, one per side, backend and frontend in parallel | build + test log is verbose, result is pass/fail + failure traces |
 | E2E runs (Phase 6) — `n2i-e2e-runner` | slow, huge log, result is pass/fail + failure traces |
 | Independent Phase 7 findings / Phase 8 CI jobs (`debugging.md` → Parallel Dispatch) — `n2i-ci-triage` | separate root causes, run concurrently |
+| Diff scan for silenced checks and dead-code candidates (Phase 5) — `n2i-diff-scanner` | full diff in, a short hit list out |
 | Pre-push code review (Phase 5) — `engineering:code-review`, else `n2i-prepush-reviewer` | already its own skill |
 
 **Keep in the main agent** — do not hand off:
@@ -61,6 +63,10 @@ independent**:
 - **Writing the ticket draft / MR/PR description.** Synthesis from context the
   main agent already holds, and quality-sensitive (product-facing tone,
   stop-slop). Handing off means re-passing almost everything for near-zero saving.
+- **The mutation spot-check (`diff-review.md`).** It edits the working tree and must be
+  restored exactly; the agents are read-only, and an interrupted run could leave a
+  mutation behind. The scan's hits also need a human call on what to fix, which
+  stays with the main agent.
 - **The Phase 4 TDD loop.** Rapid RED→GREEN iterations; per-run subagent latency
   kills the loop, and the verification gate requires the main agent to run and
   read the command itself. Only the Phase 5 final validate run is delegated.

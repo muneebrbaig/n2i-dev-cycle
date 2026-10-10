@@ -123,14 +123,15 @@ git clone https://github.com/muneebrbaig/n2i-dev-cycle.git ~/.claude/skills/n2i-
 
 ### Subagents
 
-`agents/` holds four subagents that pin the model and tools for delegated work:
+`agents/` holds five subagents that pin the model and tools for delegated work:
 
 - `n2i-unit-runner` (haiku) — final validate run (format, build, unit tests), per side
 - `n2i-e2e-runner` (haiku) — E2E runs
 - `n2i-ci-triage` (sonnet) — root cause for one failing CI job or failure domain
+- `n2i-diff-scanner` (haiku) — read-only diff scan for silenced checks and dead-code candidates
 - `n2i-prepush-reviewer` (opus) — read-only pre-push review
 
-None has Edit or Write. All four keep Bash (for git, test runners, CI CLIs), so
+None has Edit or Write. All five keep Bash (for git, test runners, CI CLIs), so
 "read-only" beyond that rests on each agent's instructions, not on a hard block.
 
 Claude Code doesn't read agents from inside a skill folder, so link them into
@@ -205,7 +206,7 @@ Start Claude Code and check the skill is listed:
 ```
 claude
 # Type /n2i-dev-cycle — should appear in skill suggestions
-# Type /agents — n2i-unit-runner, n2i-e2e-runner, n2i-ci-triage, n2i-prepush-reviewer should be listed
+# Type /agents — n2i-unit-runner, n2i-e2e-runner, n2i-diff-scanner, n2i-ci-triage, n2i-prepush-reviewer should be listed
 ```
 
 ### Companion hooks (optional)
@@ -372,6 +373,7 @@ memory milestones).
 
 - **`references/tdd.md`** — RED-GREEN-REFACTOR, test-first vs exempt scaffolding, tests that can't go red, rationalization table
 - **`references/verification.md`** — evidence-before-claims gate, claim→proof table
+- **`references/diff-review.md`** — pre-push diff checks: silenced-check scan, mutation spot-check, dead-code handling
 
 **Standards (stack-specific — .NET + Angular defaults)**:
 
@@ -382,7 +384,7 @@ memory milestones).
 
 **Beyond the references** — files the skill never loads, for people maintaining it:
 
-- **`agents/`** — four subagent definitions (`n2i-unit-runner`, `n2i-e2e-runner`, `n2i-ci-triage`, `n2i-prepush-reviewer`); link them into `~/.claude/agents/` (see Installation)
+- **`agents/`** — five subagent definitions (`n2i-unit-runner`, `n2i-e2e-runner`, `n2i-diff-scanner`, `n2i-ci-triage`, `n2i-prepush-reviewer`); link them into `~/.claude/agents/` (see Installation)
 - **`scripts/install-agents.sh`** — links the agents into `~/.claude/agents/`; re-run after each pull
 - **`PROJECT-INSTALL.md`** — how to bundle the skill into a team repo as a submodule, and how engineers migrate from a personal install
 - **`scripts/project-sync.sh`** — SessionStart hook template for that setup; copy it into the project, don't run it from here

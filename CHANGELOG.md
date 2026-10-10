@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **`references/diff-review.md`.** Three checks for the Phase 5 pre-push review that a
+  green suite can't give: a scan for silenced checks (new skips, suppression comments,
+  lowered thresholds, stubs), a mutation spot-check that proves a new test can go red,
+  and dead-code handling (remove your own orphans, ask before deleting pre-existing code).
+- **"Noticed but not touching" ledger lines.** Out-of-scope findings during Phase 4 go
+  to the ledger and the Phase 6 Known Limitations instead of being fixed in place.
+- **`n2i-diff-scanner` subagent (haiku).** Read-only. Scans the full diff for silenced
+  checks and dead-code candidates and returns a short hit list, so the diff stays out of
+  the main context. The mutation spot-check stays in the main agent.
+- `n2i-prepush-reviewer` now flags silenced checks and dead code.
+- Tests in `tests/test_references.py`.
+
 ## 1.9.1 (2026-10-03)
 
 ### Fixed

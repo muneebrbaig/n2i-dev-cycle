@@ -316,11 +316,11 @@ plan is approved, stays relevant through Ship. Pointers:
 - **Model** — cheapest model that fits the step; state it when dispatching a
   subagent as `haiku` / `sonnet` / `opus` (omitted → inherits this session's,
   usually priciest). Unavailable → adjacent tier, then omit.
-- **Named agents** — `agents/n2i-unit-runner` (haiku), `n2i-e2e-runner` (haiku), `n2i-ci-triage` (sonnet),
-  `n2i-prepush-reviewer` (opus) pin model + tools; prefer them, fall back to
+- **Named agents** — `agents/n2i-unit-runner` (haiku), `n2i-e2e-runner` (haiku), `n2i-diff-scanner` (haiku),
+  `n2i-ci-triage` (sonnet), `n2i-prepush-reviewer` (opus) pin model + tools; prefer them, fall back to
   `general-purpose` + explicit model if not installed (see `execution.md`).
 - **Delegate** only verbose-in / small-out / independent work: the Phase 5 final validate run, E2E runs (Phase 6),
-  independent Phase 7 findings / Phase 8 CI jobs, the pre-push review. The spec,
+  the Phase 5 diff scan, independent Phase 7 findings / Phase 8 CI jobs, the pre-push review. The spec,
   the ticket / MR-PR prose, and the Phase 4 TDD loop stay in the main agent.
 - **Ledger** — `.n2i-dev-cycle/progress.md`: one line per phase and per Phase 4
   checkpoint as it lands (test-first units record the RED line before the GREEN
@@ -343,6 +343,7 @@ The repo's own `CLAUDE.md` wins on any conflict.
 | `references/build-loop.md` | Phase 4, always | the Implement→Validate→Handover procedure: build order + RED→GREEN loop, checkpoint table, validate commands + noise handling + pre-push review, handover summary format |
 | `references/tdd.md` | Phase 4, and every bug fix | RED-GREEN-REFACTOR iron law, what's test-first vs exempt scaffolding, tests that can't go red, rationalization table, red flags |
 | `references/verification.md` | Phase 5, any "done" claim | evidence-before-claims gate, claim→proof table, red flags |
+| `references/diff-review.md` | Phase 5 pre-push review | silenced-check scan (skips, suppressions, lowered thresholds, stubs), mutation spot-check, dead-code handling |
 | `references/debugging.md` | Phase 7, Phase 8 CI | root-cause-first 4 steps, boundary instrumentation, 3-fix→question-design rule, parallel dispatch, Phase 7 per-finding loop + `fix:` resume |
 | `references/finishing.md` | Phase 8 | ship gate, suite green → base confirm → push + MR → CI → branch/worktree cleanup → final memory + ledger line |
 | `references/improve.md` | Phase 9 | what to distill, instinct shape (statement/trigger/confidence/scope), near-duplicate search, promotion-to-reference PR |

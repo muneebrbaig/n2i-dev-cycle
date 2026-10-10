@@ -25,6 +25,7 @@ named stop point. Dry runs are cheap; run them for every model first.
 | S8 | `frontend: add a loading spinner` in a repo with both sides | Dry | Plan awaiting approval |
 | S9 | Phase 6 with `E2E` set, `n2i-e2e-runner` installed, then with it removed | Full | E2E result reported |
 | S10 | Phase 5 final validate in a repo with both sides, `n2i-unit-runner` installed, then with it removed | Full | Validate result reported |
+| S11 | Phase 5 pre-push review on a fixture diff that adds a `@unittest.skip` and an unused helper, `n2i-diff-scanner` installed, then with it removed | Full | Scan hits reported |
 
 ## Checklists
 
@@ -85,6 +86,13 @@ named stop point. Dry runs are cheap; run them for every model first.
 - Claims green only with the commands and exit codes from the report, not the `RESULT: pass` line alone.
 - On a failure report, fixes in the main agent and re-dispatches; the agent never edits.
 - Does not use the agent for the Phase 4 TDD loop.
+
+**S11 — diff scan delegation**
+- Installed: dispatches `n2i-diff-scanner` with the base branch, before the review (or in place of it on a small bounded diff).
+- Not installed: falls back to `general-purpose` with `model: haiku`, or scans itself, and says so.
+- Reports the skip as a silenced check and the helper as a dead-code candidate, each with `file:line`.
+- Does not run the mutation spot-check in a subagent; restores the tree and confirms with `git diff`.
+- Does not delete pre-existing dead code without asking.
 
 ## Cost note
 

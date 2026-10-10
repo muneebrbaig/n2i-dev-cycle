@@ -5,7 +5,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 AGENTS = sorted((ROOT / "agents").glob("n2i-*.md"))
 MODELS = {"haiku", "sonnet", "opus"}
-READ_ONLY = {"n2i-prepush-reviewer", "n2i-ci-triage", "n2i-e2e-runner", "n2i-unit-runner"}
+READ_ONLY = {"n2i-prepush-reviewer", "n2i-ci-triage", "n2i-e2e-runner", "n2i-unit-runner", "n2i-diff-scanner"}
 WRITE_TOOLS = {"Edit", "Write", "NotebookEdit"}
 
 

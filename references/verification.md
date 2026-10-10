@@ -40,6 +40,7 @@ Commands are the .NET + Angular default — substitute `BACKEND_VALIDATE_CMD` /
 | Bug fixed | the repro test now passes AND failed before the fix | code changed, assumed fixed |
 | Regression test works | red-green verified — revert fix, test fails, restore, passes | test passes once |
 | Test-first was followed | the ledger shows the RED failure line before the GREEN commit for each logic unit | "I wrote tests for it" |
+| No check was silenced to get green | the `diff-review.md` scan of the full diff: no new skip, suppression, lowered threshold, or stub | "the suite is green" |
 | Requirements met | line-by-line check against the ticket / plan | tests passing |
 | Subagent done | the VCS diff shows the change; for a propose-only agent (`n2i-ci-triage`), the cited `file:line` evidence for its root cause | the agent said "success" |
 | Unit tests / build pass (subagent-run) | the `n2i-unit-runner` report: each command line with its exit code, 0 failed | the agent's `RESULT: pass` line alone |
@@ -52,6 +53,7 @@ Commands are the .NET + Angular default — substitute `BACKEND_VALIDATE_CMD` /
 - About to commit / push / open an MR without a fresh run
 - Trusting a subagent's success report without checking the diff (or, for a propose-only agent, its cited `file:line` evidence)
 - Partial check → extrapolating to the whole
+- Green after the diff added a `.skip`, a suppression comment, or a lower threshold
 - "Just this once" / "I'm confident" / "I'm tired"
 
 ## Common Mistakes to Avoid

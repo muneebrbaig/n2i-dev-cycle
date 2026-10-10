@@ -61,6 +61,9 @@ isn't coverage. Watch for:
 - Asserting the value the test itself computed or hard-coded into the fake
 - A snapshot as the only check on a logic change
 
+To prove a test can go red on code that already exists, run the mutation spot-check
+in `references/diff-review.md` at the Phase 5 pre-push review.
+
 ## Single-test commands
 
 .NET + Angular default (other stacks: derive the single-test form of

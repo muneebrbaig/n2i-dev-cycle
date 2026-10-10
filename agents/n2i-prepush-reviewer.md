@@ -23,8 +23,13 @@ Input from the caller: the base branch and the ticket or spec the change impleme
    - silent failures: errors swallowed or turned into defaults;
    - tests that cannot go red (assert nothing, mock the thing under test, pass
      before the change);
+   - silenced checks: a new `.skip`/`xit`/`[Ignore]`, suppression comment
+     (`eslint-disable`, `@ts-ignore`, `#pragma warning disable`, `[SuppressMessage]`),
+     lowered threshold or analyzer severity, empty `catch`, or stub body;
    - scope creep: changes the ticket did not ask for;
-   - missing tests for new logic.
+   - missing tests for new logic;
+   - dead code the change leaves behind (list it with `file:line`; do not ask for
+     its deletion unless the change itself orphaned it).
 3. Report only findings you can point to. For each: `file:line`, the problem, the
    concrete failing scenario, and the suggested fix. Rank most severe first.
 4. Do not pad with style nitpicks. If there is nothing material, say
