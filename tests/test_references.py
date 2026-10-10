@@ -133,6 +133,16 @@ class ReviewGuardrails(unittest.TestCase):
                 self.assertIn(needle, section)
 
 
+class ReadmeCoverage(unittest.TestCase):
+    def test_readme_describes_the_new_behaviour(self):
+        text = read("README.md")
+        for needle in ("diff-review.md", "doubt.md", "silenced checks", "Mutation spot-check",
+                       "n2i-diff-scanner", "n2i-doubter", "`Critical`", "400 changed lines",
+                       "noticed", "rollback"):
+            with self.subTest(needle=needle):
+                self.assertIn(needle, text)
+
+
 class Evals(unittest.TestCase):
     def test_routing_scenario_has_trigger_and_non_trigger_prompts(self):
         text = read("evals/scenarios.md").split("**S12 — routing**")[1].split("\n**S13")[0]
