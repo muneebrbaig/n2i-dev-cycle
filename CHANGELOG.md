@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.10.0 (2026-10-11)
 
 ### Added
 - **`references/doubt.md` and `n2i-doubter` subagent (opus).** Opt-in, architectural class
