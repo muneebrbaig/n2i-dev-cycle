@@ -84,5 +84,68 @@ class Wiring(unittest.TestCase):
         self.assertIn("dead code", text)
 
 
+class DoubtReview(unittest.TestCase):
+    def test_doubt_is_architectural_only_and_opt_in(self):
+        planning = read("references/planning.md")
+        self.assertIn("architectural class only", planning)
+        self.assertIn("only if the user says yes", planning)
+        text = read("references/doubt.md")
+        self.assertIn("Architectural class", text)
+        self.assertIn("only if the user says yes", text)
+
+    def test_doubter_never_receives_the_claim(self):
+        text = read("references/doubt.md")
+        self.assertIn("artifact and the contract only", text)
+        self.assertIn("never", read("references/execution.md").split("Doubt review")[1].split("\n")[0])
+
+    def test_doubter_agent_has_no_approval_answer_and_needs_a_contract(self):
+        text = read("agents/n2i-doubter.md")
+        self.assertIn('Never answer "looks good"', text)
+        self.assertIn("contract is missing, stop", text)
+
+    def test_doubt_stops_after_three_cycles(self):
+        self.assertIn("three cycles", read("references/doubt.md"))
+
+
+class ReviewGuardrails(unittest.TestCase):
+    def test_reviewer_uses_all_five_severity_labels(self):
+        text = read("agents/n2i-prepush-reviewer.md")
+        for label in ("Critical", "Required", "Nit", "Optional", "FYI"):
+            with self.subTest(label=label):
+                self.assertIn(f"`{label}`", text)
+
+    def test_build_loop_acts_on_severity_and_size(self):
+        pre_push = read("references/build-loop.md").split("### Pre-push review")[1].split("\n## ")[0]
+        self.assertIn("`Critical` and `Required` before Phase 6", pre_push)
+        self.assertIn("400 changed lines", pre_push)
+
+    def test_plan_estimates_size_and_rollback(self):
+        text = read("references/planning.md")
+        self.assertIn("Changed lines (rough)", text)
+        self.assertIn("rollback path", text)
+        self.assertIn("400", text)
+
+    def test_handover_has_compatibility_and_docs_section(self):
+        text = read("references/build-loop.md")
+        section = text.split("### Compatibility & Docs")[1].split("\n### ")[0]
+        for needle in ("rollback", "backward-compatible", "current state"):
+            with self.subTest(needle=needle):
+                self.assertIn(needle, section)
+
+
+class Evals(unittest.TestCase):
+    def test_routing_scenario_has_trigger_and_non_trigger_prompts(self):
+        text = read("evals/scenarios.md").split("**S12 — routing**")[1].split("\n**S13")[0]
+        trigger, no_trigger = text.split("No trigger")
+        self.assertGreaterEqual(trigger.count("\n- `"), 4)
+        self.assertGreaterEqual(no_trigger.count("\n- `"), 4)
+
+    def test_skill_description_covers_the_trigger_prompts(self):
+        head = read("SKILL.md").split("---")[1]
+        for phrase in ("ticket", "feature or bug prompt", "spec document", "fix:", "brainstorm"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, head)
+
+
 if __name__ == "__main__":
     unittest.main()

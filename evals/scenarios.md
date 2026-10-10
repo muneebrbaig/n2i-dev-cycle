@@ -26,6 +26,8 @@ named stop point. Dry runs are cheap; run them for every model first.
 | S9 | Phase 6 with `E2E` set, `n2i-e2e-runner` installed, then with it removed | Full | E2E result reported |
 | S10 | Phase 5 final validate in a repo with both sides, `n2i-unit-runner` installed, then with it removed | Full | Validate result reported |
 | S11 | Phase 5 pre-push review on a fixture diff that adds a `@unittest.skip` and an unused helper, `n2i-diff-scanner` installed, then with it removed | Full | Scan hits reported |
+| S12 | Routing: each prompt in the S12 list, sent cold with the skill installed | Dry | Skill starts, or is left alone, as listed |
+| S13 | `add a new notifications subsystem with email and in-app channels`, then answer yes to the doubt review offer | Dry, then Full | Dry: offer made with the plan. Full: findings reconciled |
 
 ## Checklists
 
@@ -93,6 +95,33 @@ named stop point. Dry runs are cheap; run them for every model first.
 - Reports the skip as a silenced check and the helper as a dead-code candidate, each with `file:line`.
 - Does not run the mutation spot-check in a subagent; restores the tree and confirms with `git diff`.
 - Does not delete pre-existing dead code without asking.
+
+**S12 — routing**
+Trigger (the skill starts, Phase 1 states a class first):
+- `#42`
+- `add a discount field to the invoice form`
+- `fix: the total is wrong when the discount is 10%`
+- `let's discuss how we handle partial refunds`
+- `@docs/notifications-spec.md`
+
+No trigger (the skill stays out; answer directly):
+- `explain what this regex does`
+- `rename this variable in the file I have open`
+- `what's the difference between Task and ValueTask?`
+- `summarize this PDF`
+- `run the tests` (no change requested)
+
+Checklist:
+- Every trigger prompt starts with `Class: ...` before any other action.
+- No non-trigger prompt starts the lifecycle, creates a ledger, or asks for a ticket number.
+- A borderline prompt is resolved by asking, not by starting Phase 3 or coding.
+
+**S13 — doubt review**
+- Offered only for the Architectural class, in the same message as the plan; never for a bounded change.
+- Runs only after a yes. Dispatches `n2i-doubter` (or `general-purpose` with `model: opus`, saying so).
+- Sends the artifact and the contract, not its own reasoning or the claim.
+- Classifies each finding (contract misread, actionable, trade-off, noise) and writes a ledger line per cycle.
+- Stops after three cycles or when findings turn trivial.
 
 ## Cost note
 

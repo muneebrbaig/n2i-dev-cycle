@@ -3,6 +3,19 @@
 ## Unreleased
 
 ### Added
+- **`references/doubt.md` and `n2i-doubter` subagent (opus).** Opt-in, architectural class
+  only. The plan, or a unit's diff, goes to a fresh-context adversarial reviewer with the
+  artifact and its contract but never the author's reasoning. Findings are classified as
+  contract misread, actionable, trade-off, or noise, and it stops after three cycles.
+- **Severity labels** (`Critical`, `Required`, `Nit`, `Optional`, `FYI`) in
+  `n2i-prepush-reviewer` reports. Phase 5 fixes `Critical` and `Required` and shows the
+  rest to the user.
+- **Change-size guardrail.** The plan estimates changed lines and proposes a split past
+  roughly 400. The pre-push review raises the same flag on a large diff.
+- **Compatibility & Docs** section in the Phase 6 handover (public-contract breaks,
+  migration rollback path, docs written for the current state), and a rollback line in the
+  plan's migration item.
+- **Routing eval (S12)** with trigger and non-trigger prompts, and a doubt-review eval (S13).
 - **`references/diff-review.md`.** Three checks for the Phase 5 pre-push review that a
   green suite can't give: a scan for silenced checks (new skips, suppression comments,
   lowered thresholds, stubs), a mutation spot-check that proves a new test can go red,

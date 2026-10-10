@@ -17,6 +17,7 @@ Phase 5, `diff-review.md` at the Phase 5 pre-push review.
   - What Changed
   - What to Test Locally
   - Known Limitations
+  - Compatibility & Docs
   - E2E Coverage
   - Memory
 
@@ -72,6 +73,9 @@ Every stop costs a user turn, so checkpoints scale with the Phase 1 class:
 | Backend scaffold | Entity, DTOs, requests, config, migration, DI + wire-up, build clean |
 | Backend service + controller | Methods and endpoints built test-first, all tests green |
 | Frontend | Models, service, list + form components built (test-first where applicable), routes swapped, sidebar/nav wired, `ng build` clean |
+
+At each architectural checkpoint, offer a doubt review of that unit's diff
+(`references/doubt.md`) when it holds a shared interface, concurrency, or an irreversible step.
 
 At each checkpoint, summarize what was built, **append the ledger line**, and ask: **"[Unit] done. Want to review before I continue?"** The user may review, request changes, push/commit, or say continue. **Never skip ahead silently.**
 
@@ -149,6 +153,11 @@ skips triggering a CI run against a state you already know you're about to patch
   and/or frontend paths per SCOPE), not a PR URL — no MR/PR exists yet at this point.
   Ask it to also flag silent failures (errors swallowed or turned into defaults) and tests
   that can't go red (`references/tdd.md`).
+- Findings carry a severity label (`Critical`, `Required`, `Nit`, `Optional`, `FYI`). Fix
+  `Critical` and `Required` before Phase 6. Show `Nit`, `Optional`, and `FYI` to the user
+  and fix only what they pick.
+- If the diff is over roughly 400 changed lines, say so and ask whether to split it before
+  review; a refactor mixed into the feature is the usual first cut.
 - Handle findings with technical rigor, not performative agreement: restate each finding, verify
   it against the codebase, push back with reasoning if it's wrong or YAGNI, ask the user if it
   conflicts with a prior decision. A finding that's a real bug goes through `references/debugging.md`
@@ -180,6 +189,13 @@ Summarize for user:
 - Every `Phase 4: noticed` ledger line, with `file:line`
 - Pre-existing dead code found by `diff-review.md`, awaiting the user's call
 - Dependencies on other work
+
+### Compatibility & Docs
+- A changed public contract (API shape, event, config key): who breaks, and the
+  backward-compatible path or the migration for callers.
+- Each migration script's rollback path: the forward-fix script, or why none is needed.
+- Docs touched or needing a change, written for the current state, not as a change history.
+- Say "none" for each that doesn't apply; do not leave the section out.
 
 ### E2E Coverage
 Only if `E2E != none`. **Reviewing the change's e2e impact is mandatory; writing a

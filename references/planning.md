@@ -14,7 +14,7 @@ vocabulary below is the .NET + Angular default — on another stack it follows t
 - Entities to create/modify (list fields, FKs, business rules)
 - Services to create/modify (list methods, validation logic)
 - Controllers to create/modify (list endpoints, auth levels)
-- Migration scripts needed (table creates/alters) — note target dialect (`DB_ENGINE`)
+- Migration scripts needed (table creates/alters) — note target dialect (`DB_ENGINE`) and the rollback path (a forward-fix script, or why none is needed)
 - Wire-up steps (DI, ModelBuilder)
 
 **Frontend:**
@@ -42,6 +42,7 @@ vocabulary below is the .NET + Angular default — on another stack it follows t
 - Files to modify: N
 - Migration scripts: N
 - Unit tests: N
+- Changed lines (rough): N
 
 ## No Placeholders
 
@@ -60,6 +61,14 @@ Before presenting: re-read the spec, confirm every requirement maps to a plan
 item (list any gaps), scan for the placeholders above, and check names /
 signatures are consistent across sections — a method called one thing under the
 entity and another under tests is a bug. Fix inline.
+
+**Size check.** Review quality drops as a change grows: about 100 changed lines reviews
+easily, 300 is fine as one logical change, and past roughly 400 it should be split. If
+the estimate is over 400, propose the split (stacked branches or commits, one logical
+change each) in the plan, and plan any refactor as its own change, apart from the feature.
+
+**Doubt review (architectural class only).** In the same message as the plan, offer
+one fresh-context review (`references/doubt.md`). Run it only if the user says yes.
 
 Then **wait for user approval before proceeding.** The user may refine, add, or
 remove items.

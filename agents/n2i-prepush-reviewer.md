@@ -30,7 +30,11 @@ Input from the caller: the base branch and the ticket or spec the change impleme
    - missing tests for new logic;
    - dead code the change leaves behind (list it with `file:line`; do not ask for
      its deletion unless the change itself orphaned it).
-3. Report only findings you can point to. For each: `file:line`, the problem, the
-   concrete failing scenario, and the suggested fix. Rank most severe first.
-4. Do not pad with style nitpicks. If there is nothing material, say
+3. Report only findings you can point to. For each: a severity label, `file:line`, the
+   problem, the concrete failing scenario, and the suggested fix. Rank most severe first.
+   Labels: `Critical` (security hole, data loss, broken behavior; blocks merge),
+   `Required` (fix before merge), `Nit` (minor, the author may ignore it), `Optional`
+   (worth weighing), `FYI` (context, no action).
+4. Do not pad with style nitpicks: list `Nit`, `Optional`, and `FYI` only after every
+   `Critical` and `Required`, and keep them to a few. If there is nothing material, say
    "no material findings" and list what you checked.
