@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.10.1 (2026-10-13)
 
 ### Changed
 - **`scripts/project-sync.sh` now syncs every `.claude/skills/n2i-*` submodule**, not only
@@ -12,6 +12,11 @@
 - The hook printed `fatal: not a git repository` when run outside a repo. It now exits 0
   with no output.
 - Tests for multi-skill sync, foreign skill folders, and silent exit outside a repo.
+
+### Upgrading from 1.10.0
+- Projects that bundle the skill: copy `scripts/project-sync.sh` over
+  `.claude/hooks/sync-n2i-skill.sh`. A project that keeps the old copy still syncs
+  `n2i-dev-cycle`, but ignores other `n2i-*` skills.
 
 ## 1.10.0 (2026-10-11)
 
