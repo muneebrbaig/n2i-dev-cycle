@@ -7,6 +7,7 @@ AGENTS = sorted((ROOT / "agents").glob("n2i-*.md"))
 MODELS = {"haiku", "sonnet", "opus"}
 READ_ONLY = {"n2i-prepush-reviewer", "n2i-ci-triage", "n2i-e2e-runner", "n2i-unit-runner", "n2i-diff-scanner", "n2i-doubter"}
 WRITE_TOOLS = {"Edit", "Write", "NotebookEdit"}
+SIBLING_SKILLS = ("n2i-dev-cycle", "n2i-sec-audit")  # skill names, not agent names
 
 
 def frontmatter(path):
@@ -49,7 +50,7 @@ class AgentFiles(unittest.TestCase):
         docs = [ROOT / "SKILL.md", ROOT / "SKILL.qwen.md", ROOT / "README.md", *(ROOT / "references").glob("*.md")]
         for doc in docs:
             for tok in re.findall(r"(?<![.\w-])n2i-[a-z0-9-]+", doc.read_text()):
-                if tok.startswith("n2i-dev-cycle"):
+                if tok.startswith(SIBLING_SKILLS):
                     continue
                 with self.subTest(doc=doc.name, token=tok):
                     self.assertIn(tok, names)
