@@ -70,6 +70,17 @@ Notes:
 - If the project's `.claude/skills/` is gitignored, remove that rule for this path or the submodule can't be tracked.
 - The scripts are bash. On Windows use WSL or Git Bash, and symlinks need Developer Mode.
 
+## Add another `n2i-*` skill
+
+A second skill needs only its own submodule line. For `n2i-sec-audit`:
+
+```bash
+git submodule add -b main https://github.com/muneebrbaig/n2i-sec-audit.git .claude/skills/n2i-sec-audit
+git config -f .gitmodules submodule..claude/skills/n2i-sec-audit.ignore all
+```
+
+Add the skill's local-state folder to `.gitignore` (for `n2i-sec-audit`, `.n2i-sec-audit/`) and commit. At the next session start the hook you already have initializes the submodule and links its agents, as long as your copy of the hook is the multi-skill version. If it is older, copy `scripts/project-sync.sh` over it first.
+
 ## How updates reach people
 
 - A change pushed to `main` here reaches every engineer within about a week, with no action on their side.

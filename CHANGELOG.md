@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- Documented the companion [`n2i-sec-audit`](https://github.com/muneebrbaig/n2i-sec-audit)
+  skill. The README shows how to hand an audit report to this skill by naming the finding
+  IDs to fix, and `PROJECT-INSTALL.md` has a section on adding a second `n2i-*` skill to a
+  bundled project.
+
 ## 1.10.1 (2026-10-13)
 
 ### Changed

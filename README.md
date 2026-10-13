@@ -200,6 +200,10 @@ submodule with a SessionStart hook that keeps it current. See
 [`PROJECT-INSTALL.md`](PROJECT-INSTALL.md) for setup, the copy-in hook
 `scripts/project-sync.sh`, and a migration prompt for engineers who already have a personal install.
 
+One hook serves every `n2i-*` skill a project bundles, such as
+[`n2i-sec-audit`](https://github.com/muneebrbaig/n2i-sec-audit), a companion skill that audits
+a codebase for security gaps. A second skill needs only its own submodule line.
+
 ### Choosing a session model
 
 The session model drives how reliably the skill's gates hold. In our evals, Opus followed
@@ -308,6 +312,11 @@ Uses the description as requirements. Classified and aligned like a ticket.
 ```
 
 Reads the document and extracts requirements.
+
+A report from [`n2i-sec-audit`](https://github.com/muneebrbaig/n2i-sec-audit) works as the
+document. Name the finding IDs to fix, for example
+`/n2i-dev-cycle @docs/2026-10-13-security-review.md fix C3 and B5`. The skill classifies and
+plans them like any other work.
 
 ### Migration Continuation
 
