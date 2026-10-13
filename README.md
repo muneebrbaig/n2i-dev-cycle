@@ -417,7 +417,7 @@ memory milestones).
 - **`agents/`** — six subagent definitions (`n2i-unit-runner`, `n2i-e2e-runner`, `n2i-diff-scanner`, `n2i-ci-triage`, `n2i-doubter`, `n2i-prepush-reviewer`); link them into `~/.claude/agents/` (see Installation)
 - **`scripts/install-agents.sh`** — links the agents into `~/.claude/agents/`; re-run after each pull
 - **`PROJECT-INSTALL.md`** — how to bundle the skill into a team repo as a submodule, and how engineers migrate from a personal install
-- **`scripts/project-sync.sh`** — SessionStart hook template for that setup; copy it into the project, don't run it from here
+- **`scripts/project-sync.sh`** — SessionStart hook template for that setup; copy it into the project, don't run it from here. One hook syncs every `n2i-*` skill submodule
 - **`tests/`** — structural tests for the agents, the install script and startup check, the project hook, doc references, and Contents lists: `python3 -m unittest discover -s tests`
 - **`evals/scenarios.md`** — behavior scenarios with pass/fail checklists, for checking the skill on different models
 

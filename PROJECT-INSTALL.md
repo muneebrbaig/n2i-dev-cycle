@@ -10,11 +10,11 @@ For a single-user install, use the README's Installation section instead.
 
 - The skill is a git submodule at `.claude/skills/n2i-dev-cycle`, cloned over HTTPS from this repo (no SSH or credentials needed while the repo is public).
 - A hook script in the project, `.claude/hooks/sync-n2i-skill.sh`, runs at every Claude Code session start:
-  - initializes the submodule, so a fresh clone needs no `--recurse-submodules`;
-  - pulls the tip of `main` at most once a week per clone;
-  - links the subagents from `agents/` into the project's `.claude/agents/` and removes links whose target is gone.
+  - initializes every `.claude/skills/n2i-*` submodule, so a fresh clone needs no `--recurse-submodules`;
+  - pulls the tip of `main` for each at most once a week per clone;
+  - links each skill's subagents from `agents/` into the project's `.claude/agents/` and removes links whose target is gone.
 - The hook is best-effort. It prints nothing and always exits 0, so an offline machine or a failed fetch never blocks a session. It retries on the next session.
-- The hook script lives in the project, not in the submodule, because it has to exist before the submodule does. `scripts/project-sync.sh` in this repo is the template to copy.
+- The hook script lives in the project, not in the submodule, because it has to exist before the submodule does. `scripts/project-sync.sh` in this repo is the template to copy. One hook serves every `n2i-*` skill the project bundles, such as `n2i-sec-audit`, so a second skill needs only its own submodule line.
 
 ## Setup
 
@@ -76,7 +76,7 @@ Notes:
 - To pick one up sooner, delete `.git/n2i-skill-synced` in your clone and start a new Claude session.
 - There is no version pin. A bad push to `main` reaches everyone within a week. If a project needs a gate, track a release tag instead of `main`.
 - The skill repo's `hooks/settings.snippet.json` (secret scan, verify gate) is not wired by this setup. Add it to the project's `settings.json` if you want it.
-- If the template changes, compare the project's copy and re-copy it:
+- If the template changes, compare the project's copy and re-copy it. Copies made before the multi-skill version still work for `n2i-dev-cycle` but ignore other `n2i-*` skills, and they print a `fatal:` line when run outside a git repo:
 
   ```bash
   diff .claude/hooks/sync-n2i-skill.sh .claude/skills/n2i-dev-cycle/scripts/project-sync.sh

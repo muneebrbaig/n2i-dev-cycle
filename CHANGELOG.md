@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- **`scripts/project-sync.sh` now syncs every `.claude/skills/n2i-*` submodule**, not only
+  `n2i-dev-cycle`. One hook serves a project that bundles several `n2i-*` skills. Each
+  skill's agents are linked into `.claude/agents/`, and the weekly pull stamp updates when
+  any pull succeeds. Projects with an older copy keep working but should re-copy it.
+
+### Fixed
+- The hook printed `fatal: not a git repository` when run outside a repo. It now exits 0
+  with no output.
+- Tests for multi-skill sync, foreign skill folders, and silent exit outside a repo.
+
 ## 1.10.0 (2026-10-11)
 
 ### Added

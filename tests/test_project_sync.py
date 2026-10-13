@@ -121,11 +121,48 @@ class ProjectSync(unittest.TestCase):
         self.assertEqual(self.head(), pinned)
         self.assertFalse((self.project / ".git" / "n2i-skill-synced").exists())
 
-    def test_exits_zero_outside_a_repo(self):
+    def test_exits_zero_and_stays_silent_outside_a_repo(self):
         with tempfile.TemporaryDirectory() as d:
             env = {k: v for k, v in self.env.items() if k != "CLAUDE_PROJECT_DIR"}
             result = subprocess.run(["bash", str(SCRIPT)], cwd=d, env=env, capture_output=True, text=True)
         self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.stdout + result.stderr, "")
+
+    def add_second_skill(self):
+        other = Path(self.tmp.name) / "other"
+        (other / "agents").mkdir(parents=True)
+        (other / "agents" / "n2i-other-one.md").write_text("one")
+        git(other, "init", "-q", "-b", "main")
+        git(other, "add", "-A")
+        git(other, "commit", "-qm", "v1")
+        git(self.project, "submodule", "add", "-q", "-b", "main", str(other), ".claude/skills/n2i-other", env=self.env)
+        git(self.project, "commit", "-qam", "add other skill")
+        return other
+
+    def test_syncs_every_n2i_skill_submodule(self):
+        other = self.add_second_skill()
+        self.run_script()
+        (self.project / ".git" / "n2i-skill-synced").unlink()
+        (other / "agents" / "n2i-other-two.md").write_text("two")
+        git(other, "add", "-A")
+        git(other, "commit", "-qm", "two")
+        self.push_upstream("n2i-two")
+        result = self.run_script()
+        self.assertEqual(result.stdout + result.stderr, "")
+        self.assertEqual(self.head(), git(self.upstream, "rev-parse", "HEAD").stdout.strip())
+        self.assertEqual(
+            git(self.project / ".claude/skills/n2i-other", "rev-parse", "HEAD").stdout.strip(),
+            git(other, "rev-parse", "HEAD").stdout.strip(),
+        )
+        for name in ("n2i-one", "n2i-two", "n2i-other-one", "n2i-other-two"):
+            self.assertTrue((self.agents() / f"{name}.md").is_symlink(), name)
+
+    def test_skill_folders_without_the_n2i_prefix_are_ignored(self):
+        foreign = self.project / ".claude/skills/foo/agents"
+        foreign.mkdir(parents=True)
+        (foreign / "n2i-foo.md").write_text("foo")
+        self.run_script()
+        self.assertFalse((self.agents() / "n2i-foo.md").exists())
 
 
 class ProjectInstallDocs(unittest.TestCase):
