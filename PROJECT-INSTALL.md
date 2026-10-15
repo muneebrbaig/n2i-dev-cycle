@@ -10,7 +10,7 @@ For a single-user install, use the README's Installation section instead.
 
 - The skill is a git submodule at `.claude/skills/n2i-dev-cycle`, cloned over HTTPS from this repo (no SSH or credentials needed while the repo is public).
 - A hook script in the project, `.claude/hooks/sync-n2i-skill.sh`, runs at every Claude Code session start:
-  - initializes each `.claude/skills/n2i-*` submodule that isn't checked out yet, so a fresh clone needs no `--recurse-submodules`. It skips submodules already checked out, because a repeat init would reset a pulled tip to the commit the project recorded;
+  - checks out each `.claude/skills/n2i-*` submodule at the commit the project records when it isn't checked out yet or when that recorded commit changed, so a fresh clone needs no `--recurse-submodules` and a pointer bump reaches every clone after `git pull`. Otherwise it leaves the checkout alone, because a repeat init would reset a pulled tip to the recorded commit;
   - pulls the tip of `main` for each at most once a week per clone;
   - links each skill's subagents from `agents/` into the project's `.claude/agents/` and removes links whose target is gone.
 - The hook is best-effort. It prints nothing and always exits 0, so an offline machine or a failed fetch never blocks a session. It retries on the next session.

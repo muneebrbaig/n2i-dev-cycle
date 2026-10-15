@@ -88,6 +88,19 @@ class ProjectSync(unittest.TestCase):
         self.run_script()
         self.assertEqual(self.head(), tip)
 
+    def test_pointer_bump_moves_checkout_without_a_weekly_pull(self):
+        self.run_script()
+        old = self.head()
+        self.push_upstream("n2i-two")
+        git(self.project / SKILL, "pull", "-q", "origin", "main")
+        new = self.head()
+        git(self.project, "add", "--force", SKILL)
+        git(self.project, "commit", "-qm", "bump skill")
+        git(self.project / SKILL, "checkout", "-q", old)
+        self.run_script()
+        self.assertEqual(self.head(), new)
+        self.assertTrue((self.agents() / "n2i-two.md").is_symlink())
+
     def test_recent_stamp_skips_remote_pull(self):
         self.run_script()
         pinned = self.head()

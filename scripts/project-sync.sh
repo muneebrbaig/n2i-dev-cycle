@@ -2,8 +2,9 @@
 # SessionStart hook template: keeps every n2i-* skill submodule under .claude/skills/ current
 # and links their subagents into .claude/agents/ (Claude Code doesn't read agents from inside
 # a skill). One hook serves n2i-dev-cycle, n2i-sec-audit, and any later n2i-* skill.
-# Init runs only for a submodule not yet checked out (a later init would reset a pulled tip to the
-# recorded pointer); the pull to each remote tip runs at most once a week per clone.
+# A skill is checked out at the commit the project records when it isn't checked out yet or when
+# that recorded commit changed since the last sync, so a pointer bump reaches every clone. Otherwise
+# it is left alone, so a pulled tip survives. The pull to each remote tip runs at most once a week.
 # Best-effort: output is discarded and it always exits 0, so it can never block a session.
 cd "${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null)}" 2>/dev/null || exit 0
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
@@ -17,7 +18,11 @@ STAMP="$(git rev-parse --git-dir)/n2i-skill-synced"
   mkdir -p .claude/agents
   for SKILL in .claude/skills/n2i-*; do
     [ -e "$SKILL" ] || continue
-    [ -e "$SKILL/.git" ] || git submodule update --init -- "$SKILL"
+    REC=$(git rev-parse "HEAD:$SKILL" 2>/dev/null)
+    SEEN="$(git rev-parse --git-dir)/n2i-pointer-$(basename "$SKILL")"
+    if [ ! -e "$SKILL/.git" ] || { [ -n "$REC" ] && [ "$REC" != "$(cat "$SEEN" 2>/dev/null)" ]; }; then
+      git submodule update --init -- "$SKILL" && [ -n "$REC" ] && echo "$REC" >"$SEEN"
+    fi
     if [ -n "$DUE" ] && git submodule update --remote -- "$SKILL"; then
       PULLED=1
     fi
