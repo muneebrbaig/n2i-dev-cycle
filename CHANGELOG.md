@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.10.3 (2026-10-16)
+
+### Fixed
+- `scripts/project-sync.sh` in 1.10.2 skipped `submodule update --init` for any skill already
+  checked out, so a bumped submodule pointer never reached a clone that had pulled it. The hook
+  now checks a skill out at the recorded commit when that commit changed since the last sync,
+  and leaves the checkout alone otherwise, so a weekly pull still survives.
+
+### Upgrading
+- Projects that bundle the skill: copy `scripts/project-sync.sh` over
+  `.claude/hooks/sync-n2i-skill.sh`. After that, a pointer bump needs only `git pull`.
+
 ## 1.10.2 (2026-10-16)
 
 ### Fixed
