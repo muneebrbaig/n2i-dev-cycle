@@ -277,7 +277,7 @@ each fix:** append a `Phase 7: <what was fixed> (RED → GREEN)` line to the led
 
 **Load `references/debugging.md`.** No fix without root-cause investigation first;
 symptom fixes are failure. Its "Phase 7 orchestration" section holds the per-finding
-loop (root cause → failing repro test → one fix → re-validate → report), the
+loop (root cause → failing repro test → one fix → re-validate → sweep for the same bug elsewhere → report), the
 three-failed-fixes stop rule, parallel dispatch for independent findings, and the
 `"fix: [details]"` cold-start resume (read `progress.md` + `git log`, search memory,
 resume at the first incomplete phase). Repeat until the user is satisfied.

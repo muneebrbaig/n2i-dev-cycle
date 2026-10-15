@@ -93,6 +93,21 @@ Add the skill's local-state folder to `.gitignore` (for `n2i-sec-audit`, `.n2i-s
   diff .claude/hooks/sync-n2i-skill.sh .claude/skills/n2i-dev-cycle/scripts/project-sync.sh
   ```
 
+## Releasing a skill change to a bundled project
+
+After releasing a skill (commit, tag, push to `main`), a project that wants the change now, not within a week, does this on a new branch off its default branch:
+
+1. For each released skill, move the pointer. `ignore = all` makes a plain `git add` skip it, so force it:
+
+   ```bash
+   git submodule update --remote -- .claude/skills/n2i-dev-cycle
+   git add --force .claude/skills/n2i-dev-cycle
+   ```
+
+2. If the release changed `scripts/project-sync.sh` (the CHANGELOG's "Upgrading" section says so), copy it over `.claude/hooks/sync-n2i-skill.sh` in the same change.
+3. Commit, push, open the merge request, merge.
+4. Engineers run `git pull` and restart Claude Code. A release that changed the hook reaches them one session late, so tell them to restart twice.
+
 ## Migrate an existing install
 
 A personal copy in `~/.claude/skills/n2i-dev-cycle` takes priority over the project copy, so engineers who installed the skill themselves keep running it, and it never auto-updates. They must remove it. Project agents in `.claude/agents/` do take priority over `~/.claude/agents/`, so a leftover personal skill can end up paired with the project's agents at a different version.

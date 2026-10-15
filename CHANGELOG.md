@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- Phase 7 now ends each fix with a sweep: look for the same class of bug in the repo, sibling
+  repos, templates, and docs, then name what a copied or pinned version needs to pick the fix
+  up (`references/debugging.md`, Step 5).
+- `PROJECT-INSTALL.md` has a "Releasing a skill change to a bundled project" checklist: bump
+  the submodule pointer (forced, because of `ignore = all`), copy the hook if it changed, merge,
+  then engineers pull and restart.
+
 ## 1.10.3 (2026-10-16)
 
 ### Fixed

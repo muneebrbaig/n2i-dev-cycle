@@ -50,6 +50,17 @@ stack fixes. Don't know → say so, research more.
    elsewhere, or needing "massive refactoring", means the design is wrong, not
    the hypothesis. Question the architecture with the user before fix #4.
 
+## Step 5 — Sweep and Propagate
+
+A fixed bug usually has siblings and downstream copies. Before reporting done:
+
+1. **Sweep for the same class** — grep the repo, sibling repos and skills, templates,
+   scripts, and docs and tests that describe the old behavior. Run the failing repro
+   or a check for the pattern against each hit. Report what you found, even if nothing.
+2. **Check propagation** — if the code is copied, bundled, or pinned elsewhere
+   (submodule pointer, template copied into projects, installed copy), name what must
+   be updated and who has to act. Not done until that is covered.
+
 ## Parallel Dispatch
 
 When there are **2+ genuinely independent failures** — different subsystems,
@@ -82,7 +93,9 @@ The skill's Feedback phase applies the steps above per finding:
 2. **Failing repro test** (`tdd.md`), then **one fix** at the root cause — no
    bundled refactoring.
 3. **Re-validate** through the Phase 5 gate (`build-loop.md` → Validate).
-4. **Report** what changed; append a ledger line.
+4. **Sweep and propagate** (Step 5) — same class of bug elsewhere, and how the fix
+   reaches users of any copy or pinned version.
+5. **Report** what changed and what the sweep found; append a ledger line.
 
 **Three fixes that don't hold → STOP.** Question the design with the user, not fix #4.
 
