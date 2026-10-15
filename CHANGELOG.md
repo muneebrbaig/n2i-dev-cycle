@@ -1,8 +1,22 @@
 # Changelog
 
-## Unreleased
+## 1.10.2 (2026-10-16)
+
+### Fixed
+- The `Agents:` check in `SKILL.md` used an unquoted `n2i-*.md` glob. zsh aborts with
+  `no matches found` when nothing matches, so the skill failed to load. It now uses `find`.
+- `scripts/project-sync.sh` ran `git submodule update --init` every session, which reset a
+  pulled tip to the commit the project had recorded, so the weekly update lasted one session.
+  Init now runs only for a submodule that is not checked out yet.
+
+### Upgrading
+- Projects that bundle the skill: copy `scripts/project-sync.sh` over
+  `.claude/hooks/sync-n2i-skill.sh`. Bump the submodule pointer once so every clone lands on
+  the fixed version.
 
 ### Changed
+- The README now says how a bundled project gets a fix: the hook pulls once a week, and
+  bumping the submodule pointer reaches every clone at its next pull.
 - Documented the companion [`n2i-sec-audit`](https://github.com/muneebrbaig/n2i-sec-audit)
   skill. The README shows how to hand an audit report to this skill by naming the finding
   IDs to fix, and `PROJECT-INSTALL.md` has a section on adding a second `n2i-*` skill to a
