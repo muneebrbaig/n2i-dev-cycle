@@ -204,6 +204,11 @@ One hook serves every `n2i-*` skill a project bundles, such as
 [`n2i-sec-audit`](https://github.com/muneebrbaig/n2i-sec-audit), a companion skill that audits
 a codebase for security gaps. A second skill needs only its own submodule line.
 
+The hook pulls the latest `main` once a week per clone. To ship a fix sooner, bump the
+submodule pointer in the project and merge it: every clone picks it up on its next `git pull`
+and session start. When a release changes `scripts/project-sync.sh`, copy the new version over
+the project's `.claude/hooks/sync-n2i-skill.sh` in the same change.
+
 ### Choosing a session model
 
 The session model drives how reliably the skill's gates hold. In our evals, Opus followed

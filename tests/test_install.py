@@ -1,5 +1,6 @@
 import os
 import re
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -31,8 +32,9 @@ class InstallAgents(unittest.TestCase):
     def run_script(self):
         return subprocess.run(["bash", str(SCRIPT)], env=self.env, capture_output=True, text=True, check=True)
 
-    def agents_status(self):
-        out = subprocess.run(["bash", "-c", check_command()], env=self.env, capture_output=True, text=True, check=True)
+    def agents_status(self, shell="bash"):
+        out = subprocess.run([shell, "-c", check_command()], env=self.env, capture_output=True, text=True, check=True)
+        self.assertEqual(out.stderr, "")
         return out.stdout.strip()
 
     def test_links_every_agent(self):
@@ -82,6 +84,12 @@ class InstallAgents(unittest.TestCase):
     def test_check_is_quiet_when_skill_not_under_home(self):
         (self.home / ".claude" / "skills" / "n2i-dev-cycle").unlink()
         self.assertEqual(self.agents_status(), "AGENTS=ok")
+
+    @unittest.skipUnless(shutil.which("zsh"), "zsh not installed")
+    def test_check_has_no_glob_error_under_zsh(self):
+        self.assertTrue(self.agents_status("zsh").startswith("AGENTS=missing:"))
+        (self.home / ".claude" / "skills" / "n2i-dev-cycle").unlink()
+        self.assertEqual(self.agents_status("zsh"), "AGENTS=ok")
 
     def test_readme_points_at_script(self):
         self.assertIn("scripts/install-agents.sh", (ROOT / "README.md").read_text())

@@ -79,6 +79,15 @@ class ProjectSync(unittest.TestCase):
         self.assertTrue(stamp.exists())
         self.assertTrue((self.agents() / "n2i-two.md").is_symlink())
 
+    def test_next_session_keeps_pulled_tip(self):
+        self.run_script()
+        (self.project / ".git" / "n2i-skill-synced").unlink()
+        self.push_upstream("n2i-two")
+        self.run_script()
+        tip = self.head()
+        self.run_script()
+        self.assertEqual(self.head(), tip)
+
     def test_recent_stamp_skips_remote_pull(self):
         self.run_script()
         pinned = self.head()
