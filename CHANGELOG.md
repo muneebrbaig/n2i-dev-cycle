@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.11.0 (2026-10-28)
 
 ### Changed
 - Phase 7 now ends each fix with a sweep: look for the same class of bug in the repo, sibling
@@ -18,6 +18,10 @@
 - The "can't go red" list, the reviewer agent and `references/frontend-standards.md` name the
   e2e patterns behind false greens: absence checks before data settles, waits that don't apply
   after client-side navigation, layout elements, skipped steps, `.first()`.
+
+### Upgrading
+- Projects that bundle the skill: bump the submodule pointer (`PROJECT-INSTALL.md`, "Releasing
+  a skill change to a bundled project"). `scripts/project-sync.sh` is unchanged, so no hook copy.
 
 ## 1.10.3 (2026-10-16)
 
