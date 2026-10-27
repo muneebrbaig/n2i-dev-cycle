@@ -9,6 +9,15 @@
 - `PROJECT-INSTALL.md` has a "Releasing a skill change to a bundled project" checklist: bump
   the submodule pointer (forced, because of `ignore = all`), copy the hook if it changed, merge,
   then engineers pull and restart.
+- A test that is the deliverable (an e2e spec, coverage for existing code) gets its RED by
+  breaking the app once per kind of assertion; shipping with go-red unchecked is no longer a
+  known limitation (`references/tdd.md`).
+- A diff that is mostly tests always gets the pre-push review, from the fresh-context
+  `n2i-prepush-reviewer`. A finding that a test can't go red is proven red before and after
+  its fix (`references/build-loop.md`).
+- The "can't go red" list, the reviewer agent and `references/frontend-standards.md` name the
+  e2e patterns behind false greens: absence checks before data settles, waits that don't apply
+  after client-side navigation, layout elements, skipped steps, `.first()`.
 
 ## 1.10.3 (2026-10-16)
 

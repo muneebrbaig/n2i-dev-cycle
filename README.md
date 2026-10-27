@@ -35,7 +35,8 @@ needed, so reviewing before the MR/PR exists costs nothing.
 The review scales with the change. A bounded change under roughly 100 changed lines that
 touches no tenant-isolation, auth, or migration code skips the prompt, and the handover notes
 it. Architectural changes, larger diffs, and anything touching those areas still ask, defaulting
-to yes.
+to yes. A diff that is mostly tests always gets the review, from the fresh-context
+`n2i-prepush-reviewer` rather than a review in the session that wrote the tests.
 
 If `engineering:code-review` isn't installed, the skill dispatches the read-only
 `n2i-prepush-reviewer` agent instead; if that is missing too, it skips the step and keeps going
@@ -51,7 +52,8 @@ A green suite can hide a weakened check, so before the review Phase 5 reads the 
   stub is surfaced to you with `file:line`, not folded into "tests pass".
 - **Mutation spot-check.** The skill inverts one condition per logic unit and expects a red
   test, then restores the line and confirms with `git diff`. A suite that stays green names
-  the missing test.
+  the missing test. When the test is the change itself (an e2e spec, say), the skill breaks
+  the app instead and expects red.
 - **Dead code.** Code your change orphaned is removed; pre-existing dead code is listed in the
   handover and left for you to decide.
 

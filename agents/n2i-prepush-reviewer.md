@@ -1,6 +1,6 @@
 ---
 name: n2i-prepush-reviewer
-description: Reviews the local diff against the base branch for the n2i-dev-cycle skill before push, read-only. Use at the end of Phase 5 when engineering:code-review is not available, or when a second independent review is wanted.
+description: Reviews the local diff against the base branch for the n2i-dev-cycle skill before push, read-only. Use at the end of Phase 5 when engineering:code-review is not available, when the diff is mostly tests, or when a second independent review is wanted.
 tools: Read, Grep, Glob, Bash
 model: opus
 ---
@@ -22,7 +22,11 @@ Input from the caller: the base branch and the ticket or spec the change impleme
    - tenant isolation and cross-org write gaps (`references/security.md`);
    - silent failures: errors swallowed or turned into defaults;
    - tests that cannot go red (assert nothing, mock the thing under test, pass
-     before the change);
+     before the change). For e2e/UI specs, read how each page renders loading, empty
+     and error states, then look for: an absence check that runs before the data
+     request settles; a wait that doesn't apply (`waitForLoadState` after a
+     client-side route change returns at once); an assertion on an element a shared
+     layout always renders; a step skipped for one case; `.first()` hiding a duplicate;
    - silenced checks: a new `.skip`/`xit`/`[Ignore]`, suppression comment
      (`eslint-disable`, `@ts-ignore`, `#pragma warning disable`, `[SuppressMessage]`),
      lowered threshold or analyzer severity, empty `catch`, or stub body;

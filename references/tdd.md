@@ -36,7 +36,8 @@ logic tests that follow must fail if the scaffold is wrong.
 the production change that would make this test fail before you write it.
 
 **Verify RED** — run it. It must *fail*, not error, and fail because the feature
-is missing. Passes immediately → you're testing existing behaviour, fix the test.
+is missing. Passes immediately → you're testing existing behaviour, fix the test
+(unless the test is the deliverable: see Tests for Behavior That Already Exists).
 Record the failure — test name + the assertion message / reason — in this unit's
 ledger line (`SKILL.md` Checkpoint Ledger). A GREEN commit with no RED line before
 it is indistinguishable from tests-after.
@@ -50,6 +51,17 @@ warnings).
 **REFACTOR** — remove duplication, fix names, extract helpers. Stay green. No new
 behaviour.
 
+## Tests for Behavior That Already Exists
+
+When the test is the deliverable (an e2e spec, a characterization test, coverage for
+existing code), it passes on its first run by design. RED then comes from breaking the
+behavior: once per kind of assertion, break what it checks in the working tree or the
+test setup (return a 500 from the endpoint it depends on, rename the heading, drop the
+link), run it, and watch it fail on that assertion. Then restore and confirm with
+`git diff`. Record each break and its failure in the ledger as the RED line. A test that
+stays green against a broken app is not done, and "go-red not checked" is not a known
+limitation to ship with.
+
 ## Tests That Can't Go Red
 
 Ask of every test: if the implementation were wrong, would this go red? If not, it
@@ -60,6 +72,10 @@ isn't coverage. Watch for:
   the behaviour it produced
 - Asserting the value the test itself computed or hard-coded into the fake
 - A snapshot as the only check on a logic change
+- E2E/UI: an absence check (no alert, count 0) that runs before the data request
+  settles; a wait that doesn't apply (`waitForLoadState` after a client-side route change
+  returns at once); an assertion on an element a shared layout always renders; a step
+  skipped for one case of a loop; `.first()` hiding a duplicate match
 
 To prove a test can go red on code that already exists, run the mutation spot-check
 in `references/diff-review.md` at the Phase 5 pre-push review.

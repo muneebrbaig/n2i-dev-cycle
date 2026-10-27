@@ -133,12 +133,50 @@ class ReviewGuardrails(unittest.TestCase):
                 self.assertIn(needle, section)
 
 
+class TestsThatCanGoRed(unittest.TestCase):
+    def test_tdd_gives_a_red_step_when_the_test_is_the_deliverable(self):
+        text = read("references/tdd.md")
+        section = text.split("## Tests for Behavior That Already Exists")[1].split("\n## ")[0]
+        for needle in ("500", "restore", "ledger"):
+            with self.subTest(needle=needle):
+                self.assertIn(needle, section)
+        verify_red = text.split("**Verify RED**")[1].split("\n\n")[0]
+        self.assertIn("Tests for Behavior That Already Exists", verify_red)
+
+    def test_tdd_lists_e2e_patterns_that_cannot_go_red(self):
+        section = read("references/tdd.md").split("## Tests That Can't Go Red")[1].split("\n## ")[0]
+        for needle in ("client-side route change", "layout", "`.first()`"):
+            with self.subTest(needle=needle):
+                self.assertIn(needle, section)
+
+    def test_reviewer_agent_knows_the_e2e_patterns(self):
+        text = read("agents/n2i-prepush-reviewer.md")
+        self.assertIn("client-side route change", text)
+        self.assertIn("`.first()`", text)
+
+    def test_test_heavy_diffs_get_a_fresh_context_review(self):
+        pre_push = read("references/build-loop.md").split("### Pre-push review")[1].split("\n## ")[0]
+        self.assertIn("mostly tests", pre_push)
+        self.assertIn("own context", pre_push)
+        self.assertIn("mostly tests", read("SKILL.qwen.md").split("### Pre-push review")[1])
+        self.assertIn("mostly tests", read("references/execution.md"))
+
+    def test_a_fix_for_a_test_that_cannot_go_red_is_proven(self):
+        pre_push = read("references/build-loop.md").split("### Pre-push review")[1].split("\n## ")[0]
+        self.assertIn("go red on the failure", pre_push)
+
+    def test_e2e_assertions_are_chosen_from_each_page_source(self):
+        text = read("references/frontend-standards.md")
+        section = text.split("## Browser Checks")[1].split("\n## ")[0]
+        self.assertIn("loading, empty and error", section)
+
+
 class ReadmeCoverage(unittest.TestCase):
     def test_readme_describes_the_new_behaviour(self):
         text = read("README.md")
         for needle in ("diff-review.md", "doubt.md", "silenced checks", "Mutation spot-check",
                        "n2i-diff-scanner", "n2i-doubter", "`Critical`", "400 changed lines",
-                       "noticed", "rollback"):
+                       "noticed", "rollback", "mostly tests"):
             with self.subTest(needle=needle):
                 self.assertIn(needle, text)
 

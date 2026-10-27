@@ -132,8 +132,9 @@ If validation fails:
 
 Once green, before Phase 6, scale the review to the Phase 1 class. **Bounded** with a small
 diff (roughly under 100 changed lines) that touches no tenant-isolation, auth, or migration
-code: skip the prompt, note "review skipped: bounded, small diff" in the handover, and run it
-only if the user asks. **Architectural**, a larger diff, or anything touching those areas: ask
+code and is not mostly tests: skip the prompt, note "review skipped: bounded, small diff" in
+the handover, and run it only if the user asks. Test code packs many claims into few lines, so
+a diff that is mostly tests always gets the review. **Architectural**, a larger diff, or anything touching those areas: ask
 user "Run engineering:code-review on this diff before pushing?" Default yes if unsure. Reviewing here — against the local diff, before an MR/PR exists — catches
 scope-creep and correctness issues while they're still a `git commit --amend` or a clean follow-up
 commit away, instead of a fix-up commit sitting permanently in MR history after the fact. It also
@@ -143,6 +144,9 @@ skips triggering a CI run against a state you already know you're about to patch
   dispatch the `n2i-prepush-reviewer` subagent instead (read-only, `opus`; hand it the base
   branch and the ticket/spec). If that agent isn't installed either, skip silently — don't block
   the lifecycle — and offer a manual review pass if the user still wants one.
+- If the diff is mostly tests, dispatch `n2i-prepush-reviewer` even when
+  `engineering:code-review` is available. That skill runs in your own context and shares the
+  assumptions the tests were written on; the subagent starts fresh.
 - **Before the review, load `references/diff-review.md` and run its three checks** on
   your own diff: silenced checks, a mutation spot-check per logic unit, and dead code.
   Dispatch `n2i-diff-scanner` for the first and last (the mutation stays in the main
@@ -162,6 +166,10 @@ skips triggering a CI run against a state you already know you're about to patch
   it against the codebase, push back with reasoning if it's wrong or YAGNI, ask the user if it
   conflicts with a prior decision. A finding that's a real bug goes through `references/debugging.md`
   (root cause first) and `references/tdd.md` (failing test first).
+- A finding that a test can't go red, or a timing or race finding, is a bug in the test.
+  Before the fix, break the app so the test should go red on the failure the finding
+  describes, and confirm it stays green; after the fix, the same break turns it red. A
+  suggested fix you haven't seen work is not applied.
 - Fix the accepted findings, then **re-run this Phase 5 validation loop** (verification gate)
   before moving to Phase 6.
 - Optionally ask: "Compress findings into caveman-review one-liners for the MR/PR description?"

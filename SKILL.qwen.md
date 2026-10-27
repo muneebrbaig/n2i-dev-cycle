@@ -222,7 +222,10 @@ test, run it, watch it fail for the right reason, write minimal code to pass,
 refactor while green. Code written before its test → delete it, redo from the
 test. "Keep as reference" / "test after" are violations. Record each RED failure —
 test name + reason — in the ledger line for that unit; a GREEN commit with no
-preceding RED line reads identical to tests-after.
+preceding RED line reads identical to tests-after. When the test is the deliverable
+(an e2e spec, coverage for existing code), it passes first time by design: get RED by
+breaking what each kind of assertion checks (a 500 from its endpoint, a renamed
+heading), watch it fail, restore.
 
 Test-first: service methods, controller endpoints, component behaviour, bug
 repros. Exempt (but exercised by the tests that follow): entity properties,
@@ -302,8 +305,8 @@ automatically where installed; this is the fallback.)
 ### Pre-push review
 
 Once green, before Phase 6, scale the review to the Phase 1 class. **Bounded** with a small
-diff (roughly under 100 changed lines) touching no tenant-isolation, auth, or migration code:
-skip it, note "review skipped: bounded, small diff" in the handover, run it only if the user
+diff (roughly under 100 changed lines) touching no tenant-isolation, auth, or migration code,
+and not mostly tests: skip it, note "review skipped: bounded, small diff" in the handover, run it only if the user
 asks. Otherwise run a code review against the local diff
 (`git diff <base-branch>...HEAD` plus uncommitted work via `git diff HEAD` and untracked
 files via `git status --porcelain`, per SCOPE) — a third-party review skill if
@@ -313,7 +316,9 @@ run against a state you're about to patch. Also flag silent failures (errors
 swallowed or turned into defaults) and tests that can't go red. Handle findings with technical rigor:
 restate, verify against the codebase, push back on wrong / YAGNI. A finding
 that's a real bug goes through Systematic Debugging (root cause first) + TDD
-(failing test first). Fix accepted findings, re-run the Phase 5 gate.
+(failing test first). A finding that a test can't go red is a bug in the test: break
+the app so it should go red, confirm it stays green, fix, and confirm the same break
+now turns it red. Fix accepted findings, re-run the Phase 5 gate.
 
 ---
 
