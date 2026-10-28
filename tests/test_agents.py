@@ -35,6 +35,12 @@ class AgentFiles(unittest.TestCase):
             with self.subTest(agent=p.stem):
                 self.assertFalse(tools & WRITE_TOOLS)
 
+    def test_only_the_reviewer_can_invoke_skills(self):
+        for p in AGENTS:
+            tools = {t.strip() for t in frontmatter(p)["tools"].split(",")}
+            with self.subTest(agent=p.stem):
+                self.assertEqual("Skill" in tools, p.stem == "n2i-prepush-reviewer")
+
     def test_agents_are_referenced_in_docs(self):
         docs = {
             "execution": (ROOT / "references/execution.md").read_text(),

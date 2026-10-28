@@ -162,12 +162,22 @@ class TestsThatCanGoRed(unittest.TestCase):
     def test_review_runs_in_the_fresh_context_opus_agent(self):
         pre_push = read("references/build-loop.md").split("### Pre-push review")[1].split("\n## ")[0]
         self.assertIn('"Run n2i-prepush-reviewer on this diff before pushing?"', pre_push)
-        self.assertIn("own context", pre_push)
-        self.assertIn("fallback", pre_push)
+        self.assertIn("never invoke a review skill in your own context", pre_push)
+        self.assertNotIn("fallback when the agent isn't installed", pre_push)
+        self.assertNotIn("If accepted and available", pre_push)
+        self.assertNotIn("engineering:code-review", read("references/diff-review.md"))
         for rel in ("references/execution.md", "agents/n2i-prepush-reviewer.md", "README.md"):
             with self.subTest(ref=rel):
                 self.assertNotIn("when `engineering:code-review` is unavailable", read(rel))
                 self.assertNotIn("when engineering:code-review is not available", read(rel))
+
+    def test_reviewer_agent_chains_review_skills_then_its_checklist(self):
+        text = read("agents/n2i-prepush-reviewer.md").split("---", 2)[2]
+        first, second = text.index("`engineering:code-review`"), text.index("`code-review`")
+        self.assertLess(first, second)
+        self.assertIn("Never pass `--fix`", text)
+        self.assertIn("whichever skill ran", text)
+        self.assertIn("which review skill ran", text)
 
     def test_a_fix_for_a_test_that_cannot_go_red_is_proven(self):
         pre_push = read("references/build-loop.md").split("### Pre-push review")[1].split("\n## ")[0]

@@ -39,10 +39,12 @@ to yes. A diff that is mostly tests always gets the review.
 
 The review is the read-only `n2i-prepush-reviewer` agent, which runs on Opus in a fresh
 context, so it doesn't share the assumptions the change was written on, whatever model the
-session uses. `engineering:code-review` runs inside the session, so it is only the fallback
-when the agent isn't installed; if both are missing, the skill skips the step and keeps going
-(`caveman:caveman-review`, which compresses findings into the handover summary, is optional
-in the same way). Same best-effort pattern the memory/`claude-mem` integration uses.
+session uses. Inside it, the agent runs `engineering:code-review`, or Claude Code's built-in
+`code-review` when that isn't installed, then its own checklist on top: tests that can't go
+red, silenced checks, tenant isolation, and scope against the ticket. Without the agent, the
+skill runs the same instructions in a general-purpose Opus subagent. `caveman:caveman-review`,
+which compresses findings into the handover summary, is optional and skipped when missing,
+the same best-effort pattern the memory/`claude-mem` integration uses.
 
 ### What the diff checks catch
 

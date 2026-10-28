@@ -142,16 +142,18 @@ skips triggering a CI run against a state you already know you're about to patch
 
 - The review is the `n2i-prepush-reviewer` subagent (read-only, `opus`; hand it the base
   branch and the ticket/spec). It starts from fresh context, so it doesn't share the
-  assumptions the change was written on. `engineering:code-review` runs in your own context
-  on your model, so use it only as the fallback when the agent isn't installed; say so when
-  you do. If neither is available, skip silently — don't block the lifecycle — and offer a
-  manual review pass if the user still wants one.
+  assumptions the change was written on. Inside it, it runs `engineering:code-review`, else
+  the built-in `code-review`, then its own checklist on top. Dispatch it even from an Opus
+  session: never invoke a review skill in your own context, where it shares your
+  assumptions. If the agent isn't installed, use the named-agent fallback in
+  `references/execution.md` (`general-purpose`, `model: opus`, the agent's instructions
+  inline).
 - **Before the review, load `references/diff-review.md` and run its three checks** on
   your own diff: silenced checks, a mutation spot-check per logic unit, and dead code.
   Dispatch `n2i-diff-scanner` for the first and last (the mutation stays in the main
   agent) and review its hit list. They apply whether or not the review itself runs, so a skipped review (bounded, small
   diff) still gets the silenced-check scan. Hand any hits to the reviewer as context.
-- If accepted and available, invoke it against the diff: `git diff <base-branch>...HEAD` plus any
+- If accepted, invoke it against the diff: `git diff <base-branch>...HEAD` plus any
   uncommitted work (`git diff HEAD`) and untracked files (`git status --porcelain`) (backend
   and/or frontend paths per SCOPE), not a PR URL — no MR/PR exists yet at this point.
   Ask it to also flag silent failures (errors swallowed or turned into defaults) and tests

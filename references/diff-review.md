@@ -1,7 +1,7 @@
 # Diff Review Checks
 
 Read at the Phase 5 pre-push review, before you review your own diff or hand it to
-`n2i-prepush-reviewer` / `engineering:code-review`. Three checks that a green suite
+`n2i-prepush-reviewer`. Three checks that a green suite
 cannot give you: whether a check was silenced to get green, whether the new tests
 can actually go red, and whether the diff leaves dead code behind.
 
