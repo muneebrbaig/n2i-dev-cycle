@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.11.1 (2026-10-28)
+
+### Changed
+- The pre-push review is always the `n2i-prepush-reviewer` agent, which runs on Opus in a fresh
+  context. `engineering:code-review` runs inside the session on the session's model and shares
+  its assumptions, so it is now only the fallback when the agent isn't installed
+  (`references/build-loop.md`). Which diffs get reviewed is unchanged.
+
+### Upgrading
+- Projects that bundle the skill: bump the submodule pointer. `scripts/project-sync.sh` is
+  unchanged.
+
 ## 1.11.0 (2026-10-28)
 
 ### Changed
