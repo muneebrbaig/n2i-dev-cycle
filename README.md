@@ -40,7 +40,8 @@ to yes. A diff that is mostly tests always gets the review.
 The review is the read-only `n2i-prepush-reviewer` agent, which runs on Opus in a fresh
 context, so it doesn't share the assumptions the change was written on, whatever model the
 session uses. Inside it, the agent runs `engineering:code-review`, or Claude Code's built-in
-`code-review` when that isn't installed, then its own checklist on top: tests that can't go
+`code-review` when that isn't installed (always at `high` with the default findings cap, so a
+level the user typed earlier, such as `ultra`, never carries over), then its own checklist on top: tests that can't go
 red, silenced checks, tenant isolation, and scope against the ticket. Without the agent, the
 skill runs the same instructions in a general-purpose Opus subagent. `caveman:caveman-review`,
 which compresses findings into the handover summary, is optional and skipped when missing,

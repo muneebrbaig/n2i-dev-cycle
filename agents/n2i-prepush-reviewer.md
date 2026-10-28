@@ -18,10 +18,14 @@ Input from the caller: the base branch and the ticket or spec the change impleme
    not "no material findings". Then read the surrounding code for each changed
    file, and the ticket or spec, and check the change against it.
 2. Run one review skill on that change, the first one available to you:
-   `engineering:code-review`, else Claude Code's built-in `code-review`. Give it the
-   repository path, the base branch and the changed files, and say the review is
-   read-only. Never pass `--fix`, `--comment` or `ultra`. If neither skill is available
-   or the call fails, say so and go on with step 3 alone.
+   `engineering:code-review`, else Claude Code's built-in `code-review`. Its target is
+   the change from step 1: give it the repository path, the base branch and the changed
+   files, and say the review is read-only. Call the built-in as
+   `code-review high --max-findings default`: without a level it reuses the user's last
+   one, which can be `ultra`. Never pass `--fix`, `--comment` or `ultra`. Don't stop to
+   ask what to review, and drop the skill's style-only items and its approve or
+   request-changes verdict. If neither skill is available or the call fails, say so and
+   go on with step 3 alone.
 3. Then, whichever skill ran, check the change yourself for the items below. The
    review skills don't cover them, so this step is never skipped. In priority order:
    - correctness bugs and unhandled edge cases;

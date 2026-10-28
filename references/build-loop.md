@@ -112,8 +112,8 @@ in parallel), handing it the side, the directory, and the exact validate command
 returns `RESULT`, each command with its exit code, totals, and failure traces only. A
 `pass` report counts as evidence only with the commands and exit codes shown
 (`verification.md`). On `fail`, fix in the main agent, then re-dispatch. If the agent
-isn't installed, run the commands yourself per the next paragraph and fall back per
-`references/execution.md` (named agents).
+isn't installed, dispatch `general-purpose` with `model: haiku` and the same instructions
+inline (`references/execution.md`, named agents).
 
 **Keep the runner noise out of context.** Use the quietest reporter that still
 shows exit code and failure count (`-v minimal` / `--watch=false` above; add
@@ -171,8 +171,11 @@ skips triggering a CI run against a state you already know you're about to patch
   Before the fix, break the app so the test should go red on the failure the finding
   describes, and confirm it stays green; after the fix, the same break turns it red. A
   suggested fix you haven't seen work is not applied.
-- Fix the accepted findings, then **re-run this Phase 5 validation loop** (verification gate)
-  before moving to Phase 6.
+- Fix the accepted findings, then **re-run this Phase 5 validation loop** (verification gate),
+  final `n2i-unit-runner` run included, and re-run the `diff-review.md` checks on the fixes.
+  The review doesn't run again by default: re-dispatch the reviewer only when a fix was for a
+  `Critical` finding, the fixes add roughly 100 or more changed lines, or the user asks. Then
+  move to Phase 6.
 - Optionally ask: "Compress findings into caveman-review one-liners for the MR/PR description?"
   If yes and `caveman:caveman-review` is available, run it over the findings and fold the output
   into Phase 6's handover summary. If not available, skip silently — the raw findings still stand.

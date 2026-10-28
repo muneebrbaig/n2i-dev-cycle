@@ -119,6 +119,18 @@ class ReviewGuardrails(unittest.TestCase):
         self.assertIn("`Critical` and `Required` before Phase 6", pre_push)
         self.assertIn("400 changed lines", pre_push)
 
+    def test_unit_runner_fallback_is_one_path(self):
+        text = read("references/build-loop.md")
+        final_run = " ".join(text.split("**Final run via")[1].split("**Keep the runner")[0].split())
+        self.assertIn("dispatch `general-purpose` with `model: haiku`", final_run)
+        self.assertNotIn("run the commands yourself", final_run)
+
+    def test_fixes_rerun_validation_and_diff_checks_not_the_review(self):
+        pre_push = read("references/build-loop.md").split("### Pre-push review")[1].split("\n## ")[0]
+        pre_push = " ".join(pre_push.split())
+        self.assertIn("re-run the `diff-review.md` checks on the fixes", pre_push)
+        self.assertIn("re-dispatch the reviewer only when", pre_push)
+
     def test_plan_estimates_size_and_rollback(self):
         text = read("references/planning.md")
         self.assertIn("Changed lines (rough)", text)
@@ -172,10 +184,12 @@ class TestsThatCanGoRed(unittest.TestCase):
                 self.assertNotIn("when engineering:code-review is not available", read(rel))
 
     def test_reviewer_agent_chains_review_skills_then_its_checklist(self):
-        text = read("agents/n2i-prepush-reviewer.md").split("---", 2)[2]
+        text = " ".join(read("agents/n2i-prepush-reviewer.md").split("---", 2)[2].split())
         first, second = text.index("`engineering:code-review`"), text.index("`code-review`")
         self.assertLess(first, second)
-        self.assertIn("Never pass `--fix`", text)
+        self.assertIn("Never pass `--fix`, `--comment` or `ultra`", text)
+        self.assertIn("`code-review high --max-findings default`", text)
+        self.assertIn("Don't stop to ask what to review", text)
         self.assertIn("whichever skill ran", text)
         self.assertIn("which review skill ran", text)
 
