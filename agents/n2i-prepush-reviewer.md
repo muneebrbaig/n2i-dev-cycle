@@ -1,6 +1,6 @@
 ---
 name: n2i-prepush-reviewer
-description: Reviews the local diff against the base branch for the n2i-dev-cycle skill before push, read-only. Use at the end of Phase 5 when engineering:code-review is not available, when the diff is mostly tests, or when a second independent review is wanted.
+description: Reviews the local diff against the base branch for the n2i-dev-cycle skill before push, read-only. Use at the end of Phase 5 whenever the pre-push review runs, and when a second independent review is wanted.
 tools: Read, Grep, Glob, Bash
 model: opus
 ---

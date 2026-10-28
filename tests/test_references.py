@@ -154,12 +154,20 @@ class TestsThatCanGoRed(unittest.TestCase):
         self.assertIn("client-side route change", text)
         self.assertIn("`.first()`", text)
 
-    def test_test_heavy_diffs_get_a_fresh_context_review(self):
+    def test_test_heavy_diffs_always_get_the_review(self):
         pre_push = read("references/build-loop.md").split("### Pre-push review")[1].split("\n## ")[0]
         self.assertIn("mostly tests", pre_push)
-        self.assertIn("own context", pre_push)
         self.assertIn("mostly tests", read("SKILL.qwen.md").split("### Pre-push review")[1])
-        self.assertIn("mostly tests", read("references/execution.md"))
+
+    def test_review_runs_in_the_fresh_context_opus_agent(self):
+        pre_push = read("references/build-loop.md").split("### Pre-push review")[1].split("\n## ")[0]
+        self.assertIn('"Run n2i-prepush-reviewer on this diff before pushing?"', pre_push)
+        self.assertIn("own context", pre_push)
+        self.assertIn("fallback", pre_push)
+        for rel in ("references/execution.md", "agents/n2i-prepush-reviewer.md", "README.md"):
+            with self.subTest(ref=rel):
+                self.assertNotIn("when `engineering:code-review` is unavailable", read(rel))
+                self.assertNotIn("when engineering:code-review is not available", read(rel))
 
     def test_a_fix_for_a_test_that_cannot_go_red_is_proven(self):
         pre_push = read("references/build-loop.md").split("### Pre-push review")[1].split("\n## ")[0]

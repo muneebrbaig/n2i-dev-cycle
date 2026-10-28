@@ -34,7 +34,7 @@ delegations below. Prefer them by name (`subagent_type`):
 | `n2i-ci-triage` | `sonnet` | Phase 7/8 root cause for one independent failure domain (no edits) |
 | `n2i-diff-scanner` | `haiku` | Phase 5 mechanical scan of the diff for silenced checks and dead-code candidates (`diff-review.md`) |
 | `n2i-doubter` | `opus` | Architectural class: adversarial review of the plan or a unit's diff, artifact and contract only (`doubt.md`) |
-| `n2i-prepush-reviewer` | `opus` | Phase 5 pre-push review when `engineering:code-review` is unavailable or the diff is mostly tests |
+| `n2i-prepush-reviewer` | `opus` | Phase 5 pre-push review (`engineering:code-review` is the fallback when it isn't installed) |
 
 If a named agent isn't installed (dispatch rejects the name), fall back to the
 `general-purpose` agent with the `model` from the table above and the same
@@ -53,7 +53,7 @@ independent**:
 | Independent Phase 7 findings / Phase 8 CI jobs (`debugging.md` → Parallel Dispatch) — `n2i-ci-triage` | separate root causes, run concurrently |
 | Diff scan for silenced checks and dead-code candidates (Phase 5) — `n2i-diff-scanner` | full diff in, a short hit list out |
 | Doubt review (architectural class, `doubt.md`) — `n2i-doubter` | fresh context is the point; it sees the artifact and contract, never your reasoning |
-| Pre-push code review (Phase 5) — `engineering:code-review`, else `n2i-prepush-reviewer` (always the agent when the diff is mostly tests) | already its own skill |
+| Pre-push code review (Phase 5) — `n2i-prepush-reviewer`, else `engineering:code-review` | fresh context and a stronger model are the point; it never sees your reasoning |
 
 **Keep in the main agent** — do not hand off:
 

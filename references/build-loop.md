@@ -135,18 +135,17 @@ diff (roughly under 100 changed lines) that touches no tenant-isolation, auth, o
 code and is not mostly tests: skip the prompt, note "review skipped: bounded, small diff" in
 the handover, and run it only if the user asks. Test code packs many claims into few lines, so
 a diff that is mostly tests always gets the review. **Architectural**, a larger diff, or anything touching those areas: ask
-user "Run engineering:code-review on this diff before pushing?" Default yes if unsure. Reviewing here — against the local diff, before an MR/PR exists — catches
+user "Run n2i-prepush-reviewer on this diff before pushing?" Default yes if unsure. Reviewing here — against the local diff, before an MR/PR exists — catches
 scope-creep and correctness issues while they're still a `git commit --amend` or a clean follow-up
 commit away, instead of a fix-up commit sitting permanently in MR history after the fact. It also
 skips triggering a CI run against a state you already know you're about to patch.
 
-- If `engineering:code-review` isn't in the available-skills list this session, say so and
-  dispatch the `n2i-prepush-reviewer` subagent instead (read-only, `opus`; hand it the base
-  branch and the ticket/spec). If that agent isn't installed either, skip silently — don't block
-  the lifecycle — and offer a manual review pass if the user still wants one.
-- If the diff is mostly tests, dispatch `n2i-prepush-reviewer` even when
-  `engineering:code-review` is available. That skill runs in your own context and shares the
-  assumptions the tests were written on; the subagent starts fresh.
+- The review is the `n2i-prepush-reviewer` subagent (read-only, `opus`; hand it the base
+  branch and the ticket/spec). It starts from fresh context, so it doesn't share the
+  assumptions the change was written on. `engineering:code-review` runs in your own context
+  on your model, so use it only as the fallback when the agent isn't installed; say so when
+  you do. If neither is available, skip silently — don't block the lifecycle — and offer a
+  manual review pass if the user still wants one.
 - **Before the review, load `references/diff-review.md` and run its three checks** on
   your own diff: silenced checks, a mutation spot-check per logic unit, and dead code.
   Dispatch `n2i-diff-scanner` for the first and last (the mutation stays in the main

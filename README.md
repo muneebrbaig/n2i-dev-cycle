@@ -29,17 +29,18 @@ Cross-cutting mechanics — model selection (`haiku` for scaffolding, `sonnet` f
 The skill runs code review at the end of Phase 5, after build and test are green, before anything
 gets pushed. Catch a finding there and it's a clean amend or a pre-push commit, not a fix-up
 commit stuck in the MR/PR's history for good. CI also only has to run once against a state
-you've already reviewed. `engineering:code-review` works straight off a `git diff`, no PR URL
-needed, so reviewing before the MR/PR exists costs nothing.
+you've already reviewed. The reviewer works straight off a `git diff`, no PR URL needed, so
+reviewing before the MR/PR exists costs nothing.
 
 The review scales with the change. A bounded change under roughly 100 changed lines that
 touches no tenant-isolation, auth, or migration code skips the prompt, and the handover notes
 it. Architectural changes, larger diffs, and anything touching those areas still ask, defaulting
-to yes. A diff that is mostly tests always gets the review, from the fresh-context
-`n2i-prepush-reviewer` rather than a review in the session that wrote the tests.
+to yes. A diff that is mostly tests always gets the review.
 
-If `engineering:code-review` isn't installed, the skill dispatches the read-only
-`n2i-prepush-reviewer` agent instead; if that is missing too, it skips the step and keeps going
+The review is the read-only `n2i-prepush-reviewer` agent, which runs on Opus in a fresh
+context, so it doesn't share the assumptions the change was written on, whatever model the
+session uses. `engineering:code-review` runs inside the session, so it is only the fallback
+when the agent isn't installed; if both are missing, the skill skips the step and keeps going
 (`caveman:caveman-review`, which compresses findings into the handover summary, is optional
 in the same way). Same best-effort pattern the memory/`claude-mem` integration uses.
 
