@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.11.2 (2026-10-28)
+
+### Changed
+- `n2i-prepush-reviewer` now runs a review skill inside its own fresh Opus context:
+  `engineering:code-review`, else Claude Code's built-in `code-review` (never with `--fix`,
+  `--comment` or `ultra`), then its own checklist on top, whichever skill ran. The agent gains
+  the `Skill` tool, and its report says which review skill ran. This replaces 1.11.1's rule
+  that `engineering:code-review` was a fallback run in the session's own context.
+- The session never runs a review skill in its own context, even on Opus. Without the agent,
+  the existing `general-purpose` Opus fallback in `references/execution.md` runs the same
+  instructions.
+
+### Upgrading
+- Start a new Claude Code session: agent definitions, including the reviewer's new `Skill`
+  tool, load at session start.
+- Projects that bundle the skill: bump the submodule pointer. `scripts/project-sync.sh` is
+  unchanged.
+
 ## 1.11.1 (2026-10-28)
 
 ### Changed
