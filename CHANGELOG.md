@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.11.3 (2026-10-28)
+
+### Fixed
+- `n2i-prepush-reviewer` calls the built-in `code-review` as
+  `code-review high --max-findings default`. Without a level it reused the user's last one,
+  so a past `/code-review ultra` would have started the cloud review, and a leftover
+  `--max-findings` cap would have hidden findings.
+- The reviewer gives the review skill the step-1 diff as its target, doesn't stop to ask what
+  to review, and drops the skill's style-only items and approve or request-changes verdict.
+- Phase 5 names one fallback when `n2i-unit-runner` isn't installed: `general-purpose` on
+  `haiku` with the same instructions. It used to say both "run the commands yourself" and
+  "fall back per `execution.md`".
+- After review fixes, Phase 5 re-runs validation and the `diff-review.md` checks on the
+  fixes. The reviewer runs again only for a `Critical` fix, fixes of roughly 100 or more
+  changed lines, or when the user asks.
+
+### Upgrading
+- Start a new Claude Code session: agent definitions, including the reviewer's changed
+  instructions, load at session start.
+- Projects that bundle the skill: bump the submodule pointer. `scripts/project-sync.sh` is
+  unchanged.
+
 ## 1.11.2 (2026-10-28)
 
 ### Changed
