@@ -65,7 +65,11 @@ session. This session starts cold.
 3. List every **gap, contradiction, or ambiguity** you actually see. Do not
    re-brainstorm a finalized spec — only surface what an implementer would have
    to guess at.
-4. Get one explicit approval, then Phase 2.
+4. For each decision you recommend, find the spec's general rule it touches (how
+   "off" is encoded, which pass is shown, what a missing value means) and check the
+   decision against it, not only against the legacy app. A decision that adds a
+   second way to express the same state is a contradiction: list it in step 3.
+5. Get one explicit approval, then Phase 2.
 
 ## Common Mistakes to Avoid
 
@@ -73,6 +77,8 @@ session. This session starts cold.
   has none of the brainstorm context; the restate is where cross-session drift
   surfaces.
 - Re-litigating a finalized spec instead of flagging only the unclear parts.
+- Justifying a decision by legacy parity ("as on the desktop") when the spec states a
+  general rule that says otherwise.
 - Starting a branch or plan before the user has said yes to the intent.
 - Treating a new project as bounded because the *kind* of app is familiar — no
   existing flow to change means architectural.

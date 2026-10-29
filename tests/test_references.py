@@ -203,6 +203,45 @@ class TestsThatCanGoRed(unittest.TestCase):
         self.assertIn("loading, empty and error", section)
 
 
+class SpecConformance(unittest.TestCase):
+    def test_alignment_gate_checks_decisions_against_spec_rules(self):
+        text = read("references/brainstorming.md")
+        self.assertIn("general rule", text)
+        self.assertIn("second way", text)
+
+    def test_plan_self_review_checks_decisions_and_the_default_path(self):
+        section = read("references/planning.md").split("## Plan Self-Review")[1]
+        self.assertIn("general rule", section)
+        self.assertIn("default path", section)
+
+    def test_duplicated_rules_are_scanned_and_listed(self):
+        text = read("references/diff-review.md")
+        self.assertIn("## Duplicated Rules", text)
+        self.assertIn("every reader", text)
+        self.assertIn("DUPLICATE:", read("agents/n2i-diff-scanner.md"))
+
+    def test_reviewer_checks_the_spec_and_the_sibling_diff(self):
+        text = read("agents/n2i-prepush-reviewer.md")
+        for needle in ("clause by clause", "sibling", "claims to check", "boundary",
+                       "default path", "every reader"):
+            with self.subTest(needle=needle):
+                self.assertIn(needle, text)
+        pre_push = read("references/build-loop.md").split("### Pre-push review")[1].split("\n## ")[0]
+        self.assertIn("sibling", pre_push)
+        self.assertIn("spec", pre_push)
+
+    def test_tests_map_to_acceptance_criteria_and_boundaries(self):
+        cycle = read("references/tdd.md").split("## The Cycle")[1].split("\n## ")[0]
+        self.assertIn("acceptance criterion", cycle)
+        self.assertIn("boundary", cycle)
+
+    def test_pr_follows_repo_rules_and_is_reread(self):
+        step = read("references/finishing.md").split("## Step 3")[1].split("\n## ")[0]
+        self.assertIn("AGENTS.md", step)
+        self.assertIn("re-read", step)
+        self.assertIn("left unfixed", step)
+
+
 class ReadmeCoverage(unittest.TestCase):
     def test_readme_describes_the_new_behaviour(self):
         text = read("README.md")

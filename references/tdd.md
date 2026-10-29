@@ -32,6 +32,11 @@ logic tests that follow must fail if the scaffold is wrong.
 
 ## The Cycle
 
+**Before the first RED**, list each acceptance criterion and the test that will cover it:
+each option on its own, the combinations the ticket names ("can be used together"), and
+the off state. Add one test per boundary or shared element (an item in two groups, the
+first and last element), with the new step on. A criterion with no test is a gap to name.
+
 **RED** — one behaviour, clear name, real code (mocks only if unavoidable). Name
 the production change that would make this test fail before you write it.
 

@@ -12,14 +12,14 @@ clean finish, pattern capture):
 
 | Phase | What Happens |
 |-------|-------------|
-| **1. Ingest, Classify & Align** | Classifies the work (spike / bounded / architectural). No ticket yet → brainstorms a ticket draft for Product review and stops. Ticket already finalized → restates the spec, flags every gap or ambiguity, gets one approval. Searches memory; starts a checkpoint ledger; checks skill-state hygiene (`.n2i-dev-cycle/` gitignored, no secrets in `notes.md`). |
+| **1. Ingest, Classify & Align** | Classifies the work (spike / bounded / architectural). No ticket yet → brainstorms a ticket draft for Product review and stops. Ticket already finalized → restates the spec, flags every gap or ambiguity, checks each recommended decision against the spec's general rules (not only the legacy app), gets one approval. Searches memory; starts a checkpoint ledger; checks skill-state hygiene (`.n2i-dev-cycle/` gitignored, no secrets in `notes.md`). |
 | **2. Branch** | Suggests a branch name or lets you create your own, and offers an isolated git worktree for long or multi-session work. |
-| **3. Plan** | Structured implementation plan with concrete field lists, method signatures, and named test cases — no placeholders, a rough changed-line estimate with a split proposed past about 400, and a rollback path for each migration. Self-reviewed against the spec. Architectural work gets an offer of a fresh-context doubt review. Waits for your approval. |
+| **3. Plan** | Structured implementation plan with concrete field lists, method signatures, and named test cases — no placeholders, a rough changed-line estimate with a split proposed past about 400, and a rollback path for each migration. Self-reviewed against the spec, including which path pays each accepted cost (a new cost on the default path, every option off, needs your yes). Architectural work gets an offer of a fresh-context doubt review. Waits for your approval. |
 | **4. Implement** | Business logic is test-first (RED → GREEN → REFACTOR); scaffolding is exempt but exercised by the tests that follow. Intra-phase review checkpoints (all of them for architectural work, none for bounded changes, adjustable on request). The RED failure line is recorded in the ledger before each GREEN commit, so test-first order survives a session or machine switch. Out-of-scope findings are logged as "noticed" ledger lines instead of fixed in place. |
-| **5. Validate** | Runs the project's format + build + test — `dotnet` / `ng` by default, or the `BACKEND_VALIDATE_CMD` / `FRONTEND_VALIDATE_CMD` config snippets on any other stack. Evidence-before-claims gate: no "green" without a fresh run in hand. Then diff checks a green suite can't give (silenced checks, a mutation spot-check, dead code) and a code review of the local diff with severity-labeled findings (verified, not rubber-stamped; a real bug routes through the debugging + TDD refs) before anything gets pushed. |
-| **6. Handover** | Summarizes changes, lists what to test locally, notes limitations (including the "noticed" items), and flags public-contract breaks, migration rollback, and doc changes. Builds and runs affected e2e specs (in a subagent) against a dev or throwaway DB where possible. |
+| **5. Validate** | Runs the project's format + build + test — `dotnet` / `ng` by default, or the `BACKEND_VALIDATE_CMD` / `FRONTEND_VALIDATE_CMD` config snippets on any other stack. Evidence-before-claims gate: no "green" without a fresh run in hand. Then diff checks a green suite can't give (silenced checks, a mutation spot-check, dead code, duplicated rules) and a code review of the local diff with severity-labeled findings (verified, not rubber-stamped; a real bug routes through the debugging + TDD refs) before anything gets pushed. An exit gate keeps Phase 6 waiting until each check is in the ledger, run or skipped with its reason. |
+| **6. Handover** | Opens with a `Review:` line saying which Phase 5 checks ran. Summarizes changes, lists what to test locally, notes limitations (including the "noticed" items), and flags public-contract breaks, migration rollback, and doc changes. Builds and runs affected e2e specs (in a subagent) against a dev or throwaway DB where possible. |
 | **7. Feedback** | Root-cause-first debugging (three failed fixes → question the design, not fix #4). Independent findings dispatched in parallel. Failing repro test before each fix. Re-validates. Repeatable. |
-| **8. Ship** | Full suite green → confirm base branch → push + MR → root-cause any CI failure → clean up local branch and worktree after merge. |
+| **8. Ship** | Full suite green → confirm base branch → push + MR (meets the repo's PR rules, lists unfixed review findings, re-reads the rendered description) → root-cause any CI failure → clean up local branch and worktree after merge. |
 | **9. Improve** | Distills 1–3 reusable patterns from the cycle into `.n2i-dev-cycle/instincts.md` (statement / trigger / confidence / stack scope), read back at Phase 1 of the next cycle. A plain file, so it works without memory tools. A pattern that recurs across cycles gets proposed as a one-line PR to the matching reference file. Archives the checkpoint ledger so the next ticket starts clean. |
 
 Cross-cutting mechanics — model selection (`haiku` for scaffolding, `sonnet` for logic and test design, `opus` for architecture / debugging / review, stepping to the adjacent tier when a model is unavailable), subagent delegation, the **checkpoint ledger** (`.n2i-dev-cycle/progress.md`, survives context compaction and cross-session re-entry), and memory milestones — live in `references/execution.md`, loaded once the plan is approved so discussion and spike runs never pay for it and `SKILL.md` itself stays lean.
@@ -41,8 +41,11 @@ The review is the read-only `n2i-prepush-reviewer` agent, which runs on Opus in 
 context, so it doesn't share the assumptions the change was written on, whatever model the
 session uses. Inside it, the agent runs `engineering:code-review`, or Claude Code's built-in
 `code-review` when that isn't installed (always at `high` with the default findings cap, so a
-level the user typed earlier, such as `ultra`, never carries over), then its own checklist on top: tests that can't go
-red, silenced checks, tenant isolation, and scope against the ticket. Without the agent, the
+level the user typed earlier, such as `ultra`, never carries over), then its own checklist on top: spec conformance clause
+by clause (the plan's approved decisions are claims to check, not facts), boundary and shared
+elements, duplicated rules, cost on the default path, tests that can't go red, silenced
+checks, tenant isolation, and scope against the ticket. For paired backend and frontend work
+it also gets the sibling repo, so one review sees both sides of the contract. Without the agent, the
 skill runs the same instructions in a general-purpose Opus subagent. `caveman:caveman-review`,
 which compresses findings into the handover summary, is optional and skipped when missing,
 the same best-effort pattern the memory/`claude-mem` integration uses.
@@ -60,8 +63,11 @@ A green suite can hide a weakened check, so before the review Phase 5 reads the 
   the app instead and expects red.
 - **Dead code.** Code your change orphaned is removed; pre-existing dead code is listed in the
   handover and left for you to decide.
+- **Duplicated rules.** The same comparison in several places (across repos too), and every
+  reader of a value whose meaning the diff changed, so one copy doesn't get fixed while the
+  others keep the old meaning.
 
-The scan and the dead-code candidate list go to the read-only `n2i-diff-scanner` agent. The
+The scan, the dead-code candidate list and the duplicated-rule list go to the read-only `n2i-diff-scanner` agent. The
 mutation edits the tree, so it stays in the main agent. Review findings carry a severity
 label (`Critical`, `Required`, `Nit`, `Optional`, `FYI`): the first two are fixed before the
 handover, the rest are yours to pick from. A diff over roughly 400 changed lines prompts a
@@ -162,7 +168,7 @@ git clone https://github.com/muneebrbaig/n2i-dev-cycle.git ~/.claude/skills/n2i-
 - `n2i-unit-runner` (haiku) — final validate run (format, build, unit tests), per side
 - `n2i-e2e-runner` (haiku) — E2E runs
 - `n2i-ci-triage` (sonnet) — root cause for one failing CI job or failure domain
-- `n2i-diff-scanner` (haiku) — read-only diff scan for silenced checks and dead-code candidates
+- `n2i-diff-scanner` (haiku) — read-only diff scan for silenced checks, dead-code candidates and duplicated rules
 - `n2i-doubter` (opus) — read-only adversarial review of a plan or diff, artifact and contract only (architectural class, opt-in)
 - `n2i-prepush-reviewer` (opus) — read-only pre-push review
 
@@ -305,8 +311,9 @@ sessions.
 
 Fetches the ticket via `glab issue view`. Since the planning session starts cold, the
 skill runs an **alignment gate** first — restates the spec in a few bullets and lists
-every gap or ambiguity it sees — then waits for one approval before Phase 2. It does
-not re-brainstorm a finalized ticket.
+every gap or ambiguity it sees, and checks each decision it recommends against the
+spec's general rules — then waits for one approval before Phase 2. It does not
+re-brainstorm a finalized ticket.
 
 ### From a Prompt
 
@@ -423,7 +430,7 @@ memory milestones).
 - **`references/tdd.md`** — RED-GREEN-REFACTOR, test-first vs exempt scaffolding, tests that can't go red, rationalization table
 - **`references/doubt.md`** — architectural class, opt-in: fresh-context adversarial review of the plan or a unit, 3-cycle stop
 - **`references/verification.md`** — evidence-before-claims gate, claim→proof table
-- **`references/diff-review.md`** — pre-push diff checks: silenced-check scan, mutation spot-check, dead-code handling
+- **`references/diff-review.md`** — pre-push diff checks: silenced-check scan, mutation spot-check, dead-code handling, duplicated rules
 
 **Standards (stack-specific — .NET + Angular defaults)**:
 

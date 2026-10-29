@@ -1,14 +1,15 @@
 # Diff Review Checks
 
 Read at the Phase 5 pre-push review, before you review your own diff or hand it to
-`n2i-prepush-reviewer`. Three checks that a green suite
+`n2i-prepush-reviewer`. Four checks that a green suite
 cannot give you: whether a check was silenced to get green, whether the new tests
-can actually go red, and whether the diff leaves dead code behind.
+can actually go red, whether the diff leaves dead code behind, and whether one rule
+now lives in several places.
 
 Delegation: the silenced-check scan and the dead-code candidate list are mechanical
 and verbose-in, so hand them to `n2i-diff-scanner` (`haiku`, read-only; falls back
 to `general-purpose` with `model: haiku`, per `execution.md`). It returns hits with
-`file:line`; you judge them. The mutation spot-check and the dead-code decisions stay
+`file:line`; you judge them. The duplicated-rule list goes to the scanner too. The mutation spot-check and the dead-code decisions stay
 in the main agent, since the first edits the tree and the second needs judgment about
 hidden callers.
 
@@ -17,6 +18,7 @@ hidden callers.
 - Silenced Checks
 - Mutation Spot-Check
 - Dead Code
+- Duplicated Rules
 - Red Flags — Stop
 - Common Mistakes to Avoid
 
@@ -64,6 +66,19 @@ unused import or parameter, a branch that can no longer be taken, a commented-ou
   Limitations and ask before deleting. Never remove code you can't prove is unused;
   reflection, DI registration, and route tables hide callers.
 
+## Duplicated Rules
+
+A rule written in several places drifts: one copy gets fixed and the others keep the old
+meaning. Look for:
+
+- the same comparison in two or more places (`startswith("…0.1.")`, `== SOME_CONSTANT`,
+  the same ternary), across the backend and frontend too;
+- a value whose meaning the diff changes (`None` now means "frozen", a default flipped):
+  grep every reader of it, including the ones the diff didn't touch.
+
+Each copy the diff added, or each reader left on the old meaning, is a finding: route them
+through one helper, and fix every reader in the same change.
+
 ## Red Flags — Stop
 
 - Suite went green in the same diff that touched a skip, a suppression, or a threshold
@@ -78,3 +93,4 @@ unused import or parameter, a branch that can no longer be taken, a commented-ou
 - Leaving the mutation in the tree after the run.
 - Mutating scaffolding (entity props, DI wire-up) and calling the empty result a gap.
 - Deleting pre-existing dead code without asking.
+- Fixing one copy of a duplicated rule and calling the finding closed.

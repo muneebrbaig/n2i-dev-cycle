@@ -248,7 +248,8 @@ estimate, and a self-review against the spec before you present it.
 
 **After approval, append `Phase 3: plan approved` to the ledger** (writing its first line
 now if Phase 1 hasn't). Then load `references/execution.md` (model selection, delegation,
-ledger format, memory milestones — stays relevant through Ship).
+ledger format, memory milestones — stays relevant through Ship) **and `references/build-loop.md`**
+(Phases 4–6, including the Phase 5 review gate below), in the same step, before any code.
 
 ---
 
@@ -261,8 +262,21 @@ validate commands + noise handling + pre-push review, and the handover summary
 refs still load per phase: `references/tdd.md` at Phase 4, `references/verification.md`
 at Phase 5.
 
-**Every build cycle ends with the Phase 6 handover** — What Changed / What to Test
-Locally / Known Limitations — never just "done".
+**Phase 5 exit gate — no Phase 6 until each line is done and in the ledger.** The procedure
+for each is in `build-loop.md` (Validate, Pre-push review); a skipped line needs its reason.
+1. Final validate run via `n2i-unit-runner`, one per active side.
+2. `references/diff-review.md`: silenced-check scan via `n2i-diff-scanner`, mutation
+   spot-check per logic unit, dead code, duplicated rules.
+3. Pre-push review via `n2i-prepush-reviewer`. Architectural class, a diff touching
+   tenant-isolation/auth/migration code, or a diff that is mostly tests: run it. Only a
+   bounded diff under ~100 lines outside those areas may skip it, and the reason is
+   written down. If unsure, run it.
+4. Ledger line `Phase 5: review run (<n> Critical/Required fixed)` or
+   `Phase 5: review skipped (<class>, <reason>)`, written before the Phase 6 line.
+
+**Every build cycle ends with the Phase 6 handover** — Review / What Changed / What to Test
+Locally / Known Limitations — never just "done". The handover opens with a `Review:` line
+saying which Phase 5 checks ran (or why one was skipped); a handover without it is incomplete.
 
 Nothing in Phases 4–6 runs until the Phase 3 plan is approved — a discussion- or
 planning-only invocation never loads `build-loop.md`.

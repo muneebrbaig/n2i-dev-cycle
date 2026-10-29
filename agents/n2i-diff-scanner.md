@@ -26,10 +26,16 @@ Input from the caller: the base branch, and the check list from
    made unused, grep the repo for remaining callers. List it only when you found none,
    and say what you searched. Mark reflection, DI registration, route tables, and
    serialization as "possible hidden callers" rather than dead.
-4. Report in this shape:
+4. **Duplicated rules.** For each comparison or predicate the diff adds (a
+   `startswith(...)`, an `== CONSTANT`, a repeated ternary), grep the repo, and the
+   sibling repo if the caller names one, for the same check. For each value whose
+   meaning the diff changes (what `None` or a default means), list every reader of it.
+5. Report in this shape:
    - `SILENCED:` each hit as `file:line`, the exact added line, and which move it is.
    - `DEAD:` each candidate as `file:line`, what you searched, and whether it was
      already unused before the diff (check `git show <base>:<file>`).
+   - `DUPLICATE:` each rule with every `file:line` that holds a copy, or every reader of
+     a changed value, marking the ones the diff didn't touch.
    - `CHECKED:` the three diff sources you read and the patterns you searched.
-5. If nothing turns up, say "no hits" and still give `CHECKED:`. Do not pad with style
+6. If nothing turns up, say "no hits" and still give `CHECKED:`. Do not pad with style
    notes, and do not rank or decide what to fix; the caller does that.

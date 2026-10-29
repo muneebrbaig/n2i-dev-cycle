@@ -22,9 +22,13 @@ git push -u origin <feature-branch>
 ```
 
 Create the MR/PR against the confirmed base with the forge CLI (`glab mr create`
-/ `gh pr create`), following the repo's template and conventions. Description in
-PM tone: problem → what changed → test notes. Fold in the pre-push review
-one-liners if they were captured in Phase 5. Report the URL.
+/ `gh pr create`), following the repo's template and conventions. First read the PR
+rules in the repo's `AGENTS.md`, `CONTRIBUTING.md` and PR template (screenshots for UI
+changes, required sections) and meet each one. Description in PM tone: problem → what
+changed → test notes. Fold in the pre-push review one-liners if they were captured in
+Phase 5, and list every review finding left unfixed under Known limitations, with the
+reason. After creating it, re-read the description as the forge renders it
+(`gh pr view` / `glab mr view`) and fix stray text. Report the URL.
 
 If migration mode: update the `MIGRATION_DOC` status table **before** the push.
 

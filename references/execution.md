@@ -89,6 +89,9 @@ in a git repo.
 - First line: `# <ticket-or-slug> — <one-line goal>`
 - One line per phase as it completes: `Phase N: <what landed> (<commit range>)`
 - Phase 4 intra-phase checkpoints get a line too.
+- Phase 5 always gets a review line, written before the Phase 6 line: `Phase 5: review run
+  (<n> Critical/Required fixed)` or `Phase 5: review skipped (<class>, <reason>)`. A ledger
+  that goes from Phase 4 to Phase 6 without it shows the gate was skipped.
 - Phase 4 test-first units record the RED failure line before the GREEN commit
   (`references/tdd.md`) — the ledger is where test-first order is proven across
   sessions and machines.

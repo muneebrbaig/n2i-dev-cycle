@@ -62,6 +62,11 @@ item (list any gaps), scan for the placeholders above, and check names /
 signatures are consistent across sections — a method called one thing under the
 entity and another under tests is a bug. Fix inline.
 
+**Decisions and costs.** Check each recommended decision against the spec's general rule it
+touches (`brainstorming.md`, alignment gate step 4). For any cost the plan accepts (a fetch,
+a copy, a recompute), say which path pays it, and check the default path (every option off,
+the most common view): a new cost there needs the user's explicit yes, not a footnote.
+
 **Size check.** Review quality drops as a change grows: about 100 changed lines reviews
 easily, 300 is fine as one logical change, and past roughly 400 it should be split. If
 the estimate is over 400, propose the split (stacked branches or commits, one logical
