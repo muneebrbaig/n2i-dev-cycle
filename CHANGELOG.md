@@ -1,5 +1,38 @@
 # Changelog
 
+## 1.12.0 (2026-10-29)
+
+### Added
+- Phase 5 exit gate in `SKILL.md`: no Phase 6 until the final validate run, the
+  `diff-review.md` checks and the pre-push review are each in the ledger, run or skipped with
+  the class and reason. The ledger always gets a `Phase 5: review run …` or
+  `Phase 5: review skipped (<class>, <reason>)` line before the Phase 6 line, and
+  `build-loop.md` is loaded at plan approval together with `execution.md`.
+- The Phase 6 handover opens with a `Review:` line saying which Phase 5 checks ran.
+- The alignment gate and the plan self-review check each recommended decision against the
+  spec's general rule it touches, not only against the legacy app. A decision that adds a
+  second way to express the same state is listed as a contradiction.
+- The plan self-review names which path pays each accepted cost; a new cost on the default
+  path (every option off) needs the user's explicit yes.
+- `diff-review.md` gains a fourth check, Duplicated Rules: the same comparison in several
+  places, and every reader of a value whose meaning changed. `n2i-diff-scanner` reports them
+  as `DUPLICATE:`.
+- `n2i-prepush-reviewer` takes the spec path, the approved decisions (as claims to check)
+  and, for paired backend/frontend work, the sibling repo. It checks spec conformance clause
+  by clause, the cross-repo contract, boundary and shared elements, duplicated rules, and
+  cost on the default path.
+- `tdd.md`: before the first RED, map each acceptance criterion (each option, named
+  combinations, the off state) and each boundary element to a test.
+- `finishing.md` Step 3: read the repo's PR rules (`AGENTS.md`, `CONTRIBUTING.md`, template)
+  first, list review findings left unfixed under Known limitations, and re-read the
+  rendered description after creating the PR.
+- README describes the new checks.
+
+### Upgrading
+- Start a new Claude Code session so the changed agent instructions load.
+- Projects that bundle the skill: bump the submodule pointer. `scripts/project-sync.sh` is
+  unchanged.
+
 ## 1.11.3 (2026-10-28)
 
 ### Fixed
