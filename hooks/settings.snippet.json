@@ -1,5 +1,5 @@
 {
-  "//": "n2i-dev-cycle companion hooks. Merge into ~/.claude/settings.json — add these entries to the matching arrays; do not replace hooks you already have. Assumes the skill is at ~/.claude/skills/n2i-dev-cycle. Both hooks are additive and safe to run alongside the skill's prose gates.",
+  "//": "n2i-dev-cycle companion hooks. Merge into ~/.claude/settings.json — add these entries to the matching arrays; do not replace hooks you already have. Assumes the skill is at ~/.claude/skills/n2i-dev-cycle. These hooks are additive and safe to run alongside the skill's prose gates.",
   "hooks": {
     "PreToolUse": [
       {
@@ -19,6 +19,15 @@
           {
             "type": "command",
             "command": "python3 $HOME/.claude/skills/n2i-dev-cycle/hooks/verify-gate.py"
+          }
+        ]
+      },
+      {
+        "//": "Phase 5 review gate: blocks a stop when ledger-repo files changed and no pre-push review or skip line followed.",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/skills/n2i-dev-cycle/hooks/review-gate.py"
           }
         ]
       }

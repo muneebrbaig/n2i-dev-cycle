@@ -261,15 +261,16 @@ claude
 
 ### Companion hooks (optional)
 
-`hooks/` holds two Python hooks that enforce lifecycle gates outside the model's
+`hooks/` holds three Python hooks that enforce lifecycle gates outside the model's
 control. They are additive — the skill's prose gates still work without them.
 
 | Hook | Event | What it does |
 |---|---|---|
 | `pre-push-secret-scan.py` | `PreToolUse` / Bash | Blocks a `git push` when the outgoing commits, or `.n2i-dev-cycle/config` / `notes.md`, contain something shaped like a secret (AWS/GitHub/Slack tokens, private keys, passwords in URLs, quoted `api_key=`-style assignments). Conservative pattern match, not entropy. The block lists each file:line and, for a false positive, echoes back the exact `git push` for the user to run in their own terminal. |
 | `verify-gate.py` | `Stop` | Heuristic backstop for `references/verification.md`: blocks a stop whose final turn claims a green build/test when no build or test command ran in that turn. Opt-in — drop it if false positives get noisy. |
+| `review-gate.py` | `Stop` | Enforces the Phase 5 exit gate: when the turn edited files in a repo that keeps a `.n2i-dev-cycle/` ledger, it blocks the stop until `n2i-prepush-reviewer` ran after the last edit or a `Phase 5: review skipped (<class>, <reason>)` line was written. It checks that a review ran, not that it was good. Edits made through Bash are not seen. |
 
-Both need `python3` (already a Claude Code hooks prerequisite). Merge
+All need `python3` (already a Claude Code hooks prerequisite). Merge
 `hooks/settings.snippet.json` into `~/.claude/settings.json`, adding its entries to
 the matching `hooks` arrays rather than replacing what's there. Paths in the
 snippet assume the skill lives at `~/.claude/skills/n2i-dev-cycle`.
