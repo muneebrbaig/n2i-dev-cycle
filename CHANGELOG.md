@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.13.0 (2026-11-04)
+
+### Added
+- `hooks/review-gate.py` (`Stop`): enforces the Phase 5 exit gate outside the model. When the
+  turn edited files in a repo that keeps a `.n2i-dev-cycle/` ledger, it blocks the stop until
+  `n2i-prepush-reviewer` ran after the last edit, or a `Phase 5: review skipped (<class>, <reason>)`
+  line was written. It checks that a review ran, not that it was good, and does not see edits
+  made through Bash. `hooks/tests/test_review_gate.py` covers it.
+- `hooks/settings.snippet.json` and the README hook table list the new hook.
+
+### Upgrading
+- Add the new `Stop` entry from `hooks/settings.snippet.json` to `~/.claude/settings.json`.
+  Without it the Phase 5 gate stays prose-only, as in 1.12.0.
+
 ## 1.12.0 (2026-10-29)
 
 ### Added
