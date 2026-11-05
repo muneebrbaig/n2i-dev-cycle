@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.14.0 (2026-11-05)
 
 ### Added
 - `references/prepush-prompt.md`: a fixed template for the `n2i-prepush-reviewer` prompt, with
