@@ -74,8 +74,9 @@ Every stop costs a user turn, so checkpoints scale with the Phase 1 class:
 | Backend service + controller | Methods and endpoints built test-first, all tests green |
 | Frontend | Models, service, list + form components built (test-first where applicable), routes swapped, sidebar/nav wired, `ng build` clean |
 
-At each architectural checkpoint, offer a doubt review of that unit's diff
-(`references/doubt.md`) when it holds a shared interface, concurrency, or an irreversible step.
+At each architectural checkpoint, run a doubt review of that unit's diff
+(`references/doubt.md`) when it holds a shared interface, concurrency, or an irreversible step,
+unless the user said "skip doubt".
 
 At each checkpoint, summarize what was built, **append the ledger line**, and ask: **"[Unit] done. Want to review before I continue?"** The user may review, request changes, push/commit, or say continue. **Never skip ahead silently.**
 
@@ -144,7 +145,9 @@ scope-creep and correctness issues while they're still a `git commit --amend` or
 commit away, instead of a fix-up commit sitting permanently in MR history after the fact. It also
 skips triggering a CI run against a state you already know you're about to patch.
 
-- The review is the `n2i-prepush-reviewer` subagent (read-only, `opus`; hand it the base
+- The review is the `n2i-prepush-reviewer` subagent (read-only, `opus`; dispatch with
+  `model: sonnet` instead for a bounded diff outside the architectural, tenant-isolation,
+  auth and migration areas that is not mostly tests; hand it the base
   branch, the ticket, the spec path and the plan's approved decisions). When the work is
   split across repos (paired backend and frontend PRs), also hand it the sibling repo's
   path and base branch, so one review sees both sides of the contract. It starts from fresh context, so it doesn't share the
@@ -152,8 +155,8 @@ skips triggering a CI run against a state you already know you're about to patch
   the built-in `code-review`, then its own checklist on top. Dispatch it even from an Opus
   session: never invoke a review skill in your own context, where it shares your
   assumptions. If the agent isn't installed, use the named-agent fallback in
-  `references/execution.md` (`general-purpose`, `model: opus`, the agent's instructions
-  inline).
+  `references/execution.md` (`general-purpose`, `model: opus`, or `sonnet` for the low-risk
+  bounded case above, the agent's instructions inline). Build its prompt from `references/prepush-prompt.md` instead of writing it fresh.
 - **Before the review, load `references/diff-review.md` and run its four checks** on
   your own diff: silenced checks, a mutation spot-check per logic unit, dead code, and
   duplicated rules. Dispatch `n2i-diff-scanner` for all but the mutation (it stays in the main
@@ -175,6 +178,10 @@ skips triggering a CI run against a state you already know you're about to patch
   (root cause first) and `references/tdd.md` (failing test first).
 - Before you defer a finding as a trade-off or "revisit later", search the spec for a clause that makes
   it a requirement. If one does, it is a fix, not a trade-off.
+- Every reviewer finding, of any severity, gets a ledger line: `Phase 5: finding <file:line> —
+  fixed` or `— decided: <reason>`. "Deferred" is not allowed for a finding about determinism, a
+  process or worker boundary, or cost to the user: fix it, or record `decided: not a defect —
+  <evidence>`. Never `later`.
 - A finding that a test can't go red, or a timing or race finding, is a bug in the test.
   Before the fix, break the app so the test should go red on the failure the finding
   describes, and confirm it stays green; after the fix, the same break turns it red. A

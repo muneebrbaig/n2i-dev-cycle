@@ -13,7 +13,7 @@ subagent — an omitted model inherits this session's, usually the priciest.
 |---|---|---|
 | Scaffolding, migration DDL, single-file mechanical edits, transcription from a detailed plan, E2E runs | cheap / fast | `haiku` |
 | Service/controller/component logic, multi-file integration, test design | standard | `sonnet` |
-| Architecture, ambiguous debugging, the Phase 5 pre-push review, CI root-cause on a multi-layer failure | most capable | `opus` |
+| Architecture, ambiguous debugging, the Phase 5 pre-push review of architectural or high-risk diffs (bounded low-risk diffs: `sonnet`), CI root-cause on a multi-layer failure | most capable | `opus` |
 
 **Unavailable model.** If the dispatch is rejected because the model is unknown,
 unavailable, or not permitted for this account, retry once one tier up

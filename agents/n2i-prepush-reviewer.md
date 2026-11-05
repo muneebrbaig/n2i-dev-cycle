@@ -44,6 +44,10 @@ Treat the approved decisions as claims to check against the spec, not as facts.
      including ones the diff didn't touch, across both repos;
    - cost on the default path (every option off, the most common view): a fetch, copy
      or recompute the diff adds there;
+   - output that depends on the environment (thread count, locale, timezone, CPU, a worker
+     or process boundary): run it under at least two settings and compare. If this machine
+     can't show the difference (a math library that hides thread effects), say so and ask
+     for a run in a Linux container;
    - tenant isolation and cross-org write gaps (`references/security.md`);
    - silent failures: errors swallowed or turned into defaults;
    - tests that cannot go red (assert nothing, mock the thing under test, pass
@@ -67,5 +71,8 @@ Treat the approved decisions as claims to check against the spec, not as facts.
    `Required` (fix before merge), `Nit` (minor, the author may ignore it), `Optional`
    (worth weighing), `FYI` (context, no action).
 5. Do not pad with style nitpicks: list `Nit`, `Optional`, and `FYI` only after every
-   `Critical` and `Required`, and keep them to a few. If there is nothing material, say
+   `Critical` and `Required`, and keep them to a few. Never rate a finding about
+   determinism, a process or worker boundary, or cost to the user below `Required`: the
+   caller must fix it or show it is not a defect, never defer it. The caller gives every finding a disposition, `fixed`
+   or `decided: <reason>`, whatever its label. If there is nothing material, say
    "no material findings" and list what you checked.

@@ -85,13 +85,73 @@ class Wiring(unittest.TestCase):
 
 
 class DoubtReview(unittest.TestCase):
-    def test_doubt_is_architectural_only_and_opt_in(self):
-        planning = read("references/planning.md")
-        self.assertIn("architectural class only", planning)
-        self.assertIn("only if the user says yes", planning)
-        text = read("references/doubt.md")
-        self.assertIn("Architectural class", text)
-        self.assertIn("only if the user says yes", text)
+    def test_doubt_runs_by_default_for_architectural_and_risky_bounded(self):
+        planning = " ".join(read("references/planning.md").split())
+        self.assertIn("bounded class that touches a cross-repo contract", planning)
+        self.assertIn("No yes is needed first", planning)
+        self.assertNotIn("only if the user says yes", planning)
+        text = " ".join(read("references/doubt.md").split())
+        self.assertIn("bounded class when the change touches a contract between two repos", text)
+        self.assertIn("skip doubt", text)
+        self.assertNotIn("only if the user says yes", text)
+
+    def test_doubt_red_flags_match_the_bounded_rule(self):
+        flags = " ".join(read("references/doubt.md").split("## Red Flags")[1].split())
+        self.assertIn("on a spike, or on a rename or one-field change that touches no", flags)
+        self.assertNotIn("Running it on bounded work because", flags)
+
+
+class ReviewLessons(unittest.TestCase):
+    def test_every_finding_gets_a_disposition(self):
+        pre_push = " ".join(read("references/build-loop.md").split("### Pre-push review")[1].split("\n## ")[0].split())
+        self.assertIn("of any severity", pre_push)
+        self.assertIn("decided: <reason>", pre_push)
+        self.assertIn("determinism", pre_push)
+        self.assertIn("decided: not a defect", pre_push)
+        agent = " ".join(read("agents/n2i-prepush-reviewer.md").split())
+        self.assertIn("determinism", agent)
+        self.assertIn("below `Required`", agent)
+        self.assertIn("decided: <reason>", agent)
+
+    def test_environment_dependent_output_is_run_under_two_settings(self):
+        for rel in ("references/diff-review.md", "agents/n2i-prepush-reviewer.md"):
+            with self.subTest(file=rel):
+                text = " ".join(read(rel).split())
+                self.assertIn("at least two settings", text)
+                self.assertIn("Linux container", text)
+
+    def test_prompt_template_is_linked_and_has_the_standing_checks(self):
+        template = read("references/prepush-prompt.md")
+        for needle in ("{ticket}", "{spec}", "{base}", "{claims}", "{review_read}", "glossary",
+                       "Avoid lists", "Cancel or Retry", "instincts.md", "measured data"):
+            with self.subTest(needle=needle):
+                self.assertIn(needle, template)
+        self.assertIn("{scanner_hits}", template)
+        self.assertIn("Build the prompt from `references/prepush-prompt.md`", read("SKILL.md"))
+        self.assertIn("Build its prompt from `references/prepush-prompt.md`", read("references/build-loop.md"))
+
+    def test_doubt_trigger_wins_over_the_skip_list(self):
+        text = " ".join(read("references/doubt.md").split())
+        self.assertIn("The trigger wins", text)
+        self.assertIn("that touches none of those", text)
+        self.assertNotIn("offer a doubt review", read("references/build-loop.md"))
+        self.assertNotIn("offer", read("evals/scenarios.md").split("**S13")[1].split("**S")[0])
+
+    def test_review_read_key_is_documented_and_used(self):
+        self.assertIn("REVIEW_READ", read("n2i-dev-cycle.config.example"))
+        self.assertIn("REVIEW_READ", read("README.md"))
+        skill = read("SKILL.md")
+        self.assertIn("REVIEW_READ=${REVIEW_READ:-unset}", skill)
+        self.assertIn("If `REVIEW_READ` is set, read each listed file too", skill)
+        self.assertIn("{review_read}", read("references/prepush-prompt.md"))
+
+    def test_pre_existing_claims_need_a_base_branch_run(self):
+        text = read("references/verification.md")
+        self.assertIn("a run on the base branch", text)
+
+    def test_prepush_review_model_follows_risk(self):
+        pre_push = read("references/build-loop.md").split("### Pre-push review")[1].split("\n## ")[0]
+        self.assertIn("`model: sonnet` instead for a bounded diff", pre_push)
 
     def test_doubter_never_receives_the_claim(self):
         text = read("references/doubt.md")

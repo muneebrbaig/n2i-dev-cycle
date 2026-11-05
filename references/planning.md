@@ -72,8 +72,11 @@ easily, 300 is fine as one logical change, and past roughly 400 it should be spl
 the estimate is over 400, propose the split (stacked branches or commits, one logical
 change each) in the plan, and plan any refactor as its own change, apart from the feature.
 
-**Doubt review (architectural class only).** In the same message as the plan, offer
-one fresh-context review (`references/doubt.md`). Run it only if the user says yes.
+**Doubt review (architectural class; bounded class that touches a cross-repo contract, an
+export, or a persisted format).** Before presenting the plan, run one fresh-context review
+(`references/doubt.md`) and present the plan with its outcome. No yes is needed first. Skip
+it for spikes and for other bounded changes (a rename, one field, a one-line fix) that touch
+none of those.
 
 Then **wait for user approval before proceeding.** The user may refine, add, or
 remove items.

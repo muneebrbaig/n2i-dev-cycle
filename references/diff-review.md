@@ -52,6 +52,11 @@ A new test passing proves little. Prove it can fail on the code that exists now:
 5. **Restore the line exactly** and confirm with `git diff` that the tree matches what
    it was before the mutation. Re-run the unit green.
 
+**Vary the environment.** When output depends on thread count, locale, timezone, CPU, or
+a worker or process boundary, run it under at least two settings and compare. A test that
+cannot fail on this machine (a math library that hides thread effects) is not red until
+it fails in a Linux container.
+
 Main agent only; the pre-push reviewer is read-only. One mutation per logic unit is
 enough, so skip scaffolding (`tdd.md` exempt column) and pure UI markup. Never leave a
 mutation in place across a tool call you might not finish.

@@ -1,7 +1,9 @@
 # Doubt Review
 
-Read when the user accepts the doubt review offered at the Phase 3 plan, or at an
-architectural checkpoint (`build-loop.md`). Architectural class only. Your own context
+Read when the Phase 3 plan is drafted (architectural class; bounded class when the
+change touches a contract between two repos, an export, or a persisted format), or at an
+architectural checkpoint (`build-loop.md`). In past use the reviewer's findings were
+adopted over 90% of the time, so it runs by default. Your own context
 agrees with your own plan, so a reviewer who never saw your reasoning is the check
 that can still change direction. The Phase 5 pre-push review comes too late for that.
 
@@ -15,11 +17,15 @@ that can still change direction. The Phase 5 pre-push review comes too late for 
 
 ## When to Run
 
-Architectural class (`brainstorming.md`) only, and only if the user says yes. Offer it in
-the same message as the plan or checkpoint summary so it costs no extra turn. Worth it
-for: a new subsystem, a shared interface, concurrency or ordering, an irreversible step
-(data migration, public contract). Skip it for bounded work, renames, and anything the
-compiler or a single test settles.
+Run before the plan is presented, so it costs the user no extra turn. The user can say
+"skip doubt" to turn it off. By class (`brainstorming.md`):
+- **Architectural:** always. A new subsystem, a shared interface, concurrency or ordering,
+  an irreversible step (data migration, public contract).
+- **Bounded:** only when the change touches a contract between two repos, an export, or a
+  persisted format. Skip a rename, a one-field or one-line change that touches none of
+  those, and anything the compiler or a single test settles. The trigger wins: one new
+  field in an export is not skipped.
+- **Spike:** never.
 
 ## The Cycle
 
@@ -62,4 +68,6 @@ findings but none are actionable, you are re-arguing the design: stop and tell t
 - The reviewer got your conclusion along with the artifact
 - Findings accepted without checking them against the artifact
 - A fourth cycle
-- Running it on bounded work because it was cheap to ask
+- Running it on a spike, or on a rename or one-field change that touches no cross-repo
+  contract, export, or persisted format, because it was cheap to ask
+- Skipping it on bounded work that touches a cross-repo contract, an export, or a persisted format

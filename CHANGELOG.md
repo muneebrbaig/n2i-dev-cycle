@@ -1,5 +1,32 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- `references/prepush-prompt.md`: a fixed template for the `n2i-prepush-reviewer` prompt, with
+  slots for ticket, spec, base branch, claims and the repo's convention files, plus standing
+  checks (glossary strings, every state surface, cost of a user action, the reviewer's earlier
+  must-fix items, spec claims against measured data).
+- Optional `REVIEW_READ` config key: repo files (glossary, standards, conventions) that Phase 3
+  and every review prompt must read.
+
+### Changed
+- Phase 5: every reviewer finding gets a `fixed` or `decided: <reason>` ledger line. A finding
+  about determinism, a process or worker boundary, or cost to the user can't be deferred, and the
+  reviewer rates it at least `Required`. The only other disposition for those is
+  `decided: not a defect — <evidence>`.
+- `diff-review.md` and the reviewer: when output depends on the environment (threads, locale,
+  timezone, CPU, a worker boundary), run it under two settings and compare; a test that can't
+  fail on this machine needs a Linux-container run before it counts as red.
+- `verification.md`: "pre-existing" needs a run on the base branch, not a comparison inside the
+  feature branch.
+- Doubt review runs for architectural class, and for bounded class only when the change touches
+  a contract between two repos, an export, or a persisted format. Spikes and other bounded
+  changes skip it; "skip doubt" turns it off. The red flag in `doubt.md` now matches.
+- Pre-push review is dispatched with `model: sonnet` for a bounded diff outside the
+  architectural, tenant-isolation, auth and migration areas that is not mostly tests; other diffs
+  keep the pinned `opus`.
+
 ## 1.13.1 (2026-11-05)
 
 ### Changed

@@ -14,7 +14,7 @@ clean finish, pattern capture):
 |-------|-------------|
 | **1. Ingest, Classify & Align** | Classifies the work (spike / bounded / architectural). No ticket yet → brainstorms a ticket draft for Product review and stops. Ticket already finalized → restates the spec, flags every gap or ambiguity, checks each recommended decision against the spec's general rules (not only the legacy app), gets one approval. Searches memory; starts a checkpoint ledger; checks skill-state hygiene (`.n2i-dev-cycle/` gitignored, no secrets in `notes.md`). |
 | **2. Branch** | Suggests a branch name or lets you create your own, and offers an isolated git worktree for long or multi-session work. |
-| **3. Plan** | Structured implementation plan with concrete field lists, method signatures, and named test cases — no placeholders, a rough changed-line estimate with a split proposed past about 400, and a rollback path for each migration. Self-reviewed against the spec, including which path pays each accepted cost (a new cost on the default path, every option off, needs your yes). Architectural work gets an offer of a fresh-context doubt review. Waits for your approval. |
+| **3. Plan** | Structured implementation plan with concrete field lists, method signatures, and named test cases — no placeholders, a rough changed-line estimate with a split proposed past about 400, and a rollback path for each migration. Self-reviewed against the spec, including which path pays each accepted cost (a new cost on the default path, every option off, needs your yes). Architectural work, and bounded work that touches a cross-repo contract, an export, or a persisted format, gets a fresh-context doubt review before the plan is shown. Waits for your approval. |
 | **4. Implement** | Business logic is test-first (RED → GREEN → REFACTOR); scaffolding is exempt but exercised by the tests that follow. Intra-phase review checkpoints (all of them for architectural work, none for bounded changes, adjustable on request). The RED failure line is recorded in the ledger before each GREEN commit, so test-first order survives a session or machine switch. Out-of-scope findings are logged as "noticed" ledger lines instead of fixed in place. |
 | **5. Validate** | Runs the project's format + build + test — `dotnet` / `ng` by default, or the `BACKEND_VALIDATE_CMD` / `FRONTEND_VALIDATE_CMD` config snippets on any other stack. Evidence-before-claims gate: no "green" without a fresh run in hand. Then diff checks a green suite can't give (silenced checks, a mutation spot-check, dead code, duplicated rules) and a code review of the local diff with severity-labeled findings (verified, not rubber-stamped; a real bug routes through the debugging + TDD refs) before anything gets pushed. An exit gate keeps Phase 6 waiting until each check is in the ledger, run or skipped with its reason. |
 | **6. Handover** | Opens with a `Review:` line saying which Phase 5 checks ran. Summarizes changes, lists what to test locally, notes limitations (including the "noticed" items), and flags public-contract breaks, migration rollback, and doc changes. Builds and runs affected e2e specs (in a subagent) against a dev or throwaway DB where possible. |
@@ -73,13 +73,13 @@ label (`Critical`, `Required`, `Nit`, `Optional`, `FYI`): the first two are fixe
 handover, the rest are yours to pick from. A diff over roughly 400 changed lines prompts a
 split first.
 
-### Doubt review for architectural work
+### Doubt review for architectural work and risky bounded work
 
-For architectural-class changes the skill offers, with the plan, one review by a reviewer
+For architectural changes, and bounded changes that touch a contract between two repos, an export, or a persisted format, the skill runs, before the plan is presented, one review by a reviewer
 that never saw its reasoning (`references/doubt.md`). `n2i-doubter` gets the plan or a unit's
 diff plus its contract and tries to break it. Each finding is classified as a contract
 misread, actionable, a trade-off, or noise, and the loop stops after three cycles. It runs
-only if you say yes.
+by default for those; say "skip doubt" to turn it off. Spikes and other bounded changes (a rename, one field) that touch none of those skip it.
 
 ### Session naming
 
@@ -169,8 +169,8 @@ git clone https://github.com/muneebrbaig/n2i-dev-cycle.git ~/.claude/skills/n2i-
 - `n2i-e2e-runner` (haiku) — E2E runs
 - `n2i-ci-triage` (sonnet) — root cause for one failing CI job or failure domain
 - `n2i-diff-scanner` (haiku) — read-only diff scan for silenced checks, dead-code candidates and duplicated rules
-- `n2i-doubter` (opus) — read-only adversarial review of a plan or diff, artifact and contract only (architectural class, opt-in)
-- `n2i-prepush-reviewer` (opus) — read-only pre-push review
+- `n2i-doubter` (opus) — read-only adversarial review of a plan or diff, artifact and contract only (architectural class, and bounded class touching a cross-repo contract, export, or persisted format; default on)
+- `n2i-prepush-reviewer` (opus; sonnet for a low-risk bounded diff) — read-only pre-push review
 
 None has Edit or Write. All six keep Bash (for git, test runners, CI CLIs), so
 "read-only" beyond that rests on each agent's instructions, not on a hard block.
@@ -389,6 +389,7 @@ repo-scoped the skill generates: `config` (see `n2i-dev-cycle.config.example`), 
 | `BACKEND_VALIDATE_CMD`, `FRONTEND_VALIDATE_CMD` | Phase 5 shell snippets for non-.NET/Angular stacks; unset → `dotnet` / `npm` |
 | `E2E_CMD` | Phase 6 e2e runner; unset → the detected runner |
 | `BACKEND_STANDARDS`, `FRONTEND_STANDARDS`, `MIGRATION_STANDARDS` | path to the repo's own convention file (e.g. `backend/CLAUDE.md`); Phase 3 treats it as authoritative over `references/*` |
+| `REVIEW_READ` | space-separated repo files (glossary, standards, conventions) that Phase 3 and every review prompt must read |
 
 On the **first run in a repo** (no config found), Phase 1 proposes the file from detected
 values and, with your consent, creates `.n2i-dev-cycle/config` at the git root and appends
@@ -429,7 +430,8 @@ memory milestones).
 **Discipline (stack-agnostic)** — the iron laws, loaded alongside the phase procedure:
 
 - **`references/tdd.md`** — RED-GREEN-REFACTOR, test-first vs exempt scaffolding, tests that can't go red, rationalization table
-- **`references/doubt.md`** — architectural class, opt-in: fresh-context adversarial review of the plan or a unit, 3-cycle stop
+- **`references/doubt.md`** — architectural class (and risky bounded work): fresh-context adversarial review of the plan or a unit, 3-cycle stop
+- **`references/prepush-prompt.md`** — fixed prompt template for the pre-push reviewer: slots, standing checks
 - **`references/verification.md`** — evidence-before-claims gate, claim→proof table
 - **`references/diff-review.md`** — pre-push diff checks: silenced-check scan, mutation spot-check, dead-code handling, duplicated rules
 

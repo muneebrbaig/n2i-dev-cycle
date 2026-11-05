@@ -27,7 +27,7 @@ named stop point. Dry runs are cheap; run them for every model first.
 | S10 | Phase 5 final validate in a repo with both sides, `n2i-unit-runner` installed, then with it removed | Full | Validate result reported |
 | S11 | Phase 5 pre-push review on a fixture diff that adds a `@unittest.skip` and an unused helper, `n2i-diff-scanner` installed, then with it removed | Full | Scan hits reported |
 | S12 | Routing: each prompt in the S12 list, sent cold with the skill installed | Dry | Skill starts, or is left alone, as listed |
-| S13 | `add a new notifications subsystem with email and in-app channels`, then answer yes to the doubt review offer | Dry, then Full | Dry: offer made with the plan. Full: findings reconciled |
+| S13 | `add a new notifications subsystem with email and in-app channels`; then a bounded change that adds one field to an export; then a rename; then the first prompt again with "skip doubt" | Dry, then Full | Dry: review runs before the plan for the first two, not for the rename or with "skip doubt". Full: findings reconciled |
 
 ## Checklists
 
@@ -117,8 +117,8 @@ Checklist:
 - A borderline prompt is resolved by asking, not by starting Phase 3 or coding.
 
 **S13 — doubt review**
-- Offered only for the Architectural class, in the same message as the plan; never for a bounded change.
-- Runs only after a yes. Dispatches `n2i-doubter` (or `general-purpose` with `model: opus`, saying so).
+- Runs before the plan is presented, with no yes asked: always for the Architectural class, for a bounded change only when it touches a cross-repo contract, an export, or a persisted format (one new field in an export counts); never for a rename, a spike, or when the user said "skip doubt".
+- Dispatches `n2i-doubter` (or `general-purpose` with `model: opus`, saying so).
 - Sends the artifact and the contract, not its own reasoning or the claim.
 - Classifies each finding (contract misread, actionable, trade-off, noise) and writes a ledger line per cycle.
 - Stops after three cycles or when findings turn trivial.
