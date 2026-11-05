@@ -173,6 +173,8 @@ skips triggering a CI run against a state you already know you're about to patch
   it against the codebase, push back with reasoning if it's wrong or YAGNI, ask the user if it
   conflicts with a prior decision. A finding that's a real bug goes through `references/debugging.md`
   (root cause first) and `references/tdd.md` (failing test first).
+- Before you defer a finding as a trade-off or "revisit later", search the spec for a clause that makes
+  it a requirement. If one does, it is a fix, not a trade-off.
 - A finding that a test can't go red, or a timing or race finding, is a bug in the test.
   Before the fix, break the app so the test should go red on the failure the finding
   describes, and confirm it stays green; after the fix, the same break turns it red. A
