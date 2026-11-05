@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.13.1 (2026-11-05)
+
+### Changed
+- `build-loop.md` (Pre-push review): before deferring a finding as a trade-off, search the spec
+  for a clause that makes it a requirement; if one does, it is a fix. A deferred finding came
+  back as a must-fix in review because the spec already required it.
+
 ## 1.13.0 (2026-11-04)
 
 ### Added
