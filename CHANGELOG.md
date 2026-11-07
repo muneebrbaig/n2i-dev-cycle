@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.15.0 (2026-11-07)
 
 ### Added
 - `references/prepush-prompt.md` standing checks: cached or displayed state kept in sync, Retry and
