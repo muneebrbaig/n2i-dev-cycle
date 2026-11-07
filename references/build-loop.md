@@ -157,6 +157,14 @@ skips triggering a CI run against a state you already know you're about to patch
   assumptions. If the agent isn't installed, use the named-agent fallback in
   `references/execution.md` (`general-purpose`, `model: opus`, or `sonnet` for the low-risk
   bounded case above, the agent's instructions inline). Build its prompt from `references/prepush-prompt.md` instead of writing it fresh.
+- **Re-review the fixes.** Once the review's fixes are in, dispatch it again with `{round}` set
+  to the delta since the last round, and repeat until a round finds no Critical or Required
+  item. A fix that states a number (a growth factor, a memory peak, a timing) is re-measured on
+  the input and code path its text names. Size any skip on that delta, not the whole branch: a
+  docs-only change that adds or alters no number or claim may skip as `docs-only`.
+- **With `CODEX` on,** follow `references/codex.md` (Phase 5 Rounds) instead: two Codex runs on
+  the full diff, Codex fix rounds up to `REVIEW_ROUNDS_MAX`, then one `n2i-prepush-reviewer` on
+  the full diff.
 - **Before the review, load `references/diff-review.md` and run its four checks** on
   your own diff: silenced checks, a mutation spot-check per logic unit, dead code, and
   duplicated rules. Dispatch `n2i-diff-scanner` for all but the mutation (it stays in the main

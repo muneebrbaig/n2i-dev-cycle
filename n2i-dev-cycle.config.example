@@ -55,3 +55,18 @@ BRANCH_PREFIX=mb/
 # Repo files that Phase 3 and every review prompt must read: a glossary, standards,
 # conventions. Space-separated paths relative to repo root. Optional.
 # REVIEW_READ=GLOSSARY.md docs/conventions.md
+
+# Project review checklist: a Markdown file whose rules every pre-push review applies. Path
+# relative to repo root. Each `### ` heading is a rule; the review-gate hook counts a review
+# only when its prompt holds every heading. Optional.
+# REVIEW_CHECKLIST=docs/review-checklist.md
+
+# Codex as a second reviewer (references/codex.md). Codex sends the spec, code and diff to a
+# third-party model: set it only where the repo's owner approved that. off (default): Opus
+# does every review. review: Codex runs the Phase 5 rounds. plan+review: also the Phase 3 plan review.
+# CODEX=plan+review
+# When Codex is unavailable (not logged in, usage limit, failing twice): wait (default, ask the
+# user) or opus (run that review on Opus and say so).
+# CODEX_FALLBACK=wait
+# Most Codex fix rounds before stopping to ask. Default 3.
+# REVIEW_ROUNDS_MAX=3

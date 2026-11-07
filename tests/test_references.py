@@ -145,6 +145,38 @@ class ReviewLessons(unittest.TestCase):
         self.assertIn("If `REVIEW_READ` is set, read each listed file too", skill)
         self.assertIn("{review_read}", read("references/prepush-prompt.md"))
 
+    def test_review_checklist_key_and_delta_rounds_are_documented(self):
+        self.assertIn("REVIEW_CHECKLIST", read("n2i-dev-cycle.config.example"))
+        self.assertIn("REVIEW_CHECKLIST", read("README.md"))
+        skill = read("SKILL.md")
+        self.assertIn("REVIEW_CHECKLIST=${REVIEW_CHECKLIST:-unset}", skill)
+        self.assertIn("If `REVIEW_CHECKLIST` is set, read it", skill)
+        template = read("references/prepush-prompt.md")
+        for needle in ("{checklist}", "{round}", "word for word", "re-measure every number"):
+            with self.subTest(needle=needle):
+                self.assertIn(needle, template)
+        for rel in ("SKILL.md", "references/execution.md"):
+            with self.subTest(rel=rel):
+                self.assertIn("Phase 5: review round <k> (<codex|opus>, <full|delta: files>", read(rel))
+        self.assertIn("**Re-review the fixes.**", read("references/build-loop.md"))
+        self.assertIn("`docs-only`", " ".join(skill.split()))
+
+    def test_codex_review_is_configurable_and_ends_with_opus_on_the_full_diff(self):
+        for key in ("CODEX=", "CODEX_FALLBACK=", "REVIEW_ROUNDS_MAX="):
+            with self.subTest(key=key):
+                self.assertIn(key, read("n2i-dev-cycle.config.example"))
+                self.assertIn(key.rstrip("="), read("README.md"))
+        skill = read("SKILL.md")
+        self.assertIn("CODEX=${CODEX:-off}", skill)
+        self.assertIn("read `references/codex.md`", skill)
+        codex = " ".join(read("references/codex.md").split())
+        for needle in ("codex login status", "CODEX_FALLBACK", "`wait` (the default)", "REVIEW_ROUNDS_MAX",
+                       "One `n2i-prepush-reviewer` on the full diff", "-s read-only", "never a path inside the repo",
+                       "Spec and standards:", "Lens:", "third-party model"):
+            with self.subTest(needle=needle):
+                self.assertIn(needle, codex)
+        self.assertIn("Codex runs this review (`references/codex.md`", " ".join(read("references/planning.md").split()))
+
     def test_pre_existing_claims_need_a_base_branch_run(self):
         text = read("references/verification.md")
         self.assertIn("a run on the base branch", text)

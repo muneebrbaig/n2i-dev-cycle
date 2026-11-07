@@ -1,5 +1,31 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- `references/prepush-prompt.md` standing checks: cached or displayed state kept in sync, Retry and
+  failure paths, destructive cleanup and per-role endpoint tests, new tests that must fail once and
+  boundary-size tests, and case-only path clashes (from a client project's review rounds).
+- `REVIEW_CHECKLIST` config key: a project checklist file whose rules every pre-push review
+  applies (`{checklist}` slot in `references/prepush-prompt.md`).
+- Delta review rounds: fixes for review findings get a re-review of the change since the last
+  round (`{round}` slot), with numbers re-measured, and a `Phase 5: review round <k>` ledger line.
+- `references/codex.md` and the `CODEX`, `CODEX_FALLBACK` and `REVIEW_ROUNDS_MAX` config keys:
+  Codex runs the plan review and the Phase 5 review rounds (two briefs on the full diff, then
+  capped fix rounds), and `n2i-prepush-reviewer` reviews the full diff once as the final gate.
+
+### Changed
+- `hooks/review-gate.py` counts an `n2i-prepush-reviewer` dispatch only when its prompt holds every
+  standing check and every `REVIEW_CHECKLIST` heading, and lists only the files edited since the
+  last review that counted. Its message sizes a skip on that delta, not the whole branch, and
+  allows a `docs-only` skip for a change that adds or alters no number or claim. It also counts a
+  `codex exec` run in a repo whose config sets `CODEX`, checking the prompt file the same way.
+  Upgrade note: a review prompt written from memory no longer passes the gate. Build it from
+  `references/prepush-prompt.md`.
+- Plan review (`references/planning.md`) and the Phase 5 exit gate in `SKILL.md`,
+  `build-loop.md` and `execution.md` describe the Codex path, delta rounds and the new ledger
+  format: `Phase 5: review round <k> (<codex|opus>, <full|delta: files>, <n> Critical/Required fixed)`.
+
 ## 1.14.0 (2026-11-05)
 
 ### Added

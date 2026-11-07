@@ -50,6 +50,12 @@ skill runs the same instructions in a general-purpose Opus subagent. `caveman:ca
 which compresses findings into the handover summary, is optional and skipped when missing,
 the same best-effort pattern the memory/`claude-mem` integration uses.
 
+The prompt comes from a fixed template (`references/prepush-prompt.md`): ticket, spec, base
+branch, claims to check, and standing checks copied word for word. A repo can add its own rules
+with `REVIEW_CHECKLIST`. Fixes for the review's findings get a second round on just those
+changes, which re-measures any number the fixes state. Fixes that quote numbers have shipped
+wrong ones.
+
 ### What the diff checks catch
 
 A green suite can hide a weakened check, so before the review Phase 5 reads the full diff
@@ -80,6 +86,18 @@ that never saw its reasoning (`references/doubt.md`). `n2i-doubter` gets the pla
 diff plus its contract and tries to break it. Each finding is classified as a contract
 misread, actionable, a trade-off, or noise, and the loop stops after three cycles. It runs
 by default for those; say "skip doubt" to turn it off. Spikes and other bounded changes (a rename, one field) that touch none of those skip it.
+
+### Codex as a second reviewer (optional)
+
+Set `CODEX=review` or `CODEX=plan+review` in a repo's config, and Codex takes the review volume
+(`references/codex.md`). It reviews the plan (`plan+review`), runs two briefs on the full diff
+(spec and standards, plus a lens on environment, Retry and Cancel cost, and range edges), and
+re-checks each round of fixes, up to `REVIEW_ROUNDS_MAX` rounds (default 3). Opus then
+reviews the full diff once, as the final gate. Each model family has caught bugs the other
+missed, so neither replaces the other. Codex runs read-only, and it sends the spec, code and
+diff to a third-party model, so turn it on only where the repo's owner has approved that. When
+Codex is unavailable, `CODEX_FALLBACK=wait` (the default) stops and asks, and `opus` runs that
+review on Opus. The default, `CODEX=off`, keeps every review on Opus.
 
 ### Session naming
 
@@ -268,7 +286,7 @@ control. They are additive — the skill's prose gates still work without them.
 |---|---|---|
 | `pre-push-secret-scan.py` | `PreToolUse` / Bash | Blocks a `git push` when the outgoing commits, or `.n2i-dev-cycle/config` / `notes.md`, contain something shaped like a secret (AWS/GitHub/Slack tokens, private keys, passwords in URLs, quoted `api_key=`-style assignments). Conservative pattern match, not entropy. The block lists each file:line and, for a false positive, echoes back the exact `git push` for the user to run in their own terminal. |
 | `verify-gate.py` | `Stop` | Heuristic backstop for `references/verification.md`: blocks a stop whose final turn claims a green build/test when no build or test command ran in that turn. Opt-in — drop it if false positives get noisy. |
-| `review-gate.py` | `Stop` | Enforces the Phase 5 exit gate: when the turn edited files in a repo that keeps a `.n2i-dev-cycle/` ledger, it blocks the stop until `n2i-prepush-reviewer` ran after the last edit or a `Phase 5: review skipped (<class>, <reason>)` line was written. It checks that a review ran, not that it was good. Edits made through Bash are not seen. |
+| `review-gate.py` | `Stop` | Enforces the Phase 5 exit gate: when the turn edited files in a repo that keeps a `.n2i-dev-cycle/` ledger, it blocks the stop until a review ran after the last edit or a `Phase 5: review skipped (<class>, <reason>)` line was written. A review (an `n2i-prepush-reviewer` dispatch, or `codex exec` in a repo whose config sets `CODEX`) counts only when its prompt holds every standing check from `references/prepush-prompt.md` and every `### ` heading of the repo's `REVIEW_CHECKLIST` file. The block lists only the files edited since the last review that counted, so a later round can cover that delta. It checks that a review ran with the full prompt, not that it was good. Edits made through Bash are not seen. |
 
 All need `python3` (already a Claude Code hooks prerequisite). Merge
 `hooks/settings.snippet.json` into `~/.claude/settings.json`, adding its entries to
@@ -390,6 +408,10 @@ repo-scoped the skill generates: `config` (see `n2i-dev-cycle.config.example`), 
 | `E2E_CMD` | Phase 6 e2e runner; unset → the detected runner |
 | `BACKEND_STANDARDS`, `FRONTEND_STANDARDS`, `MIGRATION_STANDARDS` | path to the repo's own convention file (e.g. `backend/CLAUDE.md`); Phase 3 treats it as authoritative over `references/*` |
 | `REVIEW_READ` | space-separated repo files (glossary, standards, conventions) that Phase 3 and every review prompt must read |
+| `REVIEW_CHECKLIST` | one repo file of review rules (`### ` heading per rule) that every pre-push review applies; the review-gate hook checks the prompt holds each heading |
+| `CODEX` | `off` (default) \| `review` \| `plan+review`: Codex runs the review rounds (and the plan review), Opus reviews the full diff once at the end (`references/codex.md`). Sends code to a third-party model; set it only where approved |
+| `CODEX_FALLBACK` | `wait` (default) \| `opus`: what happens when Codex is unavailable |
+| `REVIEW_ROUNDS_MAX` | most Codex fix rounds before stopping to ask; default 3 |
 
 On the **first run in a repo** (no config found), Phase 1 proposes the file from detected
 values and, with your consent, creates `.n2i-dev-cycle/config` at the git root and appends
@@ -431,6 +453,7 @@ memory milestones).
 
 - **`references/tdd.md`** — RED-GREEN-REFACTOR, test-first vs exempt scaffolding, tests that can't go red, rationalization table
 - **`references/doubt.md`** — architectural class (and risky bounded work): fresh-context adversarial review of the plan or a unit, 3-cycle stop
+- **`references/codex.md`** — Codex as a second reviewer when `CODEX` is set: preflight, fallback, plan review, round 1 briefs, capped fix rounds, final Opus gate
 - **`references/prepush-prompt.md`** — fixed prompt template for the pre-push reviewer: slots, standing checks
 - **`references/verification.md`** — evidence-before-claims gate, claim→proof table
 - **`references/diff-review.md`** — pre-push diff checks: silenced-check scan, mutation spot-check, dead-code handling, duplicated rules

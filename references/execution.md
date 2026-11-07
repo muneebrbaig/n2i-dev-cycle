@@ -54,6 +54,7 @@ independent**:
 | Diff scan for silenced checks and dead-code candidates (Phase 5) — `n2i-diff-scanner` | full diff in, a short hit list out |
 | Doubt review (architectural class, `doubt.md`) — `n2i-doubter` | fresh context is the point; it sees the artifact and contract, never your reasoning |
 | Pre-push code review (Phase 5) — `n2i-prepush-reviewer`, which runs the review skill inside it | fresh context and a stronger model are the point; it never sees your reasoning |
+| Plan review and Phase 5 review rounds when `CODEX` is on — Codex (`codex.md`) | another model family; Opus then reviews the full diff once, as the final gate |
 
 **Keep in the main agent** — do not hand off:
 
@@ -91,7 +92,8 @@ in a git repo.
 - Phase 4 intra-phase checkpoints get a line too.
 - Phase 5 always gets a review line, written before the Phase 6 line: `Phase 5: review run
   (<n> Critical/Required fixed)` or `Phase 5: review skipped (<class>, <reason>)`. A ledger
-  that goes from Phase 4 to Phase 6 without it shows the gate was skipped.
+  that goes from Phase 4 to Phase 6 without it shows the gate was skipped. Each later round
+  adds `Phase 5: review round <k> (<codex|opus>, <full|delta: files>, <n> Critical/Required fixed)`.
 - Phase 4 test-first units record the RED failure line before the GREEN commit
   (`references/tdd.md`) — the ledger is where test-first order is proven across
   sessions and machines.

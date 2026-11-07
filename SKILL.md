@@ -38,7 +38,7 @@ a finalized ticket both enter here.
 - Forge: !`URL=$(git remote get-url origin 2>/dev/null); case "$URL" in *gitlab*) F=gitlab;; *github*) F=github;; *) F=unknown;; esac; CLI=none; if [ "$F" = gitlab ] && command -v glab >/dev/null 2>&1; then CLI=glab; elif [ "$F" = github ] && command -v gh >/dev/null 2>&1; then CLI=gh; elif command -v glab >/dev/null 2>&1; then CLI=glab; elif command -v gh >/dev/null 2>&1; then CLI=gh; fi; echo "FORGE=$F; FORGE_CLI=$CLI"`
 - DB engine: !`f=$(find . -maxdepth 3 -path '*/.n2i-dev-cycle/config' 2>/dev/null | head -1); [ -n "$f" ] && . "$f" 2>/dev/null; E=${DB_ENGINE:-}; if [ -n "$E" ] && [ "$E" != auto ]; then echo "DB_ENGINE=$E (config)"; else FILES=$(grep -rlE 'PostgresqlDatabase\(|SqlServerDatabase\(|\.SqlDatabase\(|UseNpgsql|UseSqlServer' --include='*.cs' . 2>/dev/null | grep -v '/old/'); MIG=$(echo "$FILES" | xargs grep -hoE 'PostgresqlDatabase\(|SqlServerDatabase\(|\.SqlDatabase\(|UseNpgsql|UseSqlServer' 2>/dev/null | sort -u | tr -d '\n'); if echo "$MIG" | grep -qE 'Postgresql|Npgsql'; then echo "DB_ENGINE=postgres (migrator)"; elif echo "$MIG" | grep -qE 'SqlServer|SqlDatabase'; then echo "DB_ENGINE=sqlserver (migrator)"; else P=$(grep -rhi -E 'Npgsql\.EntityFrameworkCore|dbup-postgresql' --include='*.csproj' . 2>/dev/null); S=$(grep -rhi -E 'EntityFrameworkCore\.SqlServer|dbup-sqlserver' --include='*.csproj' . 2>/dev/null); if [ -n "$P" ] && [ -z "$S" ]; then echo "DB_ENGINE=postgres (pkg)"; elif [ -n "$S" ] && [ -z "$P" ]; then echo "DB_ENGINE=sqlserver (pkg)"; else echo "DB_ENGINE=postgres (default; confirm in Phase 1)"; fi; fi; fi`
 - Migration docs: !`c=$(find . -maxdepth 3 -path '*/.n2i-dev-cycle/config' 2>/dev/null | head -1); [ -n "$c" ] && . "$c" 2>/dev/null; if [ -n "${MIGRATION_DOC:-}" ]; then d=$(find . -maxdepth 3 -name "$MIGRATION_DOC" 2>/dev/null | head -1); [ -n "$d" ] && echo "MIGRATION_DOCS=$d" || echo "MIGRATION_DOCS=none"; else echo "MIGRATION_DOCS=none"; fi`
-- Config: !`f=$(find . -maxdepth 3 -path '*/.n2i-dev-cycle/config' -not -path '*/node_modules/*' 2>/dev/null | head -1); if [ -n "$f" ]; then . "$f" 2>/dev/null; echo "CONFIG=$f; BRANCH_PREFIX=${BRANCH_PREFIX:-unset}; DEFAULT_SCOPE=${DEFAULT_SCOPE:-unset}; FORGE_OVERRIDE=${FORGE:-unset}; BACKEND_VALIDATE_CMD=${BACKEND_VALIDATE_CMD:+set}; FRONTEND_VALIDATE_CMD=${FRONTEND_VALIDATE_CMD:+set}; E2E_CMD=${E2E_CMD:+set}; BACKEND_STANDARDS=${BACKEND_STANDARDS:-unset}; FRONTEND_STANDARDS=${FRONTEND_STANDARDS:-unset}; MIGRATION_STANDARDS=${MIGRATION_STANDARDS:-unset}; REVIEW_READ=${REVIEW_READ:-unset}"; else echo "CONFIG=none (see n2i-dev-cycle.config.example)"; fi`
+- Config: !`f=$(find . -maxdepth 3 -path '*/.n2i-dev-cycle/config' -not -path '*/node_modules/*' 2>/dev/null | head -1); if [ -n "$f" ]; then . "$f" 2>/dev/null; echo "CONFIG=$f; BRANCH_PREFIX=${BRANCH_PREFIX:-unset}; DEFAULT_SCOPE=${DEFAULT_SCOPE:-unset}; FORGE_OVERRIDE=${FORGE:-unset}; BACKEND_VALIDATE_CMD=${BACKEND_VALIDATE_CMD:+set}; FRONTEND_VALIDATE_CMD=${FRONTEND_VALIDATE_CMD:+set}; E2E_CMD=${E2E_CMD:+set}; BACKEND_STANDARDS=${BACKEND_STANDARDS:-unset}; FRONTEND_STANDARDS=${FRONTEND_STANDARDS:-unset}; MIGRATION_STANDARDS=${MIGRATION_STANDARDS:-unset}; REVIEW_READ=${REVIEW_READ:-unset}; REVIEW_CHECKLIST=${REVIEW_CHECKLIST:-unset}; CODEX=${CODEX:-off}; CODEX_FALLBACK=${CODEX_FALLBACK:-wait}; REVIEW_ROUNDS_MAX=${REVIEW_ROUNDS_MAX:-3}"; else echo "CONFIG=none (see n2i-dev-cycle.config.example)"; fi`
 - E2E: !`E2ECFG=$(find . -maxdepth 3 \( -name 'playwright.config.*' -o -name 'cypress.config.*' \) -not -path '*/node_modules/*' 2>/dev/null | head -1); if [ -n "$E2ECFG" ]; then echo "E2E=$(dirname "$E2ECFG")"; else E2EDIR=$(find . -maxdepth 3 -type d \( -name 'e2e' -o -path '*/tests/e2e' \) -not -path '*/node_modules/*' 2>/dev/null | head -1); [ -n "$E2EDIR" ] && echo "E2E=$E2EDIR" || echo "E2E=none"; fi`
 - Agents: !`D="$HOME/.claude/agents"; M=$(find -L "$HOME/.claude/skills/n2i-dev-cycle/agents" -name 'n2i-*.md' 2>/dev/null | while read -r f; do [ -e "$D/$(basename "$f")" ] || printf ' %s' "$(basename "$f" .md)"; done); if [ -z "$M" ]; then echo "AGENTS=ok"; else echo "AGENTS=missing:$M"; fi`
 
@@ -243,6 +243,9 @@ convention files (often `backend/CLAUDE.md`, `web/CLAUDE.md`) — see the README
 "Using with a different stack".
 
 If `REVIEW_READ` is set, read each listed file too, and pass the list to every review prompt.
+If `REVIEW_CHECKLIST` is set, read it and put its rules in every review prompt (`{checklist}`).
+If `CODEX` is `review` or `plan+review`, read `references/codex.md`: Codex then takes the plan
+review (`plan+review`) and the Phase 5 review rounds, and Opus reviews the full diff once at the end.
 
 **Load `references/planning.md`** and produce the implementation plan in that
 shape — `SCOPE` subsections only, concrete content (no placeholders), a scope
@@ -275,9 +278,16 @@ for each is in `build-loop.md` (Validate, Pre-push review); a skipped line needs
    tenant-isolation/auth/migration code, or a diff that is mostly tests: run it. Only a
    bounded diff under ~100 lines outside those areas may skip it, and the reason is
    written down. If unsure, run it. Build the prompt from `references/prepush-prompt.md`;
-   every finding gets a `fixed` or `decided: <reason>` ledger line.
+   every finding gets a `fixed` or `decided: <reason>` ledger line. Fixes for its findings
+   get a delta round (`{round}` in the template) before Phase 6: fixes that state numbers
+   have shipped wrong ones. After the first round, size a skip on the change since the last
+   round, not the whole branch; a docs-only change that adds or alters no number or claim
+   may skip as `docs-only`. Phase 7 fixes follow the same rule. With `CODEX` on, the rounds
+   follow `references/codex.md`: Codex for round 1 and the fix rounds (at most
+   `REVIEW_ROUNDS_MAX`), then one `n2i-prepush-reviewer` on the full diff.
 4. Ledger line `Phase 5: review run (<n> Critical/Required fixed)` or
-   `Phase 5: review skipped (<class>, <reason>)`, written before the Phase 6 line.
+   `Phase 5: review skipped (<class>, <reason>)`, written before the Phase 6 line. A later
+   round adds `Phase 5: review round <k> (<codex|opus>, <full|delta: files>, <n> Critical/Required fixed)`.
 
 **Every build cycle ends with the Phase 6 handover** — Review / What Changed / What to Test
 Locally / Known Limitations — never just "done". The handover opens with a `Review:` line
@@ -364,6 +374,7 @@ The repo's own `CLAUDE.md` wins on any conflict.
 | `references/verification.md` | Phase 5, any "done" claim | evidence-before-claims gate, claim→proof table, red flags |
 | `references/doubt.md` | architectural class; bounded class only when it touches a cross-repo contract, an export, or a persisted format; before the plan is presented | fresh-context adversarial review of the plan or a unit: claim/extract/doubt/reconcile, 3-cycle stop |
 | `references/diff-review.md` | Phase 5 pre-push review | silenced-check scan (skips, suppressions, lowered thresholds, stubs), mutation spot-check, dead-code handling |
+| `references/codex.md` | Phase 3 and Phase 5 when `CODEX` is `review` or `plan+review` | Codex preflight and fallback, the run command, plan review, round 1 briefs, capped fix rounds, the final Opus gate |
 | `references/prepush-prompt.md` | Phase 5 pre-push review | fixed prompt template for `n2i-prepush-reviewer`: slots for ticket, spec, base, claims, `REVIEW_READ` files; standing checks |
 | `references/debugging.md` | Phase 7, Phase 8 CI | root-cause-first 4 steps, boundary instrumentation, 3-fix→question-design rule, parallel dispatch, Phase 7 per-finding loop + `fix:` resume |
 | `references/finishing.md` | Phase 8 | ship gate, suite green → base confirm → push + MR → CI → branch/worktree cleanup → final memory + ledger line |

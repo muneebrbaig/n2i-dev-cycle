@@ -76,7 +76,8 @@ change each) in the plan, and plan any refactor as its own change, apart from th
 export, or a persisted format).** Before presenting the plan, run one fresh-context review
 (`references/doubt.md`) and present the plan with its outcome. No yes is needed first. Skip
 it for spikes and for other bounded changes (a rename, one field, a one-line fix) that touch
-none of those.
+none of those. With `CODEX=plan+review`, Codex runs this review (`references/codex.md`, Plan
+Review), alongside `n2i-doubter` for the architectural class.
 
 Then **wait for user approval before proceeding.** The user may refine, add, or
 remove items.
